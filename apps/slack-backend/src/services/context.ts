@@ -1,5 +1,6 @@
 import { WebClient } from '@slack/web-api';
 import { subMinutes } from 'date-fns';
+import { RateLimiter } from 'limiter';
 import { logger } from '../utils/logger.js';
 
 // Context message format for AI consumption
@@ -12,6 +13,24 @@ export interface ContextMessage {
 // Configuration
 const MAX_MESSAGES = 20;
 const CONTEXT_WINDOW_MINUTES = 60;
+
+// Rate limiter for Slack conversations API
+// Tier 3: 50 requests per minute (Marketplace apps)
+// Non-Marketplace: 1 request per minute (very restrictive)
+// We'll use a moderate limit that works for testing
+const conversationsRateLimiter = new RateLimiter({
+  tokensPerInterval: 20, // 20 requests per minute
+  interval: 'minute',
+});
+
+// Wrapper to apply rate limiting before Slack API calls
+async function rateLimitedCall<T>(fn: () => Promise<T>): Promise<T> {
+  const remaining = await conversationsRateLimiter.removeTokens(1);
+  if (remaining < 0) {
+    logger.warn({ remaining }, 'Rate limit approaching for Slack API');
+  }
+  return fn();
+}
 
 /**
  * Get conversation context from a channel (parent messages only, no thread replies).
@@ -30,11 +49,13 @@ export async function getConversationContext(
   const oldest = (subMinutes(new Date(), windowMinutes).getTime() / 1000).toString();
 
   try {
-    const result = await client.conversations.history({
-      channel: channelId,
-      limit: maxMessages,
-      oldest,
-    });
+    const result = await rateLimitedCall(() =>
+      client.conversations.history({
+        channel: channelId,
+        limit: maxMessages,
+        oldest,
+      })
+    );
 
     if (!result.ok || !result.messages) {
       logger.warn({ channelId, error: result.error }, 'Failed to fetch conversation history');
@@ -82,12 +103,14 @@ export async function getThreadContext(
   const oldest = (subMinutes(new Date(), windowMinutes).getTime() / 1000).toString();
 
   try {
-    const result = await client.conversations.replies({
-      channel: channelId,
-      ts: threadTs,
-      limit: maxMessages,
-      oldest,
-    });
+    const result = await rateLimitedCall(() =>
+      client.conversations.replies({
+        channel: channelId,
+        ts: threadTs,
+        limit: maxMessages,
+        oldest,
+      })
+    );
 
     if (!result.ok || !result.messages) {
       logger.warn({ channelId, threadTs, error: result.error }, 'Failed to fetch thread context');
@@ -136,11 +159,13 @@ export async function getContextForMessage(
   // Check if messageTs is itself a thread parent
   // by fetching replies and seeing if there are any
   try {
-    const result = await client.conversations.replies({
-      channel: channelId,
-      ts: messageTs,
-      limit: 2, // Just check if there are replies
-    });
+    const result = await rateLimitedCall(() =>
+      client.conversations.replies({
+        channel: channelId,
+        ts: messageTs,
+        limit: 2, // Just check if there are replies
+      })
+    );
 
     // If there are multiple messages, this is a thread
     if (result.ok && result.messages && result.messages.length > 1) {
