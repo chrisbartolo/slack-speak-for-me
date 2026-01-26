@@ -2,12 +2,15 @@ import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../env.js';
 import { prepareForAI, sanitizeAIOutput } from '@slack-speak/validation';
 import { logger } from '../utils/logger.js';
+import { buildStyleContext, trackRefinement } from './personalization/index.js';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
 });
 
 interface SuggestionContext {
+  workspaceId: string;
+  userId: string;
   triggerMessage: string;
   contextMessages: Array<{
     userId: string;
@@ -20,6 +23,10 @@ interface SuggestionContext {
 interface SuggestionResult {
   suggestion: string;
   processingTimeMs: number;
+  personalization: {
+    learningPhase: string;
+    usedHistory: boolean;
+  };
 }
 
 interface RefinementHistoryEntry {
@@ -28,33 +35,44 @@ interface RefinementHistoryEntry {
 }
 
 interface RefinementContext {
+  workspaceId: string;
+  userId: string;
+  suggestionId: string;
   originalSuggestion: string;
   refinementRequest: string;
   history?: RefinementHistoryEntry[];
 }
+
+// Base system prompt (static, cached for 1 hour)
+const BASE_SYSTEM_PROMPT = `You are a helpful assistant that suggests professional, thoughtful responses to workplace messages.
+
+Your suggestions should:
+- Be appropriate for professional communication
+- Be concise but complete
+- Address the key points in the message
+- Not be aggressive or confrontational
+
+When suggesting responses, consider the conversation context provided. Generate a single suggested response that the user can copy and send.`;
 
 export async function generateSuggestion(
   context: SuggestionContext
 ): Promise<SuggestionResult> {
   const startTime = Date.now();
 
-  // Format context messages for the prompt
+  // Build personalized style context
   const formattedContext = context.contextMessages
     .map(m => `[${m.ts}] User ${m.userId}: ${m.text}`)
     .join('\n');
 
+  const styleContext = await buildStyleContext({
+    workspaceId: context.workspaceId,
+    userId: context.userId,
+    conversationContext: formattedContext,
+  });
+
   // Prepare user content with sanitization and spotlighting
   const sanitizedTrigger = prepareForAI(context.triggerMessage).sanitized;
   const sanitizedContext = prepareForAI(formattedContext).sanitized;
-
-  const systemPrompt = `You are a helpful assistant that suggests professional, thoughtful responses to workplace messages. Your suggestions should:
-- Be appropriate for professional communication
-- Match a neutral, professional tone
-- Be concise but complete
-- Address the key points in the message
-- Not be aggressive or confrontational
-
-When suggesting responses, consider the conversation context provided. Generate a single suggested response that the user can copy and send.`;
 
   const userPrompt = `Here is the recent conversation context:
 ${sanitizedContext}
@@ -70,7 +88,20 @@ Please suggest a professional response the user could send. Provide only the sug
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
-      system: systemPrompt,
+      system: [
+        {
+          type: 'text',
+          text: BASE_SYSTEM_PROMPT,
+          // Cache static system prompt for 1 hour
+          cache_control: { type: 'ephemeral' },
+        },
+        {
+          type: 'text',
+          text: styleContext.promptText,
+          // Cache user style context for 5 minutes
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [
         {
           role: 'user',
@@ -92,11 +123,19 @@ Please suggest a professional response the user could send. Provide only the sug
       processingTimeMs,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
-    }, 'AI suggestion generated');
+      cacheReadTokens: (response.usage as any).cache_read_input_tokens || 0,
+      cacheCreationTokens: (response.usage as any).cache_creation_input_tokens || 0,
+      learningPhase: styleContext.learningPhase,
+      usedHistory: styleContext.usedHistory,
+    }, 'AI suggestion generated with personalization');
 
     return {
       suggestion,
       processingTimeMs,
+      personalization: {
+        learningPhase: styleContext.learningPhase,
+        usedHistory: styleContext.usedHistory,
+      },
     };
   } catch (error) {
     logger.error({ error }, 'Failed to generate AI suggestion');
@@ -107,11 +146,19 @@ Please suggest a professional response the user could send. Provide only the sug
 /**
  * Refine an existing suggestion based on user feedback
  * Supports multi-turn refinement with history tracking
+ * Automatically tracks refinement for feedback learning
  */
 export async function refineSuggestion(
   context: RefinementContext
 ): Promise<SuggestionResult> {
   const startTime = Date.now();
+
+  // Build style context for consistency
+  const styleContext = await buildStyleContext({
+    workspaceId: context.workspaceId,
+    userId: context.userId,
+    conversationContext: context.originalSuggestion,
+  });
 
   // Build refinement history for context
   const historyText = context.history && context.history.length > 0
@@ -131,7 +178,9 @@ export async function refineSuggestion(
   const sanitizedRequest = prepareForAI(context.refinementRequest).sanitized;
   const sanitizedHistory = historyText ? prepareForAI(historyText).sanitized : '';
 
-  const systemPrompt = `You are a helpful assistant that refines professional response suggestions based on user feedback. Your refined suggestions should:
+  const refinementSystemPrompt = `You are a helpful assistant that refines professional response suggestions based on user feedback.
+
+Your refined suggestions should:
 - Address the specific refinement request from the user
 - Maintain professional tone and appropriateness
 - Keep the core message intact unless the user asks to change it
@@ -151,7 +200,18 @@ Please provide the refined response text. Provide only the suggested response te
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
-      system: systemPrompt,
+      system: [
+        {
+          type: 'text',
+          text: refinementSystemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+        {
+          type: 'text',
+          text: styleContext.promptText,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [
         {
           role: 'user',
@@ -169,16 +229,36 @@ Please provide the refined response text. Provide only the suggested response te
 
     const processingTimeMs = Date.now() - startTime;
 
+    // Track refinement for feedback learning
+    try {
+      await trackRefinement({
+        workspaceId: context.workspaceId,
+        userId: context.userId,
+        suggestionId: context.suggestionId,
+        original: context.originalSuggestion,
+        modified: suggestion,
+      });
+    } catch (trackError) {
+      // Non-fatal - don't fail the refinement if tracking fails
+      logger.warn({ error: trackError }, 'Failed to track refinement event');
+    }
+
     logger.info({
       processingTimeMs,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
+      cacheReadTokens: (response.usage as any).cache_read_input_tokens || 0,
       roundNumber,
+      learningPhase: styleContext.learningPhase,
     }, 'AI refinement generated');
 
     return {
       suggestion,
       processingTimeMs,
+      personalization: {
+        learningPhase: styleContext.learningPhase,
+        usedHistory: styleContext.usedHistory,
+      },
     };
   } catch (error) {
     logger.error({ error, roundNumber }, 'Failed to generate AI refinement');
