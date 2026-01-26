@@ -52,10 +52,18 @@ Plans:
   6. User can click "Copy" button and suggestion text is copied to clipboard for pasting
   7. User can toggle watch/unwatch on specific conversations via slash command
   8. AI suggestions reflect context from recent messages in the conversation
-**Plans**: TBD
+**Plans**: 9 plans in 4 waves
 
 Plans:
-- [ ] To be created during plan-phase
+- [ ] 02-01-PLAN.md — Database schema for watched conversations and thread participation tracking
+- [ ] 02-02-PLAN.md — AI suggestion service with Claude integration
+- [ ] 02-03-PLAN.md — Context retrieval service with rate limiting
+- [ ] 02-04-PLAN.md — Event handlers for app mentions and message replies
+- [ ] 02-05-PLAN.md — /watch and /unwatch slash commands
+- [ ] 02-06-PLAN.md — Ephemeral message delivery with Block Kit buttons
+- [ ] 02-07-PLAN.md — "Help me respond" message shortcut and action handlers
+- [ ] 02-08-PLAN.md — Refinement modal with multi-turn AI conversation
+- [ ] 02-09-PLAN.md — End-to-end verification of all success criteria
 
 ### Phase 3: AI Personalization
 **Goal**: AI matches user's personal communication style through learning and explicit guidance
@@ -117,7 +125,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infrastructure | 0/5 | Planned | - |
-| 2. Core Slack Response Suggestions | 0/TBD | Not started | - |
+| 2. Core Slack Response Suggestions | 0/9 | Planned | - |
 | 3. AI Personalization | 0/TBD | Not started | - |
 | 4. Web Portal | 0/TBD | Not started | - |
 | 5. Weekly Reports | 0/TBD | Not started | - |
