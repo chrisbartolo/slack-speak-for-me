@@ -79,10 +79,19 @@ Plans:
   6. Testing page can simulate app_mention, message events, and shortcut triggers
   7. Testing page can test AI generation directly with custom prompts
   8. All tests pass in CI/CD pipeline
-**Plans**: TBD
+**Plans**: 10 plans in 4 waves
 
 Plans:
-- [ ] To be created during plan-phase
+- [ ] 02.1-01-PLAN.md — Vitest infrastructure with MSW and PGlite helpers
+- [ ] 02.1-02-PLAN.md — Unit tests for AI service and watch service
+- [ ] 02.1-03-PLAN.md — Unit tests for context and suggestion delivery services
+- [ ] 02.1-04-PLAN.md — Unit tests for OAuth installation store
+- [ ] 02.1-05-PLAN.md — Unit tests for event handlers and commands
+- [ ] 02.1-06-PLAN.md — Unit tests for actions, views, and shortcuts
+- [ ] 02.1-07-PLAN.md — Integration tests for database and job queue
+- [ ] 02.1-08-PLAN.md — E2E tests for complete flows
+- [ ] 02.1-09-PLAN.md — Manual testing page at /test
+- [ ] 02.1-10-PLAN.md — GitHub Actions CI/CD workflow
 
 ### Phase 3: AI Personalization
 **Goal**: AI matches user's personal communication style through learning and explicit guidance
@@ -145,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infrastructure | 5/5 | Complete | 2026-01-26 |
 | 2. Core Slack Response Suggestions | 9/9 | Code complete | 2026-01-26 |
-| 2.1. Testing Infrastructure | 0/TBD | Not started | - |
+| 2.1. Testing Infrastructure | 0/10 | Planned | - |
 | 3. AI Personalization | 0/TBD | Not started | - |
 | 4. Web Portal | 0/TBD | Not started | - |
 | 5. Weekly Reports | 0/TBD | Not started | - |
