@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 1 of 5 (Foundation & Infrastructure)
-Plan: 3 of TBD in current phase
+Plan: 4 of TBD in current phase
 Status: In progress
-Last activity: 2026-01-26 — Completed 01-03-PLAN.md
+Last activity: 2026-01-26 — Completed 01-04-PLAN.md
 
-Progress: [███░░░░░░░] ~30%
+Progress: [████░░░░░░] ~40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 2 min
-- Total execution time: 0.1 hours
+- Total plans completed: 4
+- Average duration: 2.5 min
+- Total execution time: 0.17 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 - Foundation | 3 | 6 min | 2 min |
+| 01 - Foundation | 4 | 10 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min), 01-02, 01-03 (2 min)
-- Trend: Steady velocity
+- Last 5 plans: 01-01 (2 min), 01-02, 01-03 (2 min), 01-04 (4 min)
+- Trend: Steady velocity, security tasks take longer
 
 *Updated after each plan completion*
 
@@ -51,6 +51,9 @@ Recent decisions affecting current work:
 - Phase 1 Plan 03: Rate limiting at 10 jobs/second — Prevents overwhelming AI API while maintaining responsiveness
 - Phase 1 Plan 03: Exponential backoff (2s, 4s, 8s) — Gives transient failures time to recover without retry storms
 - Phase 1 Plan 03: Worker error handlers log without crashing — Critical for production stability
+- Phase 1 Plan 04: 4-layer prompt injection defense — Sanitize, spotlight, detect, filter - cannot be retrofitted
+- Phase 1 Plan 04: Spotlighting with <|user_input_start|> markers — Microsoft research-based data/instruction separation
+- Phase 1 Plan 04: Logger redaction of all secrets — Automatic protection prevents accidental exposure
 
 ### Pending Todos
 
@@ -59,7 +62,7 @@ None yet.
 ### Blockers/Concerns
 
 **Research-identified risks to address:**
-- Phase 1: Prompt injection prevention must be architected from start (cannot retrofit)
+- ~~Phase 1: Prompt injection prevention must be architected from start (cannot retrofit)~~ ✓ ADDRESSED (01-04)
 - Phase 1: OAuth scopes must follow least privilege (changing post-launch requires workspace re-approval)
 - Phase 1: HTTP webhooks required for production (Socket Mode hits 10 workspace limit)
 - Phase 2: AI response latency must stay under 3 seconds (async job processing + streaming)
@@ -67,8 +70,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-26 16:47 UTC
-Stopped at: Completed 01-03-PLAN.md (BullMQ job queue with rate limiting)
+Last session: 2026-01-26 16:49 UTC
+Stopped at: Completed 01-04-PLAN.md (input validation and security)
 Resume file: None
 
 ---
