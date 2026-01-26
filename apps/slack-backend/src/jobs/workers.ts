@@ -1,10 +1,8 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult } from './types.js';
-import pino from 'pino';
-import crypto from 'crypto';
-
-const logger = pino({ name: 'worker' });
+import { generateSuggestion } from '../services/index.js';
+import { logger } from '../utils/logger.js';
 
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
 
@@ -12,29 +10,34 @@ export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
     'ai-responses',
     async (job: Job<AIResponseJobData>) => {
-      const startTime = Date.now();
-      const { workspaceId, userId, channelId, triggerMessageText, contextMessages, triggeredBy } = job.data;
+      const { workspaceId, userId, channelId, messageTs, triggerMessageText, contextMessages, triggeredBy } = job.data;
 
-      logger.info({ jobId: job.id, workspaceId, triggeredBy }, 'Processing AI response job');
+      logger.info({
+        jobId: job.id,
+        workspaceId,
+        userId,
+        triggeredBy,
+      }, 'Processing AI response job');
 
-      // Update progress
-      await job.updateProgress(10);
+      const result = await generateSuggestion({
+        triggerMessage: triggerMessageText,
+        contextMessages,
+        triggeredBy,
+      });
 
-      // TODO: Phase 2 will implement actual AI generation
-      // For now, return placeholder
-      const suggestion = `[Placeholder] AI suggestion for: "${triggerMessageText.slice(0, 50)}..."`;
+      // Generate a unique suggestion ID for tracking
+      const suggestionId = `sug_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-      await job.updateProgress(90);
-
-      // TODO: Phase 2 will send ephemeral message back to Slack
-      logger.info({ jobId: job.id, processingTimeMs: Date.now() - startTime }, 'Job completed');
-
-      await job.updateProgress(100);
+      logger.info({
+        jobId: job.id,
+        suggestionId,
+        processingTimeMs: result.processingTimeMs,
+      }, 'AI suggestion generated successfully');
 
       return {
-        suggestionId: crypto.randomUUID(),
-        suggestion,
-        processingTimeMs: Date.now() - startTime,
+        suggestionId,
+        suggestion: result.suggestion,
+        processingTimeMs: result.processingTimeMs,
       };
     },
     {
@@ -57,7 +60,11 @@ export async function startWorkers() {
   });
 
   aiResponseWorker.on('completed', (job, result) => {
-    logger.info({ jobId: job.id, processingTimeMs: result.processingTimeMs }, 'Job completed successfully');
+    logger.info({
+      jobId: job.id,
+      suggestionId: result.suggestionId,
+      processingTimeMs: result.processingTimeMs,
+    }, 'Job completed');
   });
 
   aiResponseWorker.on('stalled', (jobId) => {
