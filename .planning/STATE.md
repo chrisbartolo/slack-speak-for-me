@@ -91,6 +91,9 @@ Recent decisions affecting current work:
 - Phase 2.1 Plan 01: MSW v2 for HTTP mocking - Industry standard, supports Node and browser
 - Phase 2.1 Plan 01: PGlite for in-memory PostgreSQL - Real Postgres semantics without Docker
 - Phase 2.1 Plan 01: 90% coverage threshold for slack-backend - High bar for production services
+- Phase 2.1 Plan 02: vi.hoisted pattern for SDK mocks - enables mock references before import hoisting
+- Phase 2.1 Plan 02: gen_random_uuid() for PGlite - uuid-ossp extension not available in PGlite
+- Phase 2.1 Plan 02: Direct Anthropic SDK mocking vs MSW - SDK uses custom HTTP handling
 - Phase 2.1 Plan 03: Mock limiter module for rate-limited code testing - Prevents test timeouts
 - Phase 2.1 Plan 03: WebClient mock pattern for Slack API testing - Direct mock injection for unit tests
 - Phase 2.1 Plan 04: gen_random_uuid() for PGlite - uuid-ossp extension not available, use built-in function
