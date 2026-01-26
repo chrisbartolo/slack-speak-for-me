@@ -9,6 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@slack-speak/database": "*",
     "@slack-speak/validation": "*",
     "@slack/bolt": "^3.22.0",
