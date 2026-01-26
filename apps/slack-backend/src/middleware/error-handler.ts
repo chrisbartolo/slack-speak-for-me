@@ -1,4 +1,4 @@
-import { AllMiddlewareArgs } from '@slack/bolt';
+import type { AllMiddlewareArgs } from '@slack/bolt';
 import { logger } from '../utils/logger.js';
 
 /**

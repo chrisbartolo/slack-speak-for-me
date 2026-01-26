@@ -1,4 +1,5 @@
-import { App } from '@slack/bolt';
+import pkg from '@slack/bolt';
+const { App } = pkg;
 import { env } from './env.js';
 import { installationStore } from './oauth/installation-store.js';
 import { errorHandler } from './middleware/error-handler.js';

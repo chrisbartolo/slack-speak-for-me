@@ -1,4 +1,4 @@
-import { App } from '@slack/bolt';
+import type { App } from '@slack/bolt';
 import { watchConversation, unwatchConversation, isWatching } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
