@@ -24,6 +24,8 @@ export async function startWorkers() {
       }, 'Processing AI response job');
 
       const result = await generateSuggestion({
+        workspaceId,
+        userId,
         triggerMessage: triggerMessageText,
         contextMessages,
         triggeredBy,

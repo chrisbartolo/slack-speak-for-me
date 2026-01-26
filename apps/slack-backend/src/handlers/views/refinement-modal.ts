@@ -3,6 +3,8 @@ import { refineSuggestion } from '../../services/index.js';
 import { logger } from '../../utils/logger.js';
 
 interface RefinementMetadata {
+  workspaceId: string;
+  userId: string;
   suggestionId: string;
   currentSuggestion: string;
   history: Array<{
@@ -91,6 +93,9 @@ export function registerRefinementModalHandler(app: App): void {
       try {
         // Call AI refinement service
         const result = await refineSuggestion({
+          workspaceId: metadata.workspaceId,
+          userId: metadata.userId,
+          suggestionId: metadata.suggestionId,
           originalSuggestion: metadata.currentSuggestion,
           refinementRequest: refinementText,
           history: metadata.history,
@@ -113,6 +118,8 @@ export function registerRefinementModalHandler(app: App): void {
 
         // Update metadata with new suggestion and history
         const updatedMetadata = truncateHistory({
+          workspaceId: metadata.workspaceId,
+          userId: metadata.userId,
           suggestionId: metadata.suggestionId,
           currentSuggestion: result.suggestion,
           history: updatedHistory,

@@ -469,10 +469,12 @@ async function handleTestAI(
 ): Promise<void> {
   try {
     const body = await parseBody(req);
-    const { context, trigger, triggeredBy } = body as {
+    const { context, trigger, triggeredBy, workspaceId, userId } = body as {
       context?: string;
       trigger?: string;
       triggeredBy?: 'mention' | 'reply' | 'thread' | 'message_action';
+      workspaceId?: string;
+      userId?: string;
     };
 
     if (!trigger) {
@@ -493,6 +495,8 @@ async function handleTestAI(
       : [];
 
     const result = await generateSuggestion({
+      workspaceId: workspaceId || 'test-workspace',
+      userId: userId || 'test-user',
       triggerMessage: trigger,
       contextMessages,
       triggeredBy: triggeredBy || 'mention',
@@ -521,10 +525,13 @@ async function handleTestRefine(
 ): Promise<void> {
   try {
     const body = await parseBody(req);
-    const { originalSuggestion, refinementRequest, history } = body as {
+    const { originalSuggestion, refinementRequest, history, workspaceId, userId, suggestionId } = body as {
       originalSuggestion?: string;
       refinementRequest?: string;
       history?: Array<{ suggestion: string; refinementRequest?: string }>;
+      workspaceId?: string;
+      userId?: string;
+      suggestionId?: string;
     };
 
     if (!originalSuggestion || !refinementRequest) {
@@ -536,6 +543,9 @@ async function handleTestRefine(
     }
 
     const result = await refineSuggestion({
+      workspaceId: workspaceId || 'test-workspace',
+      userId: userId || 'test-user',
+      suggestionId: suggestionId || `test-sug-${Date.now()}`,
       originalSuggestion,
       refinementRequest,
       history,

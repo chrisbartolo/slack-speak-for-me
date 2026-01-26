@@ -32,8 +32,14 @@ export function registerRefineSuggestionAction(app: App): void {
         const actionBody = body as { actions: Array<{ value?: string }> };
         const suggestionId = actionBody.actions[0]?.value || '';
 
+        // Extract workspaceId and userId from body
+        const workspaceId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
+        const userId = 'user' in body && body.user ? (body.user as { id: string }).id : '';
+
         // Store state in private_metadata (JSON stringified, up to 3000 chars)
         const metadata = {
+          workspaceId,
+          userId,
           suggestionId,
           currentSuggestion,
           history: [],
