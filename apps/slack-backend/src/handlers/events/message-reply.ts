@@ -1,0 +1,158 @@
+import type { App } from '@slack/bolt';
+import { isWatching, recordThreadParticipation, isParticipatingInThread } from '../../services/watch.js';
+import { getContextForMessage, getThreadContext } from '../../services/context.js';
+import { queueAIResponse } from '../../jobs/queues.js';
+import { logger } from '../../utils/logger.js';
+
+/**
+ * Register message event handler for reply detection
+ *
+ * Triggers when:
+ * - Someone replies to user's message in a watched conversation
+ * - Someone posts in a thread where user is participating
+ *
+ * Filters out:
+ * - Bot messages (to prevent loops)
+ * - User's own messages
+ * - Messages in unwatched conversations
+ */
+export function registerMessageReplyHandler(app: App) {
+  app.message(async ({ message, client }) => {
+    try {
+      // Filter bot messages to avoid loops
+      if ('bot_id' in message || 'subtype' in message) {
+        return;
+      }
+
+      // Type guard: ensure this is a GenericMessageEvent with required fields
+      if (!('user' in message) || !('text' in message) || !('ts' in message) || !('channel' in message)) {
+        return;
+      }
+
+      // Extract fields with explicit type assertion after guards
+      const typedMessage = message as {
+        user: string;
+        text: string;
+        ts: string;
+        channel: string;
+        thread_ts?: string;
+      };
+
+      if (!typedMessage.user || !typedMessage.text || !typedMessage.ts) {
+        return;
+      }
+
+      const messageTs = typedMessage.ts;
+      const channelId = typedMessage.channel;
+      const userId = typedMessage.user;
+      const threadTs = typedMessage.thread_ts;
+
+      logger.debug({
+        channel: channelId,
+        user: userId,
+        ts: messageTs,
+        threadTs,
+      }, 'message event received');
+
+      // Get the workspace/team ID from the client's auth test
+      const authResult = await client.auth.test();
+      const workspaceId = authResult.team_id as string;
+
+      if (!workspaceId) {
+        logger.error('Could not determine workspace ID from auth.test');
+        return;
+      }
+
+      // Record participation in thread if this is a thread message
+      if (threadTs) {
+        await recordThreadParticipation(workspaceId, userId, channelId, threadTs);
+        logger.debug({
+          workspaceId,
+          userId,
+          channelId,
+          threadTs,
+        }, 'Recorded thread participation');
+      }
+
+      // Check if this message is a reply to someone we're watching
+      // For thread messages, we need to check if any watched user is participating
+      if (threadTs) {
+        // Get thread context to see who's in the thread
+        const threadMessages = await getThreadContext(client, channelId, threadTs);
+
+        // Get unique user IDs from thread (excluding current message author)
+        const participantUserIds = [...new Set(
+          threadMessages
+            .filter(m => m.userId !== userId)
+            .map(m => m.userId)
+        )];
+
+        logger.debug({
+          threadTs,
+          participantUserIds,
+        }, 'Thread participants identified');
+
+        // Check if any participant is watching this conversation and actively participating
+        for (const participantUserId of participantUserIds) {
+          const isWatchingConversation = await isWatching(workspaceId, participantUserId, channelId);
+
+          if (!isWatchingConversation) {
+            continue;
+          }
+
+          const isActiveInThread = await isParticipatingInThread(
+            workspaceId,
+            participantUserId,
+            channelId,
+            threadTs
+          );
+
+          if (isActiveInThread) {
+            logger.info({
+              workspaceId,
+              watchingUser: participantUserId,
+              replyingUser: userId,
+              channelId,
+              threadTs,
+            }, 'Detected reply in watched thread');
+
+            // Queue AI response for the watching user
+            const job = await queueAIResponse({
+              workspaceId,
+              userId: participantUserId,
+              channelId,
+              messageTs: threadTs, // Use thread root as message context
+              triggerMessageText: typedMessage.text,
+              contextMessages: threadMessages,
+              triggeredBy: 'thread',
+            });
+
+            logger.info({
+              jobId: job.id,
+              watchingUser: participantUserId,
+              channelId,
+              threadTs,
+            }, 'AI response job queued for thread reply');
+          }
+        }
+      } else {
+        // For non-thread messages, check if this is a direct reply to any message
+        // from a user who's watching this conversation
+        // This scenario is less common but can happen with inline replies
+
+        // For now, we'll skip this case and focus on thread replies
+        // which is the primary use case for reply detection
+        logger.debug({
+          channelId,
+          messageTs,
+        }, 'Non-thread message - skipping reply detection');
+      }
+
+    } catch (error) {
+      logger.error({ error, message }, 'Error handling message event');
+      // Don't rethrow - we don't want to crash the app for a single event
+    }
+  });
+
+  logger.info('message event handler registered');
+}
