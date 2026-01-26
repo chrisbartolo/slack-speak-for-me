@@ -2,7 +2,13 @@ import { App } from '@slack/bolt';
 import { env } from './env.js';
 import { installationStore } from './oauth/installation-store.js';
 import { errorHandler } from './middleware/error-handler.js';
-import { healthRoutes, logHealthEndpointsRegistered, registerWatchCommands } from './handlers/index.js';
+import {
+  healthRoutes,
+  logHealthEndpointsRegistered,
+  registerWatchCommands,
+  registerAppMentionHandler,
+  registerMessageReplyHandler
+} from './handlers/index.js';
 
 /**
  * Slack Bolt app with OAuth configuration and health endpoints.
@@ -33,6 +39,10 @@ export const app = new App({
 
 // Register global error handler
 app.error(errorHandler);
+
+// Register event handlers
+registerAppMentionHandler(app);
+registerMessageReplyHandler(app);
 
 // Register slash commands
 registerWatchCommands(app);

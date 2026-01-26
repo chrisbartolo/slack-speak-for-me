@@ -1,4 +1,3 @@
 export { healthRoutes, logHealthEndpointsRegistered } from './health.js';
 export { registerWatchCommands } from './commands/index.js';
-
-// Future handlers will be exported here
+export { registerAppMentionHandler, registerMessageReplyHandler } from './events/index.js';
