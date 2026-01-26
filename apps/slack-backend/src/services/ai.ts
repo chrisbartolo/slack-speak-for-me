@@ -22,6 +22,17 @@ interface SuggestionResult {
   processingTimeMs: number;
 }
 
+interface RefinementHistoryEntry {
+  suggestion: string;
+  refinementRequest?: string;
+}
+
+interface RefinementContext {
+  originalSuggestion: string;
+  refinementRequest: string;
+  history?: RefinementHistoryEntry[];
+}
+
 export async function generateSuggestion(
   context: SuggestionContext
 ): Promise<SuggestionResult> {
@@ -89,6 +100,88 @@ Please suggest a professional response the user could send. Provide only the sug
     };
   } catch (error) {
     logger.error({ error }, 'Failed to generate AI suggestion');
+    throw error;
+  }
+}
+
+/**
+ * Refine an existing suggestion based on user feedback
+ * Supports multi-turn refinement with history tracking
+ */
+export async function refineSuggestion(
+  context: RefinementContext
+): Promise<SuggestionResult> {
+  const startTime = Date.now();
+
+  // Build refinement history for context
+  const historyText = context.history && context.history.length > 0
+    ? context.history.map((entry, idx) => {
+        const parts = [`Round ${idx + 1} suggestion: ${entry.suggestion}`];
+        if (entry.refinementRequest) {
+          parts.push(`User requested: ${entry.refinementRequest}`);
+        }
+        return parts.join('\n');
+      }).join('\n\n')
+    : '';
+
+  const roundNumber = (context.history?.length || 0) + 1;
+
+  // Prepare user content with sanitization and spotlighting
+  const sanitizedOriginal = prepareForAI(context.originalSuggestion);
+  const sanitizedRequest = prepareForAI(context.refinementRequest);
+  const sanitizedHistory = historyText ? prepareForAI(historyText) : '';
+
+  const systemPrompt = `You are a helpful assistant that refines professional response suggestions based on user feedback. Your refined suggestions should:
+- Address the specific refinement request from the user
+- Maintain professional tone and appropriateness
+- Keep the core message intact unless the user asks to change it
+- Be concise but complete
+
+When refining, consider what the user is asking for (e.g., "make it shorter", "more formal", "friendlier", "add a question") and adjust accordingly.`;
+
+  const userPrompt = `${sanitizedHistory ? `Previous refinement rounds:\n${sanitizedHistory}\n\n` : ''}Original suggestion:
+${sanitizedOriginal}
+
+The user wants to refine this suggestion with the following request:
+${sanitizedRequest}
+
+Please provide the refined response text. Provide only the suggested response text, no additional commentary.`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: userPrompt,
+        },
+      ],
+    });
+
+    const rawSuggestion = response.content[0].type === 'text'
+      ? response.content[0].text
+      : '';
+
+    // Sanitize AI output before returning
+    const suggestion = sanitizeAIOutput(rawSuggestion);
+
+    const processingTimeMs = Date.now() - startTime;
+
+    logger.info({
+      processingTimeMs,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      roundNumber,
+    }, 'AI refinement generated');
+
+    return {
+      suggestion,
+      processingTimeMs,
+    };
+  } catch (error) {
+    logger.error({ error, roundNumber }, 'Failed to generate AI refinement');
     throw error;
   }
 }

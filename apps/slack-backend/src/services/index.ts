@@ -1,5 +1,5 @@
-// AI service - response suggestion generation
-export { generateSuggestion } from './ai.js';
+// AI service - response suggestion generation and refinement
+export { generateSuggestion, refineSuggestion } from './ai.js';
 
 // Context service - conversation and thread history retrieval
 export {
