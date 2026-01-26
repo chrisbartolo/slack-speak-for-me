@@ -1,35 +1,74 @@
-import pino from 'pino';
-import { app } from './app.js';
+import { app } from './app.js'; // Importing app triggers side effects: error handler + health endpoints
 import { env } from './env.js';
 import { startWorkers, stopWorkers } from './jobs/index.js';
-
-const logger = pino({ name: 'app' });
+import { logger } from './utils/logger.js';
 
 async function main() {
-  logger.info('Slack backend starting...');
+  try {
+    // Log startup configuration (without secrets)
+    logger.info({
+      port: env.PORT,
+      nodeEnv: env.NODE_ENV,
+      redisHost: env.REDIS_HOST,
+    }, 'Starting Slack Speak for Me backend');
 
-  // Start Slack Bolt app
-  await app.start(env.PORT);
-  logger.info(`Bolt app is running on port ${env.PORT}`);
+    // Start the Bolt app
+    await app.start(env.PORT);
+    logger.info({ port: env.PORT }, 'Bolt app started');
 
-  // Start background job workers
-  await startWorkers();
+    // Start background workers
+    await startWorkers();
+    logger.info('Background workers started');
 
-  logger.info('Slack backend ready');
+    // Log success with OAuth install URL
+    logger.info({
+      port: env.PORT,
+      oauthUrl: `http://localhost:${env.PORT}/slack/install`,
+      healthLive: `http://localhost:${env.PORT}/health/live`,
+      healthReady: `http://localhost:${env.PORT}/health/ready`,
+    }, 'Slack Speak for Me is ready!');
+
+  } catch (error) {
+    logger.fatal({ err: error }, 'Failed to start application');
+    process.exit(1);
+  }
 }
 
 // Graceful shutdown
-const shutdown = async () => {
-  logger.info('Shutting down...');
-  await app.stop();
-  await stopWorkers();
-  process.exit(0);
-};
+async function shutdown(signal: string) {
+  logger.info({ signal }, 'Received shutdown signal');
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+  try {
+    // Stop workers first (let in-flight jobs complete)
+    await stopWorkers();
+    logger.info('Workers stopped');
 
-main().catch((err) => {
-  logger.error({ err }, 'Failed to start application');
+    // Stop the Bolt app
+    await app.stop();
+    logger.info('App stopped');
+
+    logger.info('Graceful shutdown complete');
+    process.exit(0);
+  } catch (error) {
+    logger.error({ err: error }, 'Error during shutdown');
+    process.exit(1);
+  }
+}
+
+// Register shutdown handlers
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+// Handle uncaught errors - log and exit cleanly
+process.on('uncaughtException', (error) => {
+  logger.fatal({ err: error }, 'Uncaught exception - exiting');
   process.exit(1);
 });
+
+process.on('unhandledRejection', (reason) => {
+  logger.fatal({ err: reason }, 'Unhandled rejection - exiting');
+  process.exit(1);
+});
+
+// Start the application
+main();

@@ -2,9 +2,14 @@ import { App } from '@slack/bolt';
 import { env } from './env.js';
 import { installationStore } from './oauth/installation-store.js';
 import { errorHandler } from './middleware/error-handler.js';
+import { healthRoutes, logHealthEndpointsRegistered } from './handlers/index.js';
 
 /**
- * Slack Bolt app with OAuth configuration
+ * Slack Bolt app with OAuth configuration and health endpoints.
+ *
+ * The customRoutes option registers health endpoints:
+ * - GET /health/live: Liveness probe (is the app running?)
+ * - GET /health/ready: Readiness probe (are all dependencies healthy?)
  */
 export const app = new App({
   signingSecret: env.SLACK_SIGNING_SECRET,
@@ -22,7 +27,11 @@ export const app = new App({
   installerOptions: {
     directInstall: true,
   },
+  customRoutes: healthRoutes,
 });
 
 // Register global error handler
 app.error(errorHandler);
+
+// Log health endpoints registration
+logHealthEndpointsRegistered();
