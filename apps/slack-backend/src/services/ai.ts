@@ -44,8 +44,8 @@ export async function generateSuggestion(
     .join('\n');
 
   // Prepare user content with sanitization and spotlighting
-  const sanitizedTrigger = prepareForAI(context.triggerMessage);
-  const sanitizedContext = prepareForAI(formattedContext);
+  const sanitizedTrigger = prepareForAI(context.triggerMessage).sanitized;
+  const sanitizedContext = prepareForAI(formattedContext).sanitized;
 
   const systemPrompt = `You are a helpful assistant that suggests professional, thoughtful responses to workplace messages. Your suggestions should:
 - Be appropriate for professional communication
@@ -127,9 +127,9 @@ export async function refineSuggestion(
   const roundNumber = (context.history?.length || 0) + 1;
 
   // Prepare user content with sanitization and spotlighting
-  const sanitizedOriginal = prepareForAI(context.originalSuggestion);
-  const sanitizedRequest = prepareForAI(context.refinementRequest);
-  const sanitizedHistory = historyText ? prepareForAI(historyText) : '';
+  const sanitizedOriginal = prepareForAI(context.originalSuggestion).sanitized;
+  const sanitizedRequest = prepareForAI(context.refinementRequest).sanitized;
+  const sanitizedHistory = historyText ? prepareForAI(historyText).sanitized : '';
 
   const systemPrompt = `You are a helpful assistant that refines professional response suggestions based on user feedback. Your refined suggestions should:
 - Address the specific refinement request from the user
