@@ -12,9 +12,9 @@ This roadmap delivers an AI-powered Slack integration that helps professionals c
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Infrastructure** - Secure multi-tenant backend with OAuth and job processing
-- [ ] **Phase 2: Core Slack Response Suggestions** - AI-powered ephemeral suggestions in monitored conversations
-- [ ] **Phase 2.1: Testing Infrastructure** - Unit tests, E2E tests, and testing page (INSERTED)
+- [x] **Phase 1: Foundation & Infrastructure** - Secure multi-tenant backend with OAuth and job processing
+- [x] **Phase 2: Core Slack Response Suggestions** - AI-powered ephemeral suggestions in monitored conversations
+- [x] **Phase 2.1: Testing Infrastructure** - Unit tests, E2E tests, and testing page (INSERTED)
 - [ ] **Phase 3: AI Personalization** - Style learning and iterative refinement
 - [ ] **Phase 4: Web Portal** - Dashboard for settings, history, and management
 - [ ] **Phase 5: Weekly Reports** - Automated team report aggregation and formatting
@@ -82,16 +82,16 @@ Plans:
 **Plans**: 10 plans in 4 waves
 
 Plans:
-- [ ] 02.1-01-PLAN.md — Vitest infrastructure with MSW and PGlite helpers
-- [ ] 02.1-02-PLAN.md — Unit tests for AI service and watch service
-- [ ] 02.1-03-PLAN.md — Unit tests for context and suggestion delivery services
-- [ ] 02.1-04-PLAN.md — Unit tests for OAuth installation store
-- [ ] 02.1-05-PLAN.md — Unit tests for event handlers and commands
-- [ ] 02.1-06-PLAN.md — Unit tests for actions, views, and shortcuts
-- [ ] 02.1-07-PLAN.md — Integration tests for database and job queue
-- [ ] 02.1-08-PLAN.md — E2E tests for complete flows
-- [ ] 02.1-09-PLAN.md — Manual testing page at /test
-- [ ] 02.1-10-PLAN.md — GitHub Actions CI/CD workflow
+- [x] 02.1-01-PLAN.md — Vitest infrastructure with MSW and PGlite helpers
+- [x] 02.1-02-PLAN.md — Unit tests for AI service and watch service
+- [x] 02.1-03-PLAN.md — Unit tests for context and suggestion delivery services
+- [x] 02.1-04-PLAN.md — Unit tests for OAuth installation store
+- [x] 02.1-05-PLAN.md — Unit tests for event handlers and commands
+- [x] 02.1-06-PLAN.md — Unit tests for actions, views, and shortcuts
+- [x] 02.1-07-PLAN.md — Integration tests for database and job queue
+- [x] 02.1-08-PLAN.md — E2E tests for complete flows
+- [x] 02.1-09-PLAN.md — Manual testing page at /test
+- [x] 02.1-10-PLAN.md — GitHub Actions CI/CD workflow
 
 ### Phase 3: AI Personalization
 **Goal**: AI matches user's personal communication style through learning and explicit guidance
@@ -153,8 +153,8 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infrastructure | 5/5 | Complete | 2026-01-26 |
-| 2. Core Slack Response Suggestions | 9/9 | Code complete | 2026-01-26 |
-| 2.1. Testing Infrastructure | 0/10 | Planned | - |
+| 2. Core Slack Response Suggestions | 9/9 | Complete | 2026-01-26 |
+| 2.1. Testing Infrastructure | 10/10 | Complete | 2026-01-26 |
 | 3. AI Personalization | 0/TBD | Not started | - |
 | 4. Web Portal | 0/TBD | Not started | - |
 | 5. Weekly Reports | 0/TBD | Not started | - |
