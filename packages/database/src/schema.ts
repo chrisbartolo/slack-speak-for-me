@@ -71,6 +71,32 @@ export const userStylePreferences = pgTable('user_style_preferences', {
   workspaceUserIdx: uniqueIndex('user_style_preferences_workspace_user_idx').on(table.workspaceId, table.userId),
 }));
 
+export const messageEmbeddings = pgTable('message_embeddings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+  messageText: text('message_text').notNull(),
+  threadContext: text('thread_context'),
+  embedding: text('embedding').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: index('message_embeddings_workspace_user_idx').on(table.workspaceId, table.userId),
+  createdAtIdx: index('message_embeddings_created_at_idx').on(table.createdAt),
+}));
+
+export const refinementFeedback = pgTable('refinement_feedback', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+  suggestionId: text('suggestion_id').notNull(),
+  originalText: text('original_text').notNull(),
+  modifiedText: text('modified_text').notNull(),
+  refinementType: text('refinement_type'),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: index('refinement_feedback_workspace_user_idx').on(table.workspaceId, table.userId),
+}));
+
 export const gdprConsent = pgTable('gdpr_consent', {
   id: uuid('id').primaryKey().defaultRandom(),
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
