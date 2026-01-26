@@ -1,0 +1,30 @@
+{
+  "name": "@slack-speak/slack-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.22.0",
+    "ioredis": "^5.4.2",
+    "bullmq": "^5.28.2",
+    "drizzle-orm": "^0.38.3",
+    "postgres": "^3.4.5",
+    "zod": "^3.24.1",
+    "pino": "^9.6.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "@slack-speak/database": "*",
+    "@slack-speak/validation": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "drizzle-kit": "^0.30.1"
+  }
+}
