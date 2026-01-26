@@ -38,13 +38,15 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Weekly Reports
 
 - [ ] **REPORT-01**: App monitors Slack workflow form submissions from designated channel
-- [ ] **REPORT-02**: App tracks which direct reports have submitted weekly updates
-- [ ] **REPORT-03**: App aggregates all submissions into structured data
-- [ ] **REPORT-04**: AI summarizes submissions into board-ready format (achievements, focus, blockers, shoutouts)
-- [ ] **REPORT-05**: User can manually trigger report generation via slash command
-- [ ] **REPORT-06**: User can configure scheduled report generation (day and time)
-- [ ] **REPORT-07**: App sends draft report to user via DM or ephemeral message
-- [ ] **REPORT-08**: User can refine report draft before copying
+- [ ] **REPORT-02**: App writes each submission to connected Google Sheet
+- [ ] **REPORT-03**: App tracks which direct reports have submitted weekly updates (via Google Sheet)
+- [ ] **REPORT-04**: App reads and aggregates submissions from Google Sheet
+- [ ] **REPORT-05**: AI summarizes submissions into board-ready format (achievements, focus, blockers, shoutouts)
+- [ ] **REPORT-06**: User can manually trigger report generation via slash command
+- [ ] **REPORT-07**: User can configure scheduled report generation (day and time)
+- [ ] **REPORT-08**: App sends draft report to user via DM or ephemeral message
+- [ ] **REPORT-09**: User can refine report draft before copying
+- [ ] **REPORT-10**: Google OAuth flow for Sheets access
 
 ### Web Portal
 
@@ -108,13 +110,60 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (To be filled by roadmap) | | |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Pending |
+| INFRA-06 | Phase 1 | Pending |
+| SLACK-14 | Phase 1 | Pending |
+| SLACK-01 | Phase 2 | Pending |
+| SLACK-02 | Phase 2 | Pending |
+| SLACK-03 | Phase 2 | Pending |
+| SLACK-04 | Phase 2 | Pending |
+| SLACK-05 | Phase 2 | Pending |
+| SLACK-06 | Phase 2 | Pending |
+| SLACK-07 | Phase 2 | Pending |
+| SLACK-08 | Phase 2 | Pending |
+| SLACK-09 | Phase 2 | Pending |
+| SLACK-10 | Phase 2 | Pending |
+| SLACK-11 | Phase 2 | Pending |
+| SLACK-12 | Phase 2 | Pending |
+| SLACK-13 | Phase 2 | Pending |
+| AI-01 | Phase 2 | Pending |
+| AI-02 | Phase 2 | Pending |
+| AI-03 | Phase 3 | Pending |
+| AI-04 | Phase 3 | Pending |
+| AI-05 | Phase 3 | Pending |
+| AI-06 | Phase 3 | Pending |
+| AI-07 | Phase 3 | Pending |
+| AI-08 | Phase 3 | Pending |
+| PORTAL-01 | Phase 4 | Pending |
+| PORTAL-02 | Phase 4 | Pending |
+| PORTAL-03 | Phase 4 | Pending |
+| PORTAL-04 | Phase 4 | Pending |
+| PORTAL-05 | Phase 4 | Pending |
+| PORTAL-06 | Phase 4 | Pending |
+| PORTAL-07 | Phase 4 | Pending |
+| PORTAL-08 | Phase 4 | Pending |
+| PORTAL-09 | Phase 4 | Pending |
+| PORTAL-10 | Phase 4 | Pending |
+| REPORT-01 | Phase 5 | Pending |
+| REPORT-02 | Phase 5 | Pending |
+| REPORT-03 | Phase 5 | Pending |
+| REPORT-04 | Phase 5 | Pending |
+| REPORT-05 | Phase 5 | Pending |
+| REPORT-06 | Phase 5 | Pending |
+| REPORT-07 | Phase 5 | Pending |
+| REPORT-08 | Phase 5 | Pending |
+| REPORT-09 | Phase 5 | Pending |
+| REPORT-10 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 38 total
-- Mapped to phases: 0
-- Unmapped: 38 ⚠️
+- v1 requirements: 48 total
+- Mapped to phases: 48
+- Unmapped: 0
 
 ---
 *Requirements defined: 2025-01-26*
-*Last updated: 2025-01-26 after initial definition*
+*Last updated: 2026-01-26 after roadmap creation*
