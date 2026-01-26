@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 2.1 of 5 (Testing Infrastructure)
-Plan: 1 of 3 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-26 - Completed 02.1-01-PLAN.md (Testing Infrastructure Setup)
+Last activity: 2026-01-26 - Completed 02.1-05-PLAN.md (Handler Unit Tests)
 
-Progress: [█████████░] ~48% (Testing infrastructure ready, unit/integration tests pending)
+Progress: [█████████░] ~55% (Handler tests complete, integration tests pending)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 2.9 min
-- Total execution time: 0.63 hours
+- Total execution time: 0.68 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [█████████░] ~48% (Testing infrastructure ready, u
 |-------|-------|-------|----------|
 | 01 - Foundation | 5 | 13 min | 2.6 min |
 | 02 - Core Slack | 7 | 21 min | 3.0 min |
-| 02.1 - Testing | 1 | 6 min | 6.0 min |
+| 02.1 - Testing | 2 | 9 min | 4.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-05 (4 min), 02-06 (2 min), 02-07 (1 min), 02-08 (4 min), 02.1-01 (6 min)
-- Trend: Testing infrastructure setup expected to be slower due to dependency installation
+- Last 5 plans: 02-06 (2 min), 02-07 (1 min), 02-08 (4 min), 02.1-01 (6 min), 02.1-05 (3 min)
+- Trend: Unit test plans executing efficiently with established test infrastructure
 
 *Updated after each plan completion*
 
@@ -91,6 +91,7 @@ Recent decisions affecting current work:
 - Phase 2.1 Plan 01: MSW v2 for HTTP mocking - Industry standard, supports Node and browser
 - Phase 2.1 Plan 01: PGlite for in-memory PostgreSQL - Real Postgres semantics without Docker
 - Phase 2.1 Plan 01: 90% coverage threshold for slack-backend - High bar for production services
+- Phase 2.1 Plan 05: Handler callback testing pattern - Capture handlers via mock app.event/app.command for isolated testing
 
 ### Pending Todos
 
@@ -108,10 +109,10 @@ None
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Completed 02.1-01-PLAN.md (Testing Infrastructure Setup)
+Stopped at: Completed 02.1-05-PLAN.md (Handler Unit Tests)
 Resume file: None
 
-**Next action:** Execute 02.1-02-PLAN.md (Security and AI service unit tests)
+**Next action:** Execute 02.1-06-PLAN.md (Integration Test Setup)
 
 ---
 *Last updated: 2026-01-26*
