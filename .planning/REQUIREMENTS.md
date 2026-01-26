@@ -140,12 +140,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SLACK-13 | Phase 2 | Pending |
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
-| AI-03 | Phase 3 | Pending |
-| AI-04 | Phase 3 | Pending |
-| AI-05 | Phase 3 | Pending |
-| AI-06 | Phase 3 | Pending |
-| AI-07 | Phase 3 | Pending |
-| AI-08 | Phase 3 | Pending |
+| AI-03 | Phase 3 | Complete (backend) |
+| AI-04 | Phase 3 | Complete |
+| AI-05 | Phase 3 | Complete |
+| AI-06 | Phase 3 | Complete |
+| AI-07 | Phase 3 | Complete |
+| AI-08 | Phase 3 | Complete |
 | PORTAL-01 | Phase 4 | Pending |
 | PORTAL-02 | Phase 4 | Pending |
 | PORTAL-03 | Phase 4 | Pending |
