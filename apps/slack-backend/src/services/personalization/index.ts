@@ -30,3 +30,8 @@ export {
   type MessageExample,
   type WritingPatterns,
 } from './historyAnalyzer.js';
+
+export {
+  buildStyleContext,
+  type StyleContext,
+} from './styleContextBuilder.js';
