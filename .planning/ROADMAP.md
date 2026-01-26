@@ -102,10 +102,16 @@ Plans:
   2. AI applies explicit style guidance when generating suggestions
   3. AI analyzes user's historical Slack messages and generates suggestions matching their vocabulary and phrasing patterns
   4. System tracks how user modifies suggestions during refinement and improves future suggestions based on feedback patterns
-**Plans**: TBD
+**Plans**: 7 plans in 3 waves
 
 Plans:
-- [ ] To be created during plan-phase
+- [ ] 03-01-PLAN.md — Database schema migration for personalization tables and pgvector
+- [ ] 03-02-PLAN.md — Style preferences service with Zod validation
+- [ ] 03-03-PLAN.md — Refinement feedback tracking service
+- [ ] 03-04-PLAN.md — GDPR consent service for message history access
+- [ ] 03-05-PLAN.md — Historical message embedding and semantic search
+- [ ] 03-06-PLAN.md — Style context builder combining three learning sources
+- [ ] 03-07-PLAN.md — AI service integration with prompt caching
 
 ### Phase 4: Web Portal
 **Goal**: User can configure app, view context history, and manage settings via web dashboard
@@ -155,7 +161,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 | 1. Foundation & Infrastructure | 5/5 | Complete | 2026-01-26 |
 | 2. Core Slack Response Suggestions | 9/9 | Complete | 2026-01-26 |
 | 2.1. Testing Infrastructure | 10/10 | Complete | 2026-01-26 |
-| 3. AI Personalization | 0/TBD | Not started | - |
+| 3. AI Personalization | 0/7 | Not started | - |
 | 4. Web Portal | 0/TBD | Not started | - |
 | 5. Weekly Reports | 0/TBD | Not started | - |
 
