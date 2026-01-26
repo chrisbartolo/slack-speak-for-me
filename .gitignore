@@ -1,6 +1,17 @@
 node_modules
 dist
 .env
+.env.local
+.env.*.local
 *.log
 .turbo
 .DS_Store
+
+# TypeScript build info
+*.tsbuildinfo
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo

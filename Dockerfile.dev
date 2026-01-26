@@ -1,0 +1,37 @@
+# Development Dockerfile with hot reload
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
+# Copy package files first (for better caching)
+COPY package.json package-lock.json* ./
+COPY turbo.json ./
+COPY apps/slack-backend/package.json ./apps/slack-backend/
+COPY packages/database/package.json ./packages/database/
+COPY packages/validation/package.json ./packages/validation/
+
+# Install all dependencies
+RUN npm install
+
+# Copy tsconfig files
+COPY tsconfig.json ./
+COPY apps/slack-backend/tsconfig.json ./apps/slack-backend/
+COPY packages/database/tsconfig.json ./packages/database/
+COPY packages/validation/tsconfig.json ./packages/validation/
+
+# Copy source code (will be overridden by volume mounts in dev)
+COPY apps/slack-backend/src ./apps/slack-backend/src
+COPY packages/database/src ./packages/database/src
+COPY packages/validation/src ./packages/validation/src
+
+# Copy drizzle config for migrations
+COPY packages/database/drizzle.config.ts ./packages/database/
+
+# Expose the app port
+EXPOSE 3000
+
+# Run with tsx watch for hot reload
+CMD ["npm", "run", "dev", "--workspace=apps/slack-backend"]
