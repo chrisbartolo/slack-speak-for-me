@@ -18,3 +18,9 @@ export {
   recordThreadParticipation,
   isParticipatingInThread,
 } from './watch.js';
+
+// Suggestion delivery - ephemeral message with Block Kit
+export {
+  sendSuggestionEphemeral,
+  buildSuggestionBlocks,
+} from './suggestion-delivery.js';
