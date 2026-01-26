@@ -68,6 +68,10 @@ Recent decisions affecting current work:
 - Phase 2 Plan 02: sanitizeAIOutput for output filtering - Prevents system content leakage to users
 - Phase 2 Plan 03: 20 req/min rate limit for Slack API - Moderate limit suitable for testing and non-marketplace apps
 - Phase 2 Plan 03: Warning logs on rate limit approach - Proactive monitoring of API usage patterns
+- Phase 2 Plan 04: Type assertions for Slack events - TypeScript narrowing doesn't work well with Bolt union types
+- Phase 2 Plan 04: Multi-user thread support - All thread participants checked for watch status, enables team collaboration
+- Phase 2 Plan 04: Thread context for mentions - Automatic thread vs channel context selection based on message location
+- Phase 2 Plan 04: Participation tracking on every message - Ensures 7-day window is fresh and accurate
 - Phase 2 Plan 05: Check watch status before toggling - Prevents duplicate database operations and provides accurate user feedback
 - Phase 2 Plan 05: Ephemeral command responses - Command feedback is private to the user who ran the command
 - Phase 2 Plan 05: Immediate ack() for slash commands - Meets Slack's 3-second acknowledgment requirement
