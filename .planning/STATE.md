@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 2.1 of 5 (Testing Infrastructure)
-Plan: 5 of 6 in current phase
+Plan: 6 of 10 in current phase
 Status: In progress
-Last activity: 2026-01-26 - Completed 02.1-05-PLAN.md (Handler Unit Tests)
+Last activity: 2026-01-26 - Completed 02.1-06-PLAN.md (UI Handler Unit Tests)
 
-Progress: [█████████░] ~55% (Handler tests complete, integration tests pending)
+Progress: [█████████░] ~58% (UI handler tests complete, integration tests pending)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 2.9 min
-- Total execution time: 0.68 hours
+- Total execution time: 0.77 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [█████████░] ~55% (Handler tests complete, integra
 |-------|-------|-------|----------|
 | 01 - Foundation | 5 | 13 min | 2.6 min |
 | 02 - Core Slack | 7 | 21 min | 3.0 min |
-| 02.1 - Testing | 2 | 9 min | 4.5 min |
+| 02.1 - Testing | 3 | 14 min | 4.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-06 (2 min), 02-07 (1 min), 02-08 (4 min), 02.1-01 (6 min), 02.1-05 (3 min)
+- Last 5 plans: 02-07 (1 min), 02-08 (4 min), 02.1-01 (6 min), 02.1-05 (3 min), 02.1-06 (5 min)
 - Trend: Unit test plans executing efficiently with established test infrastructure
 
 *Updated after each plan completion*
@@ -92,6 +92,9 @@ Recent decisions affecting current work:
 - Phase 2.1 Plan 01: PGlite for in-memory PostgreSQL - Real Postgres semantics without Docker
 - Phase 2.1 Plan 01: 90% coverage threshold for slack-backend - High bar for production services
 - Phase 2.1 Plan 05: Handler callback testing pattern - Capture handlers via mock app.event/app.command for isolated testing
+- Phase 2.1 Plan 06: Handler registration testing pattern - Mock App.action/view/shortcut to capture handler functions
+- Phase 2.1 Plan 06: Service mocking for handlers - vi.mock at module level for refineSuggestion and queueAIResponse
+- Phase 2.1 Plan 06: Metadata verification pattern - Parse private_metadata from views.open/update calls
 
 ### Pending Todos
 
@@ -109,10 +112,10 @@ None
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Completed 02.1-05-PLAN.md (Handler Unit Tests)
+Stopped at: Completed 02.1-06-PLAN.md (UI Handler Unit Tests)
 Resume file: None
 
-**Next action:** Execute 02.1-06-PLAN.md (Integration Test Setup)
+**Next action:** Execute 02.1-07-PLAN.md (Command and Watch Service Tests)
 
 ---
 *Last updated: 2026-01-26*
