@@ -11,6 +11,9 @@ import {
   registerHelpMeRespondShortcut,
   registerCopySuggestionAction,
   registerDismissSuggestionAction,
+  registerRefineSuggestionAction,
+  registerCopyFinalSuggestionAction,
+  registerRefinementModalHandler,
 } from './handlers/index.js';
 
 /**
@@ -56,6 +59,11 @@ registerHelpMeRespondShortcut(app);
 // Register action handlers
 registerCopySuggestionAction(app);
 registerDismissSuggestionAction(app);
+registerRefineSuggestionAction(app);
+registerCopyFinalSuggestionAction(app);
+
+// Register view handlers
+registerRefinementModalHandler(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();
