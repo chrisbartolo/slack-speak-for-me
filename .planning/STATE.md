@@ -91,6 +91,8 @@ Recent decisions affecting current work:
 - Phase 2.1 Plan 01: MSW v2 for HTTP mocking - Industry standard, supports Node and browser
 - Phase 2.1 Plan 01: PGlite for in-memory PostgreSQL - Real Postgres semantics without Docker
 - Phase 2.1 Plan 01: 90% coverage threshold for slack-backend - High bar for production services
+- Phase 2.1 Plan 04: gen_random_uuid() for PGlite - uuid-ossp extension not available, use built-in function
+- Phase 2.1 Plan 04: vi.mock with getter for db injection - Dynamic test db injection pattern
 - Phase 2.1 Plan 05: Handler callback testing pattern - Capture handlers via mock app.event/app.command for isolated testing
 - Phase 2.1 Plan 06: Handler registration testing pattern - Mock App.action/view/shortcut to capture handler functions
 - Phase 2.1 Plan 06: Service mocking for handlers - vi.mock at module level for refineSuggestion and queueAIResponse
