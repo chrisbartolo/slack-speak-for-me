@@ -24,3 +24,10 @@ export {
   sendSuggestionEphemeral,
   buildSuggestionBlocks,
 } from './suggestion-delivery.js';
+
+// Personalization - user style preferences management
+export {
+  getStylePreferences,
+  upsertStylePreferences,
+  deleteStylePreferences,
+} from './personalization/index.js';
