@@ -10,3 +10,14 @@ export {
   type RefinementEvent,
   type RefinementPatterns,
 } from './feedbackTracker.js';
+
+export {
+  hasConsent,
+  grantConsent,
+  revokeConsent,
+  getConsentStatus,
+  requireConsent,
+  ConsentType,
+  ConsentRequiredError,
+  type ConsentStatus,
+} from './consentService.js';
