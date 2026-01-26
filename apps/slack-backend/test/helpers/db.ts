@@ -1,20 +1,20 @@
 /**
- * Test setup for database package
+ * PGlite database helpers for integration tests
  *
- * Provides PGlite helpers for testing schema and queries.
- * Simpler than slack-backend setup since this package tests
- * schema definitions and basic operations, not full services.
+ * Provides in-memory PostgreSQL for isolated test execution.
+ * Schema matches production database structure.
  */
 
 import { PGlite } from '@electric-sql/pglite';
 import { drizzle } from 'drizzle-orm/pglite';
-import * as schema from '../src/schema.js';
+import * as schema from '@slack-speak/database';
 
 let pgLite: PGlite | null = null;
 let testDb: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 /**
  * SQL schema for test database
+ * Mirrors production schema from packages/database/src/schema.ts
  */
 const createTablesSQL = `
   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -75,8 +75,10 @@ const createTablesSQL = `
 
 /**
  * Initialize a fresh PGlite instance with schema
+ * Call this in beforeAll or beforeEach depending on isolation needs
  */
 export async function setupTestDb() {
+  // Clean up any existing instance
   if (pgLite) {
     await pgLite.close();
   }
@@ -84,6 +86,7 @@ export async function setupTestDb() {
   pgLite = new PGlite();
   testDb = drizzle(pgLite, { schema });
 
+  // Create tables
   await pgLite.exec(createTablesSQL);
 
   return testDb;
@@ -91,6 +94,7 @@ export async function setupTestDb() {
 
 /**
  * Clean up PGlite instance
+ * Call this in afterAll to release resources
  */
 export async function cleanupTestDb() {
   if (pgLite) {
@@ -102,6 +106,7 @@ export async function cleanupTestDb() {
 
 /**
  * Get the current test database instance
+ * Throws if not initialized
  */
 export function getTestDb() {
   if (!testDb) {
@@ -111,7 +116,8 @@ export function getTestDb() {
 }
 
 /**
- * Get the raw PGlite instance
+ * Get the raw PGlite instance for direct SQL execution
+ * Useful for verifying data or complex queries
  */
 export function getPGlite() {
   if (!pgLite) {
@@ -120,5 +126,54 @@ export function getPGlite() {
   return pgLite;
 }
 
-// Export schema for convenience in tests
-export { schema };
+/**
+ * Clear all tables while keeping schema
+ * Useful for resetting state between tests within same suite
+ */
+export async function clearAllTables() {
+  if (!pgLite) {
+    throw new Error('PGlite not initialized. Call setupTestDb() first.');
+  }
+
+  await pgLite.exec(`
+    TRUNCATE TABLE thread_participants CASCADE;
+    TRUNCATE TABLE watched_conversations CASCADE;
+    TRUNCATE TABLE users CASCADE;
+    TRUNCATE TABLE installations CASCADE;
+    TRUNCATE TABLE workspaces CASCADE;
+  `);
+}
+
+/**
+ * Seed a workspace with installation for testing
+ * Returns the created workspace ID
+ */
+export async function seedWorkspace(options: {
+  teamId?: string;
+  name?: string;
+  botToken?: string;
+  botUserId?: string;
+} = {}) {
+  if (!pgLite) {
+    throw new Error('PGlite not initialized. Call setupTestDb() first.');
+  }
+
+  const teamId = options.teamId ?? 'T123';
+  const name = options.name ?? 'Test Workspace';
+  const botToken = options.botToken ?? 'xoxb-test-token';
+  const botUserId = options.botUserId ?? 'B123';
+
+  const result = await pgLite.query<{ id: string }>(`
+    WITH new_workspace AS (
+      INSERT INTO workspaces (team_id, name)
+      VALUES ($1, $2)
+      RETURNING id
+    )
+    INSERT INTO installations (workspace_id, bot_token, bot_user_id, bot_scopes)
+    SELECT id, $3, $4, 'channels:history,chat:write,commands,users:read'
+    FROM new_workspace
+    RETURNING workspace_id as id
+  `, [teamId, name, botToken, botUserId]);
+
+  return result.rows[0].id;
+}
