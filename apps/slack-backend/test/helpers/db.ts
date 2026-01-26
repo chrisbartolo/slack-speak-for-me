@@ -15,12 +15,11 @@ let testDb: ReturnType<typeof drizzle<typeof schema>> | null = null;
 /**
  * SQL schema for test database
  * Mirrors production schema from packages/database/src/schema.ts
+ * Note: PGlite uses gen_random_uuid() for UUID generation (no extension needed)
  */
 const createTablesSQL = `
-  CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
   CREATE TABLE workspaces (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id TEXT NOT NULL UNIQUE,
     enterprise_id TEXT,
     name TEXT,
@@ -29,7 +28,7 @@ const createTablesSQL = `
   );
 
   CREATE TABLE installations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
     bot_token TEXT NOT NULL,
     bot_user_id TEXT,
@@ -42,7 +41,7 @@ const createTablesSQL = `
   CREATE INDEX installations_workspace_id_idx ON installations(workspace_id);
 
   CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
     slack_user_id TEXT NOT NULL,
     email TEXT,
@@ -52,7 +51,7 @@ const createTablesSQL = `
   CREATE INDEX users_slack_user_id_idx ON users(slack_user_id);
 
   CREATE TABLE watched_conversations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
     user_id TEXT NOT NULL,
     channel_id TEXT NOT NULL,
@@ -62,7 +61,7 @@ const createTablesSQL = `
   CREATE UNIQUE INDEX watched_conversations_unique_watch_idx ON watched_conversations(workspace_id, user_id, channel_id);
 
   CREATE TABLE thread_participants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
     user_id TEXT NOT NULL,
     channel_id TEXT NOT NULL,
