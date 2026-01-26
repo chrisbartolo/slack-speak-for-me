@@ -14,6 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Infrastructure** - Secure multi-tenant backend with OAuth and job processing
 - [ ] **Phase 2: Core Slack Response Suggestions** - AI-powered ephemeral suggestions in monitored conversations
+- [ ] **Phase 2.1: Testing Infrastructure** - Unit tests, E2E tests, and testing page (INSERTED)
 - [ ] **Phase 3: AI Personalization** - Style learning and iterative refinement
 - [ ] **Phase 4: Web Portal** - Dashboard for settings, history, and management
 - [ ] **Phase 5: Weekly Reports** - Automated team report aggregation and formatting
@@ -65,9 +66,27 @@ Plans:
 - [ ] 02-08-PLAN.md — Refinement modal with multi-turn AI conversation
 - [ ] 02-09-PLAN.md — End-to-end verification of all success criteria
 
+### Phase 2.1: Testing Infrastructure (INSERTED)
+**Goal**: Comprehensive test coverage ensuring all code works correctly with automated and manual testing
+**Depends on**: Phase 2
+**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
+**Success Criteria** (what must be TRUE):
+  1. Unit tests exist for all services with 90%+ code coverage
+  2. Unit tests mock external dependencies (Slack API, Anthropic API, database)
+  3. Integration tests verify database operations and job queue processing
+  4. E2E tests validate complete flows from event trigger to suggestion delivery
+  5. Testing page at `/test` allows manual testing of all handlers without Slack
+  6. Testing page can simulate app_mention, message events, and shortcut triggers
+  7. Testing page can test AI generation directly with custom prompts
+  8. All tests pass in CI/CD pipeline
+**Plans**: TBD
+
+Plans:
+- [ ] To be created during plan-phase
+
 ### Phase 3: AI Personalization
 **Goal**: AI matches user's personal communication style through learning and explicit guidance
-**Depends on**: Phase 2
+**Depends on**: Phase 2.1
 **Requirements**: AI-03, AI-04, AI-05, AI-06, AI-07, AI-08
 **Success Criteria** (what must be TRUE):
   1. User can provide explicit style guidance (tone, formality, phrases to use/avoid) via web portal
@@ -120,12 +139,13 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infrastructure | 0/5 | Planned | - |
-| 2. Core Slack Response Suggestions | 0/9 | Planned | - |
+| 1. Foundation & Infrastructure | 5/5 | Complete | 2026-01-26 |
+| 2. Core Slack Response Suggestions | 9/9 | Code complete | 2026-01-26 |
+| 2.1. Testing Infrastructure | 0/TBD | Not started | - |
 | 3. AI Personalization | 0/TBD | Not started | - |
 | 4. Web Portal | 0/TBD | Not started | - |
 | 5. Weekly Reports | 0/TBD | Not started | - |

@@ -70,6 +70,14 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **INFRA-05**: Rate limiting per workspace
 - [ ] **INFRA-06**: Error handling with graceful degradation
 
+### Testing
+
+- [ ] **TEST-01**: Unit tests for all services with 90%+ code coverage
+- [ ] **TEST-02**: Unit tests mock external dependencies (Slack API, Anthropic API, database)
+- [ ] **TEST-03**: Integration tests for database operations and job queue
+- [ ] **TEST-04**: E2E tests for complete flows from event to suggestion delivery
+- [ ] **TEST-05**: Testing page at `/test` for manual testing without Slack
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -158,10 +166,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REPORT-08 | Phase 5 | Pending |
 | REPORT-09 | Phase 5 | Pending |
 | REPORT-10 | Phase 5 | Pending |
+| TEST-01 | Phase 2.1 | Pending |
+| TEST-02 | Phase 2.1 | Pending |
+| TEST-03 | Phase 2.1 | Pending |
+| TEST-04 | Phase 2.1 | Pending |
+| TEST-05 | Phase 2.1 | Pending |
 
 **Coverage:**
-- v1 requirements: 48 total
-- Mapped to phases: 48
+- v1 requirements: 53 total
+- Mapped to phases: 53
 - Unmapped: 0
 
 ---
