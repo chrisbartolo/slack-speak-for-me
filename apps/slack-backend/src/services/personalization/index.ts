@@ -21,3 +21,12 @@ export {
   ConsentRequiredError,
   type ConsentStatus,
 } from './consentService.js';
+
+export {
+  storeMessageEmbedding,
+  findSimilarMessages,
+  analyzeWritingPatterns,
+  getMessageHistoryCount,
+  type MessageExample,
+  type WritingPatterns,
+} from './historyAnalyzer.js';
