@@ -1,0 +1,98 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type checking
+        run: npm run build
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        env:
+          # Test environment variables
+          NODE_ENV: test
+          ANTHROPIC_API_KEY: test-api-key
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY || '0000000000000000000000000000000000000000000000000000000000000000' }}
+          SLACK_SIGNING_SECRET: test-signing-secret
+          SLACK_BOT_TOKEN: xoxb-test-token
+          SLACK_CLIENT_ID: test-client-id
+          SLACK_CLIENT_SECRET: test-client-secret
+          REDIS_URL: redis://localhost:6379
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            apps/slack-backend/coverage/
+            packages/database/coverage/
+          retention-days: 14
+
+      - name: Coverage report comment
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: apps/slack-backend/coverage/coverage-summary.json
+          json-final-path: apps/slack-backend/coverage/coverage-final.json
+          vite-config-path: apps/slack-backend/vitest.config.ts
+          name: slack-backend
+
+  # Optional: Separate job for integration tests that need Docker
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: npm run test -- test/integration/*.test.ts --run
+        working-directory: apps/slack-backend
+        env:
+          NODE_ENV: test
+          REDIS_URL: redis://localhost:6379
+          ANTHROPIC_API_KEY: test-api-key
+          ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
