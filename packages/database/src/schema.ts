@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, index, uniqueIndex, jsonb } from 'drizzle-orm/pg-core';
 
 export const workspaces = pgTable('workspaces', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -55,4 +55,31 @@ export const threadParticipants = pgTable('thread_participants', {
 }, (table) => ({
   workspaceChannelThreadIdx: index('thread_participants_workspace_channel_thread_idx').on(table.workspaceId, table.channelId, table.threadTs),
   uniqueParticipation: uniqueIndex('thread_participants_unique_participation_idx').on(table.workspaceId, table.userId, table.channelId, table.threadTs),
+}));
+
+export const userStylePreferences = pgTable('user_style_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+  tone: text('tone'),
+  formality: text('formality'),
+  preferredPhrases: jsonb('preferred_phrases').$type<string[]>().default([]),
+  avoidPhrases: jsonb('avoid_phrases').$type<string[]>().default([]),
+  customGuidance: text('custom_guidance'),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: uniqueIndex('user_style_preferences_workspace_user_idx').on(table.workspaceId, table.userId),
+}));
+
+export const gdprConsent = pgTable('gdpr_consent', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+  consentType: text('consent_type').notNull(),
+  consentedAt: timestamp('consented_at'),
+  revokedAt: timestamp('revoked_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  workspaceIdx: index('gdpr_consent_workspace_id_idx').on(table.workspaceId),
+  uniqueConsent: uniqueIndex('gdpr_consent_unique_idx').on(table.workspaceId, table.userId, table.consentType),
 }));
