@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 2.1 of 5 (Testing Infrastructure)
-Plan: 8 of 10 in current phase
-Status: In progress
-Last activity: 2026-01-26 - Completed 02.1-08-PLAN.md (E2E Tests)
+Plan: 10 of 10 in current phase
+Status: Phase complete
+Last activity: 2026-01-26 - Completed 02.1-10-PLAN.md (CI/CD Pipeline)
 
-Progress: [█████████░] ~65% (E2E tests complete, Phase 2 success criteria covered)
+Progress: [██████████] ~70% (Phase 2.1 Testing Infrastructure complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 3.1 min
-- Total execution time: 0.95 hours
+- Total plans completed: 19
+- Average duration: 3.0 min
+- Total execution time: 0.97 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [█████████░] ~65% (E2E tests complete, Phase 2 suc
 |-------|-------|-------|----------|
 | 01 - Foundation | 5 | 13 min | 2.6 min |
 | 02 - Core Slack | 8 | 25 min | 3.1 min |
-| 02.1 - Testing | 6 | 29 min | 4.8 min |
+| 02.1 - Testing | 7 | 30 min | 4.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 02.1-05 (3 min), 02.1-06 (5 min), 02.1-03 (5 min), 02.1-07 (4 min), 02.1-08 (6 min)
-- Trend: E2E tests complete with comprehensive Phase 2 coverage
+- Last 5 plans: 02.1-06 (5 min), 02.1-03 (5 min), 02.1-07 (4 min), 02.1-08 (6 min), 02.1-10 (1 min)
+- Trend: Phase 2.1 complete with CI/CD pipeline
 
 *Updated after each plan completion*
 
@@ -106,6 +106,9 @@ Recent decisions affecting current work:
 - Phase 2.1 Plan 07: Test encryption key as 32 bytes of zeros - Simple deterministic key for test reproducibility
 - Phase 2.1 Plan 08: Handler callback capture for E2E - Register handlers with mock App to capture callbacks
 - Phase 2.1 Plan 08: vi.hoisted for mock factory references - Enables mock functions to be accessible in mock factories
+- Phase 2.1 Plan 10: Separate CI jobs for unit and integration tests - Integration tests require Redis service
+- Phase 2.1 Plan 10: 14-day artifact retention for coverage reports - Balance storage cost and debugging capability
+- Phase 2.1 Plan 10: vitest-coverage-report-action for PR comments - Industry standard coverage visualization
 
 ### Pending Todos
 
@@ -123,10 +126,10 @@ None
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Completed 02.1-08-PLAN.md (E2E Tests)
+Stopped at: Completed 02.1-10-PLAN.md (CI/CD Pipeline)
 Resume file: None
 
-**Next action:** Execute remaining 02.1 plans (MSW config, coverage verification, CI/CD)
+**Next action:** Phase 2.1 complete. Ready to proceed to Phase 3 (Personality Learning) or Phase 4 (Dashboard)
 
 ---
 *Last updated: 2026-01-26*
