@@ -1,8 +1,12 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult } from './types.js';
-import { generateSuggestion } from '../services/index.js';
+import { generateSuggestion, sendSuggestionEphemeral } from '../services/index.js';
 import { logger } from '../utils/logger.js';
+import { db, workspaces, installations, decrypt } from '@slack-speak/database';
+import { eq } from 'drizzle-orm';
+import { getEncryptionKey } from '../env.js';
+import { WebClient } from '@slack/web-api';
 
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
 
@@ -33,6 +37,60 @@ export async function startWorkers() {
         suggestionId,
         processingTimeMs: result.processingTimeMs,
       }, 'AI suggestion generated successfully');
+
+      // Fetch installation to get bot token for delivery
+      try {
+        const [installation] = await db
+          .select({
+            installation: installations,
+            workspace: workspaces,
+          })
+          .from(installations)
+          .innerJoin(workspaces, eq(installations.workspaceId, workspaces.id))
+          .where(eq(workspaces.id, workspaceId))
+          .limit(1);
+
+        if (!installation) {
+          logger.error({ workspaceId }, 'Installation not found for workspace');
+          // Don't throw - suggestion was generated successfully
+          return {
+            suggestionId,
+            suggestion: result.suggestion,
+            processingTimeMs: result.processingTimeMs,
+          };
+        }
+
+        // Decrypt bot token
+        const encryptionKey = getEncryptionKey();
+        const botToken = decrypt(installation.installation.botToken, encryptionKey);
+
+        // Create WebClient for ephemeral message delivery
+        const client = new WebClient(botToken);
+
+        // Send ephemeral message with suggestion
+        await sendSuggestionEphemeral({
+          client,
+          channelId,
+          userId,
+          suggestionId,
+          suggestion: result.suggestion,
+          triggerContext: triggeredBy,
+        });
+
+        logger.info({
+          jobId: job.id,
+          suggestionId,
+          channelId,
+          userId,
+        }, 'Suggestion delivered successfully');
+      } catch (deliveryError) {
+        // Log delivery failure but don't throw - suggestion was still generated
+        logger.error({
+          error: deliveryError,
+          jobId: job.id,
+          suggestionId,
+        }, 'Failed to deliver suggestion (generation succeeded)');
+      }
 
       return {
         suggestionId,
