@@ -48,6 +48,9 @@ Recent decisions affecting current work:
 - Phase 0 (Planning): Three-source personality learning — History + explicit + feedback covers cold start and evolution
 - Phase 1 Plan 01: NPM workspaces — Simpler tooling than pnpm/yarn for monorepo
 - Phase 1 Plan 01: Snake_case for DB columns — Explicit naming matches PostgreSQL convention and RLS syntax
+- Phase 1 Plan 02: AES-256-GCM for OAuth tokens — Authenticated encryption prevents tampering attacks
+- Phase 1 Plan 02: Zod for environment validation — Type-safe parsing with clear error messages
+- Phase 1 Plan 02: Minimal OAuth scopes — Least-privilege principle (5 scopes only)
 - Phase 1 Plan 03: Rate limiting at 10 jobs/second — Prevents overwhelming AI API while maintaining responsiveness
 - Phase 1 Plan 03: Exponential backoff (2s, 4s, 8s) — Gives transient failures time to recover without retry storms
 - Phase 1 Plan 03: Worker error handlers log without crashing — Critical for production stability
@@ -63,15 +66,15 @@ None yet.
 
 **Research-identified risks to address:**
 - ~~Phase 1: Prompt injection prevention must be architected from start (cannot retrofit)~~ ✓ ADDRESSED (01-04)
-- Phase 1: OAuth scopes must follow least privilege (changing post-launch requires workspace re-approval)
+- ~~Phase 1: OAuth scopes must follow least privilege (changing post-launch requires workspace re-approval)~~ ✓ ADDRESSED (01-02)
 - Phase 1: HTTP webhooks required for production (Socket Mode hits 10 workspace limit)
 - Phase 2: AI response latency must stay under 3 seconds (async job processing + streaming)
 - Phase 3: GDPR compliance for message history access (RAG not fine-tuning, explicit consent)
 
 ## Session Continuity
 
-Last session: 2026-01-26 16:49 UTC
-Stopped at: Completed 01-04-PLAN.md (input validation and security)
+Last session: 2026-01-26 16:51 UTC
+Stopped at: Completed 01-02-PLAN.md (OAuth security with encrypted tokens)
 Resume file: None
 
 ---
