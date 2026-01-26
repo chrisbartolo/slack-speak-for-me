@@ -15,6 +15,10 @@ import {
   registerCopyFinalSuggestionAction,
   registerRefinementModalHandler,
 } from './handlers/index.js';
+import {
+  testRoutes,
+  logTestEndpointsRegistered,
+} from './routes/test.js';
 
 /**
  * Slack Bolt app with OAuth configuration and health endpoints.
@@ -40,7 +44,7 @@ export const app = new App({
   installerOptions: {
     directInstall: true,
   },
-  customRoutes: healthRoutes,
+  customRoutes: [...healthRoutes, ...testRoutes],
 });
 
 // Register global error handler
@@ -67,3 +71,6 @@ registerRefinementModalHandler(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();
+
+// Log test endpoints registration (non-production only)
+logTestEndpointsRegistered();
