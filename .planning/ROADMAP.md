@@ -30,10 +30,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Database enforces workspace-level isolation (multi-tenant data cannot leak between workspaces)
   4. System sanitizes inputs and prevents prompt injection attacks
   5. System handles errors gracefully with user-friendly messages instead of crashes
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] To be created during plan-phase
+- [ ] 01-01-PLAN.md — Project scaffolding with monorepo, TypeScript, database schema with RLS
+- [ ] 01-02-PLAN.md — OAuth installation store with AES-256-GCM token encryption
+- [ ] 01-03-PLAN.md — BullMQ background job queue with rate limiting
+- [ ] 01-04-PLAN.md — Input validation, prompt injection defense, error handling
+- [ ] 01-05-PLAN.md — Integration wiring and OAuth flow verification
 
 ### Phase 2: Core Slack Response Suggestions
 **Goal**: Users receive AI-generated response suggestions via ephemeral messages
@@ -112,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infrastructure | 0/TBD | Not started | - |
+| 1. Foundation & Infrastructure | 0/5 | Planned | - |
 | 2. Core Slack Response Suggestions | 0/TBD | Not started | - |
 | 3. AI Personalization | 0/TBD | Not started | - |
 | 4. Web Portal | 0/TBD | Not started | - |
