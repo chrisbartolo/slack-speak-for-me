@@ -7,7 +7,10 @@ import {
   logHealthEndpointsRegistered,
   registerWatchCommands,
   registerAppMentionHandler,
-  registerMessageReplyHandler
+  registerMessageReplyHandler,
+  registerHelpMeRespondShortcut,
+  registerCopySuggestionAction,
+  registerDismissSuggestionAction,
 } from './handlers/index.js';
 
 /**
@@ -46,6 +49,13 @@ registerMessageReplyHandler(app);
 
 // Register slash commands
 registerWatchCommands(app);
+
+// Register message shortcuts
+registerHelpMeRespondShortcut(app);
+
+// Register action handlers
+registerCopySuggestionAction(app);
+registerDismissSuggestionAction(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();
