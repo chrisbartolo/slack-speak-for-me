@@ -5,7 +5,29 @@ import {
   unwatchConversation,
   getWatchedConversations,
 } from '../services/watch.js';
+import { db, workspaces } from '@slack-speak/database';
+import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
+
+/**
+ * Get or create a workspace by team ID (for testing purposes)
+ * Returns the workspace UUID
+ */
+async function getOrCreateWorkspace(teamId: string): Promise<string> {
+  // Try to find existing workspace
+  const existing = await db.select().from(workspaces).where(eq(workspaces.teamId, teamId)).limit(1);
+  if (existing.length > 0) {
+    return existing[0].id;
+  }
+
+  // Create new workspace for testing
+  const [newWorkspace] = await db.insert(workspaces).values({
+    teamId,
+    name: `Test Workspace ${teamId}`,
+  }).returning();
+
+  return newWorkspace.id;
+}
 
 /**
  * Helper to parse JSON body from incoming request
@@ -570,7 +592,9 @@ async function handleListWatches(
       return;
     }
 
-    const channels = await getWatchedConversations(teamId, userId);
+    // Convert teamId to workspace UUID
+    const workspaceId = await getOrCreateWorkspace(teamId);
+    const channels = await getWatchedConversations(workspaceId, userId);
 
     sendJson(res, 200, {
       success: true,
@@ -611,7 +635,9 @@ async function handleAddWatch(
       return;
     }
 
-    await watchConversation(teamId, userId, channelId);
+    // Convert teamId to workspace UUID
+    const workspaceId = await getOrCreateWorkspace(teamId);
+    await watchConversation(workspaceId, userId, channelId);
 
     sendJson(res, 200, {
       success: true,
@@ -650,7 +676,9 @@ async function handleRemoveWatch(
       return;
     }
 
-    await unwatchConversation(teamId, userId, channelId);
+    // Convert teamId to workspace UUID
+    const workspaceId = await getOrCreateWorkspace(teamId);
+    await unwatchConversation(workspaceId, userId, channelId);
 
     sendJson(res, 200, {
       success: true,
