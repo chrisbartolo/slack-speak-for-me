@@ -164,3 +164,18 @@ export const googleIntegrations = pgTable('google_integrations', {
 }, (table) => ({
   uniqueIntegration: uniqueIndex('google_integrations_unique_idx').on(table.workspaceId, table.userId),
 }));
+
+export const workflowConfig = pgTable('workflow_config', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // Owner of this config
+  channelId: text('channel_id').notNull(), // Channel to monitor
+  channelName: text('channel_name'), // Display name
+  workflowBotId: text('workflow_bot_id'), // Bot ID that posts workflow submissions (learned from first submission)
+  enabled: boolean('enabled').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  uniqueConfig: uniqueIndex('workflow_config_unique_idx').on(table.workspaceId, table.userId, table.channelId),
+  channelIdx: index('workflow_config_channel_idx').on(table.workspaceId, table.channelId),
+}));
