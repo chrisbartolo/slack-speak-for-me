@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Slack Response Suggestions** - AI-powered ephemeral suggestions in monitored conversations
 - [x] **Phase 2.1: Testing Infrastructure** - Unit tests, E2E tests, and testing page (INSERTED)
 - [x] **Phase 3: AI Personalization** - Style learning and iterative refinement
-- [ ] **Phase 4: Web Portal** - Dashboard for settings, history, and management
+- [x] **Phase 4: Web Portal** - Dashboard for settings, history, and management
 - [ ] **Phase 5: Weekly Reports** - Automated team report aggregation and formatting
 
 ## Phase Details
@@ -129,15 +129,15 @@ Plans:
 **Plans**: 10 plans in 5 waves
 
 Plans:
-- [ ] 04-01-PLAN.md — Next.js app scaffolding with shadcn/ui and monorepo integration
-- [ ] 04-02-PLAN.md — Database schema update for personContext table
-- [ ] 04-03-PLAN.md — Slack OAuth authentication with JWT sessions
-- [ ] 04-04-PLAN.md — Dashboard layout with sidebar and home page
-- [ ] 04-05-PLAN.md — Style settings page with form validation
-- [ ] 04-06-PLAN.md — Conversations management page
-- [ ] 04-07-PLAN.md — People context management page
-- [ ] 04-08-PLAN.md — AI learning feedback history page
-- [ ] 04-09-PLAN.md — Weekly reports settings page
+- [x] 04-01-PLAN.md — Next.js app scaffolding with shadcn/ui and monorepo integration
+- [x] 04-02-PLAN.md — Database schema update for personContext table
+- [x] 04-03-PLAN.md — Slack OAuth authentication with JWT sessions
+- [x] 04-04-PLAN.md — Dashboard layout with sidebar and home page
+- [x] 04-05-PLAN.md — Style settings page with form validation
+- [x] 04-06-PLAN.md — Conversations management page
+- [x] 04-07-PLAN.md — People context management page
+- [x] 04-08-PLAN.md — AI learning feedback history page
+- [x] 04-09-PLAN.md — Weekly reports settings page
 - [ ] 04-10-PLAN.md — Human verification checkpoint
 
 ### Phase 5: Weekly Reports
@@ -158,14 +158,14 @@ Plans:
 **Plans**: 9 plans in 6 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — Database schema and Google OAuth service
-- [ ] 05-02-PLAN.md — Google OAuth web route integration
-- [ ] 05-03-PLAN.md — Workflow submission detection and Sheets write service
-- [ ] 05-04-PLAN.md — Report generator service with AI summarization
-- [ ] 05-05-PLAN.md — /generate-report slash command
-- [ ] 05-06-PLAN.md — Scheduled report generation (BullMQ Job Schedulers)
-- [ ] 05-07-PLAN.md — Report delivery and refinement modal
-- [ ] 05-08-PLAN.md — Web portal spreadsheet and workflow configuration
+- [x] 05-01-PLAN.md — Database schema and Google OAuth service
+- [x] 05-02-PLAN.md — Google OAuth web route integration
+- [x] 05-03-PLAN.md — Workflow submission detection and Sheets write service
+- [x] 05-04-PLAN.md — Report generator service with AI summarization
+- [x] 05-05-PLAN.md — /generate-report slash command
+- [x] 05-06-PLAN.md — Scheduled report generation (BullMQ Job Schedulers)
+- [x] 05-07-PLAN.md — Report delivery and refinement modal
+- [x] 05-08-PLAN.md — Web portal spreadsheet and workflow configuration
 - [ ] 05-09-PLAN.md — Final integration and human verification
 
 ## Progress
@@ -179,8 +179,8 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 | 2. Core Slack Response Suggestions | 9/9 | Complete | 2026-01-26 |
 | 2.1. Testing Infrastructure | 10/10 | Complete | 2026-01-26 |
 | 3. AI Personalization | 7/7 | Complete | 2026-01-26 |
-| 4. Web Portal | 0/10 | Planning complete | - |
-| 5. Weekly Reports | 0/9 | Planning complete | - |
+| 4. Web Portal | 9/10 | In progress | - |
+| 5. Weekly Reports | 8/9 | Human verification | - |
 
 ---
 *Roadmap created: 2026-01-26*
