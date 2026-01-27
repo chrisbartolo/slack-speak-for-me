@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index, uniqueIndex, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, index, uniqueIndex, jsonb, boolean, integer } from 'drizzle-orm/pg-core';
 
 export const workspaces = pgTable('workspaces', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -121,4 +121,29 @@ export const personContext = pgTable('person_context', {
 }, (table) => ({
   workspaceUserIdx: index('person_context_workspace_user_idx').on(table.workspaceId, table.userId),
   uniquePersonContext: uniqueIndex('person_context_unique_idx').on(table.workspaceId, table.userId, table.targetSlackUserId),
+}));
+
+export const reportSettings = pgTable('report_settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+
+  // Schedule settings
+  enabled: boolean('enabled').default(false),
+  dayOfWeek: integer('day_of_week').default(1), // 0=Sunday, 1=Monday, etc.
+  timeOfDay: text('time_of_day').default('09:00'), // HH:mm format
+  timezone: text('timezone').default('UTC'),
+
+  // Format settings
+  format: text('format').default('detailed'), // 'concise' | 'detailed'
+  sections: jsonb('sections').$type<string[]>().default(['achievements', 'focus', 'blockers', 'shoutouts']),
+
+  // Delivery settings
+  autoSend: boolean('auto_send').default(false), // false = draft for review, true = auto-send
+  recipientChannelId: text('recipient_channel_id'), // DM or channel to send to
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  uniqueSettings: uniqueIndex('report_settings_unique_idx').on(table.workspaceId, table.userId),
 }));
