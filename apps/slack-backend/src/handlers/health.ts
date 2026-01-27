@@ -102,6 +102,8 @@ async function handleReadinessProbe(_req: IncomingMessage, res: ServerResponse):
  * Endpoints:
  * - GET /health/live: Liveness probe (is the app running?)
  * - GET /health/ready: Readiness probe (are all dependencies healthy?)
+ * - GET /oauth/google/start: Initiate Google OAuth flow
+ * - GET /oauth/google/callback: Handle Google OAuth callback
  */
 export const healthRoutes = [
   {
@@ -118,6 +120,79 @@ export const healthRoutes = [
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'error', message: 'Internal server error' }));
       });
+    },
+  },
+  {
+    path: '/oauth/google/start',
+    method: ['GET'],
+    handler: async (req: IncomingMessage, res: ServerResponse) => {
+      try {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const workspaceId = url.searchParams.get('workspaceId');
+        const userId = url.searchParams.get('userId');
+
+        if (!workspaceId || !userId) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing workspaceId or userId' }));
+          return;
+        }
+
+        const { getGoogleAuthUrl } = await import('../oauth/google-oauth.js');
+        const authUrl = getGoogleAuthUrl(workspaceId, userId);
+
+        res.writeHead(302, { Location: authUrl });
+        res.end();
+      } catch (err) {
+        logger.error({ err }, 'Failed to generate Google auth URL');
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to start Google OAuth' }));
+      }
+    },
+  },
+  {
+    path: '/oauth/google/callback',
+    method: ['GET'],
+    handler: async (req: IncomingMessage, res: ServerResponse) => {
+      try {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const code = url.searchParams.get('code');
+        const state = url.searchParams.get('state');
+        const error = url.searchParams.get('error');
+
+        const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
+
+        if (error) {
+          logger.error({ error }, 'Google OAuth error');
+          res.writeHead(302, {
+            Location: `${webPortalUrl}/reports?error=google_auth_failed`
+          });
+          res.end();
+          return;
+        }
+
+        if (!code || !state) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing code or state parameter' }));
+          return;
+        }
+
+        // Import and call handleGoogleCallback from google-oauth service
+        const { handleGoogleCallback } = await import('../oauth/google-oauth.js');
+        await handleGoogleCallback(code, state);
+
+        // Redirect back to web portal reports page with success
+        res.writeHead(302, {
+          Location: `${webPortalUrl}/reports?google_connected=true`
+        });
+        res.end();
+      } catch (err) {
+        logger.error({ err }, 'Google OAuth callback failed');
+        const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
+        res.writeHead(302, {
+          Location: `${webPortalUrl}/reports?error=google_auth_failed`
+        });
+        res.end();
+      }
     },
   },
 ];
