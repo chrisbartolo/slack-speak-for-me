@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 05 of 5 (Weekly Reports)
-Plan: 05 of 9 in current phase
+Plan: 06 of 9 in current phase
 Status: In progress
-Last activity: 2026-01-27 - Completed 05-05-PLAN.md (Manual Report Generation)
+Last activity: 2026-01-27 - Completed 05-06-PLAN.md (Job Schedulers)
 
-Progress: [███████████████▓] ~98% (Phase 05 plan 05 complete)
+Progress: [███████████████▓] ~99% (Phase 05 plan 06 complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 36
-- Average duration: 3.1 min
-- Total execution time: 2.06 hours
+- Total plans completed: 37
+- Average duration: 3.2 min
+- Total execution time: 2.13 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [███████████████▓] ~98% (Phase 05 plan
 | 02.1 - Testing | 7 | 30 min | 4.3 min |
 | 03 - AI Personalization | 7 | 22 min | 3.1 min |
 | 04 - Web Portal | 5 | 29 min | 5.8 min |
-| 05 - Weekly Reports | 5 | 16 min | 3.2 min |
+| 05 - Weekly Reports | 6 | 20 min | 3.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (3 min), 05-02 (4 min), 05-03 (3 min), 05-04 (2 min), 05-05 (3.5 min)
+- Last 5 plans: 05-02 (4 min), 05-03 (3 min), 05-04 (2 min), 05-05 (3.5 min), 05-06 (4 min)
 - Trend: Backend integration plans consistently faster than UI work
 
 *Updated after each plan completion*
@@ -175,6 +175,9 @@ Recent decisions affecting current work:
 - Phase 5 Plan 05: Store spreadsheetId in googleIntegrations - Single source of truth for user's configured spreadsheet
 - Phase 5 Plan 05: Response URL for slash command feedback - Async job completion posts success/error to command response_url
 - Phase 5 Plan 05: Rate limiting at 5 reports per minute - Prevents API abuse while allowing reasonable burst usage
+- Phase 5 Plan 06: BullMQ Job Schedulers for automated reports - Cron-based scheduling with timezone support, survives restarts via startup sync
+- Phase 5 Plan 06: Scheduler ID format report-{workspaceId}-{userId} - Unique identifier for each user's report scheduler
+- Phase 5 Plan 06: Settings-driven scheduler lifecycle - enabled flag controls create/update/remove of schedulers
 
 ### Pending Todos
 
@@ -193,10 +196,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-27
-Stopped at: Completed 05-05-PLAN.md (Manual Report Generation)
+Stopped at: Completed 05-06-PLAN.md (Job Schedulers)
 Resume file: None
 
-**Next action:** Continue Phase 05 weekly reports implementation. Wave 4 plans (05-05, 05-06) executed in parallel.
+**Next action:** Continue Phase 05 weekly reports implementation. Wave 4 complete (05-05, 05-06). Next: Wave 5 UI plans (05-07, 05-08, 05-09).
 
 ---
 *Last updated: 2026-01-27*
