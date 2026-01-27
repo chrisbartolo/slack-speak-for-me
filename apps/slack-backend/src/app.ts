@@ -19,6 +19,7 @@ import {
   registerSendSuggestionAction,
   registerReportActionHandlers,
   registerRefinementModalHandler,
+  registerReportRefinementViewHandler,
 } from './handlers/index.js';
 import {
   testRoutes,
@@ -78,6 +79,7 @@ registerReportActionHandlers(app);
 
 // Register view handlers
 registerRefinementModalHandler(app);
+registerReportRefinementViewHandler(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();

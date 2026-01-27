@@ -10,4 +10,4 @@ export {
   registerSendSuggestionAction,
   registerReportActionHandlers,
 } from './actions/index.js';
-export { registerRefinementModalHandler } from './views/index.js';
+export { registerRefinementModalHandler, registerReportRefinementViewHandler } from './views/index.js';
