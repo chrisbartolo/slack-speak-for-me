@@ -97,6 +97,13 @@ const setupSteps: SetupStep[] = [
       <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
         <li>Go to &quot;APIs &amp; Services&quot; → &quot;Credentials&quot;</li>
         <li>Click &quot;Create Credentials&quot; → &quot;OAuth 2.0 Client ID&quot;</li>
+        <li>When asked &quot;What data will you be accessing?&quot;, select <strong>&quot;User data&quot;</strong>
+          <ul className="list-disc list-inside ml-4 mt-1 text-xs">
+            <li><strong>User data</strong> = OAuth 2.0 for accessing user&apos;s Google Sheets with their permission (this is what we need)</li>
+            <li><strong>Application data</strong> = Service accounts for server-to-server access (not what we need)</li>
+          </ul>
+        </li>
+        <li>Complete the OAuth consent screen setup if prompted (see Step 3)</li>
         <li>Application type: Select &quot;Web application&quot;</li>
         <li>Name: &quot;Slack Speak for Me Web Client&quot;</li>
         <li>Under &quot;Authorized redirect URIs&quot;, add:

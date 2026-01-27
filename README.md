@@ -115,6 +115,10 @@ To use the Weekly Reports feature, you need to set up Google OAuth for Sheets ac
 4. **Create OAuth 2.0 Client ID**
    - Go to **APIs & Services** → **Credentials**
    - Click **Create Credentials** → **OAuth 2.0 Client ID**
+   - When asked "What data will you be accessing?", select **User data** (not Application data)
+     - User data = OAuth 2.0 for accessing user's Google Sheets with their permission
+     - Application data = Service accounts, which is not what we need
+   - Complete the OAuth consent screen setup if prompted
    - Application type: **Web application**
    - Name: "Slack Speak for Me"
    - Authorized redirect URIs:
