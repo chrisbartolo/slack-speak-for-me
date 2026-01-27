@@ -6,7 +6,7 @@ import { UserMenu } from './user-menu';
 
 export function Sidebar() {
   return (
-    <aside className="w-64 border-r border-border bg-background flex flex-col h-screen">
+    <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <h1 className="text-xl font-bold">Speak For Me</h1>
