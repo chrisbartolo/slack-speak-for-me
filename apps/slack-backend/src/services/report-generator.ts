@@ -10,6 +10,17 @@ const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
 });
 
+export interface RefineReportOptions {
+  currentReport: string;
+  feedback: string;
+  history: Array<{ role: 'user' | 'assistant'; content: string }>;
+}
+
+export interface RefineReportResult {
+  refinedReport: string;
+  processingTimeMs: number;
+}
+
 interface GenerateReportOptions {
   workspaceId: string;
   userId: string;
@@ -188,4 +199,47 @@ Please create a board-ready weekly report that summarizes these submissions. Gro
     logger.error({ error }, 'Failed to generate weekly report');
     throw error;
   }
+}
+
+/**
+ * Refine a report based on user feedback
+ */
+export async function refineReport(
+  options: RefineReportOptions
+): Promise<RefineReportResult> {
+  const startTime = Date.now();
+  const { currentReport, feedback, history } = options;
+
+  const messages: Anthropic.MessageParam[] = [
+    ...history.map((h) => ({
+      role: h.role as 'user' | 'assistant',
+      content: h.content,
+    })),
+    {
+      role: 'user',
+      content: `Here is the current report:\n\n${currentReport}\n\nPlease refine it based on this feedback: ${feedback}\n\nProvide only the refined report, no explanations.`,
+    },
+  ];
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    system: 'You are a professional report editor. Refine reports based on user feedback while maintaining professional tone and structure. Output only the refined report.',
+    messages,
+  });
+
+  const refinedReport = response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+    .map((block) => block.text)
+    .join('\n');
+
+  logger.info({
+    processingTimeMs: Date.now() - startTime,
+    historyLength: history.length,
+  }, 'Report refined');
+
+  return {
+    refinedReport,
+    processingTimeMs: Date.now() - startTime,
+  };
 }
