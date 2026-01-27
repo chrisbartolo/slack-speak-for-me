@@ -148,3 +148,19 @@ export const reportSettings = pgTable('report_settings', {
 }, (table) => ({
   uniqueSettings: uniqueIndex('report_settings_unique_idx').on(table.workspaceId, table.userId),
 }));
+
+export const googleIntegrations = pgTable('google_integrations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // Slack user ID
+  accessToken: text('access_token').notNull(), // Encrypted
+  refreshToken: text('refresh_token'), // Encrypted, nullable (may not always be returned)
+  expiresAt: timestamp('expires_at'), // When access token expires
+  scope: text('scope'), // Granted scopes
+  spreadsheetId: text('spreadsheet_id'), // User's configured spreadsheet
+  spreadsheetName: text('spreadsheet_name'), // Display name for UI
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  uniqueIntegration: uniqueIndex('google_integrations_unique_idx').on(table.workspaceId, table.userId),
+}));
