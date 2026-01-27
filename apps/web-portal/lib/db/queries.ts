@@ -146,3 +146,52 @@ export const getPersonContextCount = cache(async () => {
 
   return result?.count || 0;
 });
+
+/**
+ * Get refinement feedback history with pagination
+ */
+export const getRefinementFeedback = cache(async (limit = 50) => {
+  const session = await verifySession();
+
+  return db
+    .select({
+      id: refinementFeedback.id,
+      suggestionId: refinementFeedback.suggestionId,
+      originalText: refinementFeedback.originalText,
+      modifiedText: refinementFeedback.modifiedText,
+      refinementType: refinementFeedback.refinementType,
+      createdAt: refinementFeedback.createdAt,
+    })
+    .from(refinementFeedback)
+    .where(
+      and(
+        eq(refinementFeedback.workspaceId, session.workspaceId),
+        eq(refinementFeedback.userId, session.userId)
+      )
+    )
+    .orderBy(desc(refinementFeedback.createdAt))
+    .limit(limit);
+});
+
+/**
+ * Get feedback summary statistics by refinement type
+ */
+export const getFeedbackStats = cache(async () => {
+  const session = await verifySession();
+
+  const typeStats = await db
+    .select({
+      refinementType: refinementFeedback.refinementType,
+      count: count(),
+    })
+    .from(refinementFeedback)
+    .where(
+      and(
+        eq(refinementFeedback.workspaceId, session.workspaceId),
+        eq(refinementFeedback.userId, session.userId)
+      )
+    )
+    .groupBy(refinementFeedback.refinementType);
+
+  return typeStats;
+});

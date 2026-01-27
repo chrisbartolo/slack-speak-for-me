@@ -1,4 +1,4 @@
-import { Home, Sliders, MessageSquare, Users, FileText } from 'lucide-react';
+import { Home, Sliders, MessageSquare, Users, FileText, Sparkles } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { UserMenu } from './user-menu';
 
@@ -16,6 +16,7 @@ export function Sidebar() {
         <NavItem href="/style" icon={Sliders} label="Style Settings" />
         <NavItem href="/conversations" icon={MessageSquare} label="Conversations" />
         <NavItem href="/people" icon={Users} label="People" />
+        <NavItem href="/feedback" icon={Sparkles} label="AI Learning" />
         <NavItem href="/reports" icon={FileText} label="Reports" />
       </nav>
 
