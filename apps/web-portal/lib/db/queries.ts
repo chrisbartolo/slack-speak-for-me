@@ -12,6 +12,7 @@ const {
   personContext,
   reportSettings,
   googleIntegrations,
+  workflowConfig,
 } = schema;
 
 /**
@@ -237,4 +238,23 @@ export const getGoogleIntegration = cache(async () => {
     .limit(1);
 
   return integration || null;
+});
+
+/**
+ * Get user's workflow configuration channels
+ */
+export const getWorkflowConfig = cache(async () => {
+  const session = await verifySession();
+
+  const configs = await db
+    .select()
+    .from(workflowConfig)
+    .where(
+      and(
+        eq(workflowConfig.workspaceId, session.workspaceId),
+        eq(workflowConfig.userId, session.userId)
+      )
+    );
+
+  return configs;
 });

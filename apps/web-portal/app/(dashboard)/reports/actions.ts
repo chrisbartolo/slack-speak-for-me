@@ -6,7 +6,7 @@ import { verifySession } from '@/lib/auth/dal';
 import { reportSettingsSchema } from '@/lib/validations/report-settings';
 import { and, eq } from 'drizzle-orm';
 
-const { reportSettings, googleIntegrations } = schema;
+const { reportSettings, googleIntegrations, workflowConfig } = schema;
 
 export type ActionResult = {
   success?: boolean;
@@ -141,5 +141,66 @@ export async function updateSpreadsheetConfig(
   } catch (error) {
     console.error('Failed to update spreadsheet config:', error);
     return { success: false, error: 'Failed to save configuration' };
+  }
+}
+
+export async function addWorkflowChannel(
+  channelId: string,
+  channelName: string
+): Promise<{ success: boolean; error?: string }> {
+  const session = await verifySession();
+
+  if (!channelId.trim()) {
+    return { success: false, error: 'Channel ID is required' };
+  }
+
+  try {
+    await db
+      .insert(workflowConfig)
+      .values({
+        workspaceId: session.workspaceId,
+        userId: session.userId,
+        channelId,
+        channelName,
+        enabled: true,
+      })
+      .onConflictDoUpdate({
+        target: [workflowConfig.workspaceId, workflowConfig.userId, workflowConfig.channelId],
+        set: {
+          channelName,
+          enabled: true,
+          updatedAt: new Date(),
+        },
+      });
+
+    revalidatePath('/reports');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to add workflow channel:', error);
+    return { success: false, error: 'Failed to add channel' };
+  }
+}
+
+export async function removeWorkflowChannel(
+  channelId: string
+): Promise<{ success: boolean; error?: string }> {
+  const session = await verifySession();
+
+  try {
+    await db
+      .delete(workflowConfig)
+      .where(
+        and(
+          eq(workflowConfig.workspaceId, session.workspaceId),
+          eq(workflowConfig.userId, session.userId),
+          eq(workflowConfig.channelId, channelId)
+        )
+      );
+
+    revalidatePath('/reports');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to remove workflow channel:', error);
+    return { success: false, error: 'Failed to remove channel' };
   }
 }
