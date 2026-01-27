@@ -155,10 +155,18 @@ Plans:
   8. User can configure scheduled automatic report generation (day and time)
   9. App sends draft report to user via DM for review before copying
   10. User can refine report draft before copying
-**Plans**: TBD
+**Plans**: 9 plans in 6 waves
 
 Plans:
-- [ ] To be created during plan-phase
+- [ ] 05-01-PLAN.md — Database schema and Google OAuth service
+- [ ] 05-02-PLAN.md — Google OAuth web route integration
+- [ ] 05-03-PLAN.md — Workflow submission detection and Sheets write service
+- [ ] 05-04-PLAN.md — Report generator service with AI summarization
+- [ ] 05-05-PLAN.md — /generate-report slash command
+- [ ] 05-06-PLAN.md — Scheduled report generation (BullMQ Job Schedulers)
+- [ ] 05-07-PLAN.md — Report delivery and refinement modal
+- [ ] 05-08-PLAN.md — Web portal spreadsheet and workflow configuration
+- [ ] 05-09-PLAN.md — Final integration and human verification
 
 ## Progress
 
@@ -172,7 +180,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 | 2.1. Testing Infrastructure | 10/10 | Complete | 2026-01-26 |
 | 3. AI Personalization | 7/7 | Complete | 2026-01-26 |
 | 4. Web Portal | 0/10 | Planning complete | - |
-| 5. Weekly Reports | 0/TBD | Not started | - |
+| 5. Weekly Reports | 0/9 | Planning complete | - |
 
 ---
 *Roadmap created: 2026-01-26*
