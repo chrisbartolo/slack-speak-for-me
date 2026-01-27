@@ -1,11 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/db';
-import { personContext } from '@slack-speak/database';
+import { db, schema } from '@/lib/db';
 import { eq, and } from 'drizzle-orm';
 import { verifySession } from '@/lib/auth/dal';
 import { personContextSchema } from '@/lib/validations/person-context';
+
+const { personContext } = schema;
 
 export type ActionResult = {
   success?: boolean;
@@ -33,21 +34,26 @@ export async function savePersonContext(formData: FormData): Promise<ActionResul
 
   try {
     // Upsert - create or update
+    // Type casts to work around Drizzle ORM type inference issue with re-exported schemas
+    const insertValues = {
+      workspaceId: session.workspaceId,
+      userId: session.userId,
+      targetSlackUserId,
+      contextText,
+      updatedAt: new Date(),
+    } as typeof personContext.$inferInsert;
+
+    const updateValues = {
+      contextText,
+      updatedAt: new Date(),
+    } as Partial<typeof personContext.$inferInsert>;
+
     await db
       .insert(personContext)
-      .values({
-        workspaceId: session.workspaceId,
-        userId: session.userId,
-        targetSlackUserId,
-        contextText,
-        updatedAt: new Date(),
-      })
+      .values(insertValues)
       .onConflictDoUpdate({
         target: [personContext.workspaceId, personContext.userId, personContext.targetSlackUserId],
-        set: {
-          contextText,
-          updatedAt: new Date(),
-        },
+        set: updateValues,
       });
 
     revalidatePath('/people');
