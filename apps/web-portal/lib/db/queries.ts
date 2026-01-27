@@ -11,6 +11,7 @@ const {
   refinementFeedback,
   personContext,
   reportSettings,
+  googleIntegrations,
 } = schema;
 
 /**
@@ -216,4 +217,24 @@ export const getReportSettings = cache(async () => {
     .limit(1);
 
   return settings ?? null;
+});
+
+/**
+ * Get user's Google integration status
+ */
+export const getGoogleIntegration = cache(async () => {
+  const session = await verifySession();
+
+  const [integration] = await db
+    .select()
+    .from(googleIntegrations)
+    .where(
+      and(
+        eq(googleIntegrations.workspaceId, session.workspaceId),
+        eq(googleIntegrations.userId, session.userId)
+      )
+    )
+    .limit(1);
+
+  return integration || null;
 });

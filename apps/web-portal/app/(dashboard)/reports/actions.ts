@@ -4,8 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { db, schema } from '@/lib/db';
 import { verifySession } from '@/lib/auth/dal';
 import { reportSettingsSchema } from '@/lib/validations/report-settings';
+import { and, eq } from 'drizzle-orm';
 
-const { reportSettings } = schema;
+const { reportSettings, googleIntegrations } = schema;
 
 export type ActionResult = {
   success?: boolean;
@@ -75,4 +76,36 @@ export async function saveReportSettings(formData: FormData): Promise<ActionResu
     console.error('Error saving report settings:', error);
     return { error: 'Failed to save settings' };
   }
+}
+
+export async function disconnectGoogle(): Promise<{ success: boolean; error?: string }> {
+  const session = await verifySession();
+
+  try {
+    await db
+      .delete(googleIntegrations)
+      .where(
+        and(
+          eq(googleIntegrations.workspaceId, session.workspaceId),
+          eq(googleIntegrations.userId, session.userId)
+        )
+      );
+
+    revalidatePath('/reports');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to disconnect Google:', error);
+    return { success: false, error: 'Failed to disconnect Google account' };
+  }
+}
+
+export async function getGoogleAuthUrl(): Promise<string> {
+  const session = await verifySession();
+  // Construct URL to slack-backend Google OAuth initiation
+  const backendUrl = process.env.SLACK_BACKEND_URL || 'http://localhost:3000';
+  const params = new URLSearchParams({
+    workspaceId: session.workspaceId,
+    userId: session.userId,
+  });
+  return `${backendUrl}/oauth/google/start?${params}`;
 }
