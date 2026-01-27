@@ -1,9 +1,10 @@
 import type { App } from '@slack/bolt';
 import { WebClient } from '@slack/web-api';
-import { db, installations, workspaces, decrypt } from '@slack-speak/database';
+import { db, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 import { getEncryptionKey } from '../../env.js';
 import { getWorkspaceId } from '../../services/watch.js';
+import { trackRefinement } from '../../services/personalization/feedbackTracker.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -11,7 +12,7 @@ import { logger } from '../../utils/logger.js';
  * Posts the suggestion to the channel using the user's token.
  */
 export function registerSendSuggestionAction(app: App): void {
-  app.action('send_suggestion', async ({ ack, body, respond }) => {
+  app.action('send_suggestion', async ({ ack, body, respond, client }) => {
     await ack();
 
     // Extract suggestion from button value
@@ -128,13 +129,60 @@ export function registerSendSuggestionAction(app: App): void {
         threadTs,
       }, 'Message sent as user');
 
-      // Dismiss the ephemeral message
-      await respond({
-        response_type: 'ephemeral',
-        replace_original: true,
-        delete_original: true,
-        text: '✅ Message sent!',
-      });
+      // Track that this suggestion was used (for AI learning)
+      try {
+        await trackRefinement({
+          workspaceId,
+          userId,
+          suggestionId,
+          original: suggestion,
+          modified: suggestion, // Same = accepted as-is or after refinement
+          refinementType: 'word_choice', // Indicates acceptance
+        });
+        logger.info({ suggestionId, userId }, 'Tracked suggestion usage');
+      } catch (trackError) {
+        // Don't fail the send if tracking fails
+        logger.warn({ trackError }, 'Failed to track suggestion usage');
+      }
+
+      // Check if triggered from a modal (has view property) or ephemeral message
+      const viewId = 'view' in body && body.view ? (body.view as { id: string }).id : null;
+
+      if (viewId) {
+        // Close the modal
+        await client.views.update({
+          view_id: viewId,
+          view: {
+            type: 'modal',
+            callback_id: 'send_complete',
+            title: {
+              type: 'plain_text',
+              text: 'Sent!',
+            },
+            close: {
+              type: 'plain_text',
+              text: 'Close',
+            },
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: '✅ Message sent successfully!',
+                },
+              },
+            ],
+          },
+        });
+      } else {
+        // Dismiss the ephemeral message
+        await respond({
+          response_type: 'ephemeral',
+          replace_original: true,
+          delete_original: true,
+          text: '✅ Message sent!',
+        });
+      }
     } catch (error) {
       logger.error({ error }, 'Error sending message as user');
       await respond({
