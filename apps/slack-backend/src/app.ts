@@ -7,6 +7,7 @@ import {
   healthRoutes,
   logHealthEndpointsRegistered,
   registerWatchCommands,
+  registerGenerateReportCommand,
   registerAppMentionHandler,
   registerMessageReplyHandler,
   registerWorkflowSubmissionHandler,
@@ -61,6 +62,7 @@ registerWorkflowSubmissionHandler(app);
 
 // Register slash commands
 registerWatchCommands(app);
+registerGenerateReportCommand(app);
 
 // Register message shortcuts
 registerHelpMeRespondShortcut(app);
