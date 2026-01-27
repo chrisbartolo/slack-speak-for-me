@@ -31,3 +31,11 @@ export {
   upsertStylePreferences,
   deleteStylePreferences,
 } from './personalization/index.js';
+
+// Google Sheets - workflow submission read/write
+export {
+  appendSubmission,
+  getSubmissions,
+  getSubmissionStatus,
+  type WorkflowSubmission,
+} from './google-sheets.js';
