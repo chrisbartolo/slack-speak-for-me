@@ -8,5 +8,6 @@ export {
   registerRefineSuggestionAction,
   registerCopyFinalSuggestionAction,
   registerSendSuggestionAction,
+  registerReportActionHandlers,
 } from './actions/index.js';
 export { registerRefinementModalHandler } from './views/index.js';
