@@ -70,6 +70,8 @@ export async function saveReportSettings(formData: FormData): Promise<ActionResu
         },
       });
 
+    // Note: Scheduler will sync on slack-backend restart or next scheduled job check
+    // For immediate scheduler update, restart slack-backend or wait for sync interval
     revalidatePath('/reports');
     return { success: true };
   } catch (error) {

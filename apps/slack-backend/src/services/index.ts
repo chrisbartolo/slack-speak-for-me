@@ -45,4 +45,7 @@ export {
   generateWeeklyReport,
   getMissingSubmitters,
   getReportSettings,
+  refineReport,
+  type RefineReportOptions,
+  type RefineReportResult,
 } from './report-generator.js';
