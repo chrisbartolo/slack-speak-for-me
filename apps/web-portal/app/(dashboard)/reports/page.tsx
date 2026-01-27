@@ -1,18 +1,38 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReportSettingsForm } from '@/components/forms/report-settings-form';
-import { getReportSettings } from '@/lib/db/queries';
+import { getReportSettings, getGoogleIntegration } from '@/lib/db/queries';
+import { GoogleConnectionCard } from '@/components/dashboard/google-connection-card';
+import { SuccessToast } from '@/components/dashboard/success-toast';
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ google_connected?: string; error?: string }>;
+}) {
   const settings = await getReportSettings();
+  const googleIntegration = await getGoogleIntegration();
+  const params = await searchParams;
 
   return (
     <div className="p-8 space-y-6">
+      {params.google_connected === 'true' && (
+        <SuccessToast message="Google account connected successfully" />
+      )}
+      {params.error === 'google_auth_failed' && (
+        <SuccessToast message="Failed to connect Google account" variant="error" />
+      )}
+
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Weekly Reports</h1>
         <p className="text-gray-600 mt-1">
           Configure automatic weekly report generation
         </p>
       </div>
+
+      <GoogleConnectionCard
+        isConnected={!!googleIntegration}
+        connectedEmail={googleIntegration?.scope || null}
+      />
 
       <ReportSettingsForm
         defaultValues={settings ? {
