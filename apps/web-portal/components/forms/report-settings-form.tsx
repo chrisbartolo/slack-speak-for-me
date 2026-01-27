@@ -59,9 +59,10 @@ const timezones = [
 
 interface ReportSettingsFormProps {
   defaultValues?: Partial<ReportSettings>;
+  disabled?: boolean;
 }
 
-export function ReportSettingsForm({ defaultValues }: ReportSettingsFormProps) {
+export function ReportSettingsForm({ defaultValues, disabled }: ReportSettingsFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ReportSettings>({
@@ -116,6 +117,12 @@ export function ReportSettingsForm({ defaultValues }: ReportSettingsFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <fieldset disabled={disabled} className={disabled ? 'opacity-60' : ''}>
+        {disabled && (
+          <p className="text-sm text-gray-500 mb-4">
+            Configure Google Sheets above to enable report settings.
+          </p>
+        )}
         <Card>
           <CardHeader>
             <CardTitle>Report Schedule</CardTitle>
@@ -136,7 +143,7 @@ export function ReportSettingsForm({ defaultValues }: ReportSettingsFormProps) {
                     </FormDescription>
                   </div>
                   <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} disabled={disabled} />
                   </FormControl>
                 </FormItem>
               )}
@@ -319,10 +326,11 @@ export function ReportSettingsForm({ defaultValues }: ReportSettingsFormProps) {
         </Card>
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending || disabled}>
             {isPending ? 'Saving...' : 'Save Settings'}
           </Button>
         </div>
+        </fieldset>
       </form>
     </Form>
   );
