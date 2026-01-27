@@ -154,6 +154,8 @@ Recent decisions affecting current work:
 - Phase 4 Plan 09: Explicit interface types for Zod refine() - Use explicit types instead of z.infer when schemas use refine()
 - Phase 4 Plan 08: Expandable feedback cards - Original and modified text can be lengthy, collapse by default
 - Phase 4 Plan 08: Bar chart for refinement patterns - Visual percentage display for quick understanding
+- Phase 4 Plan 06: EmptyState as reusable component - Icon, title, description, optional action props for consistent empty states
+- Phase 4 Plan 06: AlertDialog for delete confirmation - Confirmation before destructive actions
 
 ### Pending Todos
 
