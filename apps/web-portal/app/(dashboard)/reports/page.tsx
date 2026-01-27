@@ -32,6 +32,8 @@ export default async function ReportsPage({
       <GoogleConnectionCard
         isConnected={!!googleIntegration}
         connectedEmail={googleIntegration?.scope || null}
+        spreadsheetId={googleIntegration?.spreadsheetId || null}
+        spreadsheetName={googleIntegration?.spreadsheetName || null}
       />
 
       <ReportSettingsForm

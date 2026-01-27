@@ -109,3 +109,37 @@ export async function getGoogleAuthUrl(): Promise<string> {
   });
   return `${backendUrl}/oauth/google/start?${params}`;
 }
+
+export async function updateSpreadsheetConfig(
+  spreadsheetId: string,
+  spreadsheetName: string
+): Promise<{ success: boolean; error?: string }> {
+  const session = await verifySession();
+
+  // Validate spreadsheet ID format (basic validation)
+  if (!spreadsheetId || spreadsheetId.length < 10) {
+    return { success: false, error: 'Invalid spreadsheet ID' };
+  }
+
+  try {
+    await db
+      .update(googleIntegrations)
+      .set({
+        spreadsheetId,
+        spreadsheetName,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(googleIntegrations.workspaceId, session.workspaceId),
+          eq(googleIntegrations.userId, session.userId)
+        )
+      );
+
+    revalidatePath('/reports');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update spreadsheet config:', error);
+    return { success: false, error: 'Failed to save configuration' };
+  }
+}
