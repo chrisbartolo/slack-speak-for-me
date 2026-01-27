@@ -109,3 +109,16 @@ export const gdprConsent = pgTable('gdpr_consent', {
   workspaceIdx: index('gdpr_consent_workspace_id_idx').on(table.workspaceId),
   uniqueConsent: uniqueIndex('gdpr_consent_unique_idx').on(table.workspaceId, table.userId, table.consentType),
 }));
+
+export const personContext = pgTable('person_context', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // The user who owns this context
+  targetSlackUserId: text('target_slack_user_id').notNull(), // The person they're adding context about
+  contextText: text('context_text').notNull(), // Free-form notes (max 1000 chars enforced at app level)
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: index('person_context_workspace_user_idx').on(table.workspaceId, table.userId),
+  uniquePersonContext: uniqueIndex('person_context_unique_idx').on(table.workspaceId, table.userId, table.targetSlackUserId),
+}));
