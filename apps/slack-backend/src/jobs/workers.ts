@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, appendSubmission } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -10,6 +10,7 @@ import { WebClient } from '@slack/web-api';
 
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
 let sheetsWorker: Worker<SheetsWriteJobData, SheetsWriteJobResult> | null = null;
+let reportWorker: Worker<ReportGenerationJobData, ReportGenerationJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -167,6 +168,155 @@ export async function startWorkers() {
   sheetsWorker.on('completed', (job) => logger.info({ jobId: job.id }, 'Sheets job completed'));
 
   logger.info('Sheets worker started');
+
+  // Report generation worker
+  reportWorker = new Worker<ReportGenerationJobData, ReportGenerationJobResult>(
+    'report-generation',
+    async (job) => {
+      const { workspaceId, userId, spreadsheetId, responseUrl, weekStartDate } = job.data;
+
+      logger.info({
+        jobId: job.id,
+        workspaceId,
+        userId,
+      }, 'Processing report generation job');
+
+      try {
+        const result = await generateWeeklyReport({
+          workspaceId,
+          userId,
+          spreadsheetId,
+          weekStartDate: weekStartDate ? new Date(weekStartDate) : undefined,
+        });
+
+        // Fetch installation for DM delivery
+        const [installation] = await db
+          .select({
+            installation: installations,
+            workspace: workspaces,
+          })
+          .from(installations)
+          .innerJoin(workspaces, eq(installations.workspaceId, workspaces.id))
+          .where(eq(workspaces.id, workspaceId))
+          .limit(1);
+
+        if (!installation) {
+          throw new Error('Installation not found for workspace');
+        }
+
+        // Decrypt bot token
+        const encryptionKey = getEncryptionKey();
+        const botToken = decrypt(installation.installation.botToken, encryptionKey);
+        const client = new WebClient(botToken);
+
+        // Format report with Block Kit
+        const blocks: any[] = [
+          {
+            type: 'header',
+            text: {
+              type: 'plain_text',
+              text: '📊 Weekly Report',
+              emoji: true,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: result.report,
+            },
+          },
+        ];
+
+        // Add missing submitters section if any
+        if (result.missingSubmitters.length > 0) {
+          blocks.push({
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `⚠️ *Missing submissions:* ${result.missingSubmitters.join(', ')}`,
+            },
+          });
+        }
+
+        blocks.push({
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: `Generated in ${result.processingTimeMs}ms | Use \`/generate-report\` to create a new report`,
+            },
+          ],
+        });
+
+        // Send DM to user
+        await client.chat.postMessage({
+          channel: userId,
+          text: 'Your weekly report is ready!',
+          blocks,
+        });
+
+        // If responseUrl is provided (from slash command), acknowledge success
+        if (responseUrl) {
+          await fetch(responseUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: '✅ Report generated and sent to your DMs!',
+              response_type: 'ephemeral',
+            }),
+          });
+        }
+
+        logger.info({
+          jobId: job.id,
+          userId,
+          processingTimeMs: result.processingTimeMs,
+        }, 'Report generated and delivered');
+
+        return {
+          success: true,
+          report: result.report,
+          missingSubmitters: result.missingSubmitters,
+          processingTimeMs: result.processingTimeMs,
+        };
+      } catch (error) {
+        logger.error({ error, jobId: job.id }, 'Failed to generate report');
+
+        // Try to send error response if responseUrl available
+        if (responseUrl) {
+          try {
+            await fetch(responseUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: '❌ Failed to generate report. Please try again later.',
+                response_type: 'ephemeral',
+              }),
+            });
+          } catch (responseError) {
+            logger.error({ error: responseError }, 'Failed to send error response');
+          }
+        }
+
+        throw error;
+      }
+    },
+    {
+      connection: redis,
+      concurrency: 2,
+      limiter: {
+        max: 5, // Max 5 reports per minute
+        duration: 60000,
+      },
+    }
+  );
+
+  reportWorker.on('error', (err) => logger.error({ err }, 'Report worker error'));
+  reportWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Report job failed'));
+  reportWorker.on('completed', (job) => logger.info({ jobId: job.id }, 'Report job completed'));
+
+  logger.info('Report worker started');
 }
 
 export async function stopWorkers() {
@@ -179,5 +329,10 @@ export async function stopWorkers() {
     await sheetsWorker.close();
     sheetsWorker = null;
     logger.info('Sheets worker stopped');
+  }
+  if (reportWorker) {
+    await reportWorker.close();
+    reportWorker = null;
+    logger.info('Report worker stopped');
   }
 }
