@@ -1,0 +1,78 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createSession } from '@/lib/auth/session';
+import { exchangeCodeForTokens } from '@/lib/auth/slack-oauth';
+import { db, workspaces } from '@slack-speak/database';
+import { eq } from 'drizzle-orm';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const error = searchParams.get('error');
+
+  const storedState = request.cookies.get('oauth_state')?.value;
+  const returnUrl = request.cookies.get('oauth_return')?.value || '/';
+
+  // Handle OAuth errors
+  if (error) {
+    return NextResponse.redirect(new URL(`/login?error=${error}`, request.url));
+  }
+
+  // Verify state parameter (CSRF protection)
+  if (!state || state !== storedState) {
+    return NextResponse.redirect(
+      new URL('/login?error=invalid_state', request.url)
+    );
+  }
+
+  if (!code) {
+    return NextResponse.redirect(
+      new URL('/login?error=missing_code', request.url)
+    );
+  }
+
+  try {
+    // Exchange code for tokens
+    const tokens = await exchangeCodeForTokens(code);
+
+    if (!tokens.ok) {
+      console.error('Slack OAuth error:', tokens.error);
+      return NextResponse.redirect(
+        new URL('/login?error=oauth_failed', request.url)
+      );
+    }
+
+    // Look up workspace UUID from team_id
+    const [workspace] = await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.teamId, tokens.team.id))
+      .limit(1);
+
+    if (!workspace) {
+      // Workspace not found - user needs to install app first
+      return NextResponse.redirect(
+        new URL('/login?error=workspace_not_found', request.url)
+      );
+    }
+
+    // Create session with workspace and user info
+    await createSession({
+      teamId: tokens.team.id,
+      userId: tokens.authed_user.id,
+      workspaceId: workspace.id,
+    });
+
+    // Clear OAuth cookies and redirect
+    const response = NextResponse.redirect(new URL(returnUrl, request.url));
+    response.cookies.delete('oauth_state');
+    response.cookies.delete('oauth_return');
+
+    return response;
+  } catch (error) {
+    console.error('OAuth error:', error);
+    return NextResponse.redirect(
+      new URL('/login?error=oauth_failed', request.url)
+    );
+  }
+}
