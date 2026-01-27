@@ -17,3 +17,22 @@ export interface AIResponseJobResult {
   suggestion: string;
   processingTimeMs: number;
 }
+
+export interface SheetsWriteJobData {
+  workspaceId: string;
+  userId: string; // Report owner
+  spreadsheetId: string;
+  submission: {
+    timestamp: string; // ISO string
+    submitterName: string;
+    submitterSlackId: string;
+    achievements: string;
+    focus: string;
+    blockers: string;
+    shoutouts: string;
+  };
+}
+
+export interface SheetsWriteJobResult {
+  success: boolean;
+}

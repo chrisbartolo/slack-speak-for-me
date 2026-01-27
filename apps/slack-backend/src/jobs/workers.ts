@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, appendSubmission } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -9,6 +9,7 @@ import { getEncryptionKey } from '../env.js';
 import { WebClient } from '@slack/web-api';
 
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
+let sheetsWorker: Worker<SheetsWriteJobData, SheetsWriteJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -132,6 +133,40 @@ export async function startWorkers() {
   });
 
   logger.info('AI response worker started');
+
+  // Sheets worker
+  sheetsWorker = new Worker<SheetsWriteJobData, SheetsWriteJobResult>(
+    'sheets-writes',
+    async (job) => {
+      const { workspaceId, userId, spreadsheetId, submission } = job.data;
+
+      await appendSubmission(workspaceId, userId, spreadsheetId, {
+        timestamp: new Date(submission.timestamp),
+        submitterName: submission.submitterName,
+        submitterSlackId: submission.submitterSlackId,
+        achievements: submission.achievements,
+        focus: submission.focus,
+        blockers: submission.blockers,
+        shoutouts: submission.shoutouts,
+      });
+
+      return { success: true };
+    },
+    {
+      connection: redis,
+      concurrency: 1, // One at a time to avoid rate limits per spreadsheet
+      limiter: {
+        max: 30, // Max 30 writes per minute (well under 60/min limit)
+        duration: 60000,
+      },
+    }
+  );
+
+  sheetsWorker.on('error', (err) => logger.error({ err }, 'Sheets worker error'));
+  sheetsWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Sheets job failed'));
+  sheetsWorker.on('completed', (job) => logger.info({ jobId: job.id }, 'Sheets job completed'));
+
+  logger.info('Sheets worker started');
 }
 
 export async function stopWorkers() {
@@ -139,5 +174,10 @@ export async function stopWorkers() {
     await aiResponseWorker.close();
     aiResponseWorker = null;
     logger.info('AI response worker stopped');
+  }
+  if (sheetsWorker) {
+    await sheetsWorker.close();
+    sheetsWorker = null;
+    logger.info('Sheets worker stopped');
   }
 }
