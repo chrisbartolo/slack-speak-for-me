@@ -36,3 +36,18 @@ export interface SheetsWriteJobData {
 export interface SheetsWriteJobResult {
   success: boolean;
 }
+
+export interface ReportGenerationJobData {
+  workspaceId: string;
+  userId: string;
+  spreadsheetId: string;
+  responseUrl?: string; // For slash command acknowledgment
+  weekStartDate?: string; // ISO string, defaults to this week's Monday
+}
+
+export interface ReportGenerationJobResult {
+  success: boolean;
+  report?: string;
+  missingSubmitters?: string[];
+  processingTimeMs?: number;
+}
