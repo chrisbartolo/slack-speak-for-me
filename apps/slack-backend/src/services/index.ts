@@ -39,3 +39,10 @@ export {
   getSubmissionStatus,
   type WorkflowSubmission,
 } from './google-sheets.js';
+
+// Report generator - AI-powered weekly reports
+export {
+  generateWeeklyReport,
+  getMissingSubmitters,
+  getReportSettings,
+} from './report-generator.js';
