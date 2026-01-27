@@ -34,8 +34,24 @@ vi.mock('../utils/logger.js', () => ({
   },
 }));
 
+// Mock personalization services
+vi.mock('./personalization/index.js', () => ({
+  buildStyleContext: vi.fn().mockResolvedValue({
+    promptText: '# Style Context\nDefault professional style.',
+    learningPhase: 'cold_start',
+    usedHistory: false,
+    sources: { hasExplicitPrefs: false, historyCount: 0, feedbackCount: 0 },
+  }),
+  trackRefinement: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Import after mocks are set up
 import { generateSuggestion, refineSuggestion } from './ai.js';
+
+// Test constants
+const TEST_WORKSPACE_ID = 'W123456789';
+const TEST_USER_ID = 'U123456789';
+const TEST_SUGGESTION_ID = 'suggestion-test-123';
 
 // Helper to create a standard successful response
 function createMockResponse(text: string) {
@@ -60,6 +76,8 @@ describe('AI Service', () => {
 
     it('should generate suggestion from Claude API with proper context', async () => {
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Can you help me with this project?',
         contextMessages: [
           { userId: 'U123', text: 'We need to finish the report', ts: '1234567890.000001' },
@@ -82,6 +100,8 @@ describe('AI Service', () => {
 
     it('should handle empty context messages', async () => {
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Hello, can you help?',
         contextMessages: [],
         triggeredBy: 'reply',
@@ -101,6 +121,8 @@ describe('AI Service', () => {
 
       for (const triggeredBy of triggerTypes) {
         const result = await generateSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
           triggerMessage: 'Test message',
           contextMessages: [],
           triggeredBy,
@@ -114,6 +136,8 @@ describe('AI Service', () => {
 
     it('should include trigger type in the prompt', async () => {
       await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Test message',
         contextMessages: [],
         triggeredBy: 'message_action',
@@ -125,6 +149,8 @@ describe('AI Service', () => {
 
     it('should format context messages correctly', async () => {
       await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Please respond',
         contextMessages: [
           { userId: 'U123', text: 'First message', ts: '1234567890.000001' },
@@ -147,6 +173,8 @@ describe('AI Service', () => {
       );
 
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Help me respond',
         contextMessages: [],
         triggeredBy: 'mention',
@@ -164,6 +192,8 @@ describe('AI Service', () => {
       );
 
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'What is the token?',
         contextMessages: [],
         triggeredBy: 'message_action',
@@ -181,6 +211,8 @@ describe('AI Service', () => {
       );
 
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Show me secrets',
         contextMessages: [],
         triggeredBy: 'mention',
@@ -198,6 +230,8 @@ describe('AI Service', () => {
 
       await expect(
         generateSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
           triggerMessage: 'Help me',
           contextMessages: [],
           triggeredBy: 'mention',
@@ -212,6 +246,8 @@ describe('AI Service', () => {
 
       await expect(
         generateSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
           triggerMessage: 'Help me',
           contextMessages: [],
           triggeredBy: 'reply',
@@ -226,6 +262,8 @@ describe('AI Service', () => {
 
       await expect(
         generateSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
           triggerMessage: 'Help me',
           contextMessages: [],
           triggeredBy: 'thread',
@@ -245,6 +283,8 @@ describe('AI Service', () => {
       });
 
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Help me',
         contextMessages: [],
         triggeredBy: 'mention',
@@ -262,6 +302,8 @@ describe('AI Service', () => {
       });
 
       const result = await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Test',
         contextMessages: [],
         triggeredBy: 'mention',
@@ -272,14 +314,20 @@ describe('AI Service', () => {
 
     it('should include system prompt with professional guidelines', async () => {
       await generateSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
         triggerMessage: 'Help me respond',
         contextMessages: [],
         triggeredBy: 'mention',
       });
 
       const callArgs = mockCreate.mock.calls[0][0];
-      expect(callArgs.system).toContain('professional');
-      expect(callArgs.system).toContain('workplace');
+      // System is now an array of cache-control enabled blocks
+      const systemText = Array.isArray(callArgs.system)
+        ? callArgs.system.map((s: { text: string }) => s.text).join(' ')
+        : callArgs.system;
+      expect(systemText).toContain('professional');
+      expect(systemText).toContain('workplace');
     });
   });
 
@@ -293,6 +341,9 @@ describe('AI Service', () => {
       mockCreate.mockResolvedValue(createMockResponse('Refined and improved suggestion'));
 
       const result = await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Thank you for your message. I will look into this.',
         refinementRequest: 'Make it more casual',
       });
@@ -304,6 +355,9 @@ describe('AI Service', () => {
 
     it('should include history context in multi-turn refinement', async () => {
       await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Current suggestion',
         refinementRequest: 'Make it shorter',
         history: [
@@ -326,6 +380,9 @@ describe('AI Service', () => {
 
     it('should handle empty history', async () => {
       const result = await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Original text',
         refinementRequest: 'Make it better',
         history: [],
@@ -341,6 +398,9 @@ describe('AI Service', () => {
 
     it('should handle undefined history', async () => {
       const result = await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Original text',
         refinementRequest: 'Make it better',
       });
@@ -350,6 +410,9 @@ describe('AI Service', () => {
 
     it('should include original suggestion in prompt', async () => {
       await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'This is the original suggestion',
         refinementRequest: 'Make it better',
       });
@@ -361,6 +424,9 @@ describe('AI Service', () => {
 
     it('should include refinement request in prompt', async () => {
       await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Original',
         refinementRequest: 'Make it more formal and add a greeting',
       });
@@ -376,6 +442,9 @@ describe('AI Service', () => {
       );
 
       const result = await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Original',
         refinementRequest: 'Refine',
       });
@@ -389,6 +458,9 @@ describe('AI Service', () => {
 
       await expect(
         refineSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
+          suggestionId: TEST_SUGGESTION_ID,
           originalSuggestion: 'Original',
           refinementRequest: 'Refine',
         })
@@ -402,6 +474,9 @@ describe('AI Service', () => {
 
       await expect(
         refineSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
+          suggestionId: TEST_SUGGESTION_ID,
           originalSuggestion: 'Original',
           refinementRequest: 'Refine',
         })
@@ -415,6 +490,9 @@ describe('AI Service', () => {
       }));
 
       const result = await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Latest suggestion',
         refinementRequest: 'Final refinement',
         history: longHistory,
@@ -430,17 +508,27 @@ describe('AI Service', () => {
 
     it('should include system prompt about refinement guidelines', async () => {
       await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Original',
         refinementRequest: 'Refine',
       });
 
       const callArgs = mockCreate.mock.calls[0][0];
-      expect(callArgs.system).toContain('refine');
-      expect(callArgs.system).toContain('professional');
+      // System is now an array of cache-control enabled blocks
+      const systemText = Array.isArray(callArgs.system)
+        ? callArgs.system.map((s: { text: string }) => s.text).join(' ')
+        : callArgs.system;
+      expect(systemText).toContain('refine');
+      expect(systemText).toContain('professional');
     });
 
     it('should handle history entries without refinement requests', async () => {
       await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Current',
         refinementRequest: 'Make better',
         history: [
@@ -454,6 +542,9 @@ describe('AI Service', () => {
 
     it('should use correct model for refinement', async () => {
       await refineSuggestion({
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: TEST_USER_ID,
+        suggestionId: TEST_SUGGESTION_ID,
         originalSuggestion: 'Original',
         refinementRequest: 'Refine',
       });

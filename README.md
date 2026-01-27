@@ -48,13 +48,46 @@ npm run docker:logs
 
 ### 3. Configure Slack App
 
+#### Option A: Import App Manifest (Recommended)
+
+1. Go to https://api.slack.com/apps → **Create New App** → **From an app manifest**
+2. Select your workspace
+3. Copy contents of `slack-app-manifest.yml` from repo root
+4. Replace `YOUR_BACKEND_URL` with your backend URL (e.g., `http://localhost:3000` or tunnel URL)
+5. Replace `YOUR_WEB_PORTAL_URL` with your web portal URL (e.g., `http://localhost:3001` or tunnel URL)
+6. Create the app
+
+#### Option B: Manual Configuration
+
 In your Slack app settings (https://api.slack.com/apps):
 
 1. **OAuth & Permissions**
-   - Add Redirect URL: `http://localhost:3000/slack/oauth_redirect`
-   - Scopes: `channels:history`, `channels:read`, `chat:write`, `users:read`, `app_mentions:read`
+   - Redirect URLs:
+     - `http://localhost:3000/slack/oauth_redirect` (backend)
+     - `http://localhost:3001/callback` (web portal)
+   - Bot Token Scopes: `app_mentions:read`, `channels:history`, `channels:read`, `chat:write`, `commands`, `users:read`
+   - User Token Scopes: `openid`, `profile`
 
-2. **Install the App**
+2. **Slash Commands** (Features → Slash Commands):
+   | Command | Request URL | Description |
+   |---------|-------------|-------------|
+   | `/watch` | `http://localhost:3000/slack/events` | Enable AI suggestions for this conversation |
+   | `/unwatch` | `http://localhost:3000/slack/events` | Disable AI suggestions for this conversation |
+
+3. **Interactivity & Shortcuts** (Features → Interactivity & Shortcuts):
+   - Enable Interactivity: ON
+   - Request URL: `http://localhost:3000/slack/events`
+   - Create Message Shortcut:
+     - Name: `Help me respond`
+     - Description: `Get an AI-suggested response to this message`
+     - Callback ID: `help_me_respond`
+
+4. **Event Subscriptions** (Features → Event Subscriptions):
+   - Enable Events: ON
+   - Request URL: `http://localhost:3000/slack/events`
+   - Subscribe to bot events: `app_mention`, `message.channels`
+
+5. **Install the App**
    - Visit `http://localhost:3000/slack/install`
    - Approve the OAuth permissions
 
@@ -94,13 +127,15 @@ Edit any file in these directories and the app automatically rebuilds:
 ```
 slack-speak-for-me/
 ├── apps/
-│   └── slack-backend/     # Slack Bolt app
+│   ├── slack-backend/       # Slack Bolt app (event handling, AI integration)
+│   └── web-portal/          # Next.js settings portal
 ├── packages/
-│   ├── database/          # Drizzle ORM schema and client
-│   └── validation/        # Zod schemas and sanitization
-├── docker-compose.yml     # Development services
-├── Dockerfile.dev         # Development container
-└── .env.docker            # Environment template
+│   ├── database/            # Drizzle ORM schema and client
+│   └── validation/          # Zod schemas and sanitization
+├── slack-app-manifest.yml   # Slack app configuration template
+├── docker-compose.yml       # Development services
+├── Dockerfile.dev           # Development container
+└── .env.docker              # Environment template
 ```
 
 ### Local Development (without Docker)
@@ -117,9 +152,21 @@ npm run dev --workspace=apps/slack-backend
 
 | Service | Port | Description |
 |---------|------|-------------|
-| App | 3000 | Slack backend API |
+| Slack Backend | 3000 | Slack Bolt app (events, commands, AI) |
+| Web Portal | 3001 | Next.js settings dashboard |
 | PostgreSQL | 5432 | Database (user: postgres, pass: postgres) |
 | Redis | 6379 | Job queue |
+
+## Web Portal
+
+The web portal allows users to manage their settings:
+
+- **Style Preferences**: Tone, formality, phrases to use/avoid
+- **People Context**: Notes about colleagues for personalized suggestions
+- **AI Learning**: View how AI adapts to your style
+- **Reports**: Configure weekly report generation
+
+See `apps/web-portal/README.md` for detailed setup instructions.
 
 ## Architecture
 

@@ -1,6 +1,7 @@
 import type { App, MessageShortcut } from '@slack/bolt';
 import { queueAIResponse } from '../../jobs/queues.js';
 import { getContextForMessage } from '../../services/context.js';
+import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -42,6 +43,18 @@ export function registerHelpMeRespondShortcut(app: App): void {
       : undefined;
 
     try {
+      // Look up internal workspace ID from Slack team ID
+      const workspaceId = await getWorkspaceId(teamId);
+      if (!workspaceId) {
+        logger.error({ teamId }, 'Workspace not found for team ID');
+        await client.chat.postEphemeral({
+          channel: channelId,
+          user: userId,
+          text: 'Workspace not found. Please reinstall the app.',
+        });
+        return;
+      }
+
       // Fetch conversation context
       const contextMessages = await getContextForMessage(
         client,
@@ -52,7 +65,7 @@ export function registerHelpMeRespondShortcut(app: App): void {
 
       // Queue AI response job
       await queueAIResponse({
-        workspaceId: teamId,
+        workspaceId,
         userId,
         channelId,
         messageTs,

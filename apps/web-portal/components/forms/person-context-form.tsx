@@ -22,9 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
+import { UserSearch } from './user-search';
 import { personContextSchema, type PersonContextInput } from '@/lib/validations/person-context';
 import { savePersonContext } from '@/app/(dashboard)/people/actions';
 
@@ -40,6 +40,7 @@ interface PersonContextFormProps {
 export function PersonContextForm({ defaultValues, trigger, onSuccess }: PersonContextFormProps) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
 
   const form = useForm<PersonContextInput>({
     resolver: zodResolver(personContextSchema),
@@ -54,6 +55,9 @@ export function PersonContextForm({ defaultValues, trigger, onSuccess }: PersonC
       const formData = new FormData();
       formData.set('targetSlackUserId', data.targetSlackUserId);
       formData.set('contextText', data.contextText);
+      if (selectedUserName) {
+        formData.set('targetUserName', selectedUserName);
+      }
 
       const result = await savePersonContext(formData);
 
@@ -103,16 +107,20 @@ export function PersonContextForm({ defaultValues, trigger, onSuccess }: PersonC
               name="targetSlackUserId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Slack User ID</FormLabel>
+                  <FormLabel>Person</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g., U01ABC123"
-                      {...field}
+                    <UserSearch
+                      value={field.value}
+                      onChange={(userId, user) => {
+                        field.onChange(userId);
+                        setSelectedUserName(user?.displayName || user?.name || null);
+                      }}
                       disabled={!!defaultValues}
+                      placeholder="Search by name..."
                     />
                   </FormControl>
                   <FormDescription>
-                    Find this by clicking on a user&apos;s profile in Slack and copying their member ID
+                    Search and select the person you want to add context about
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

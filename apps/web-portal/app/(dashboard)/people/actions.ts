@@ -21,6 +21,7 @@ export async function savePersonContext(formData: FormData): Promise<ActionResul
     targetSlackUserId: formData.get('targetSlackUserId') as string,
     contextText: formData.get('contextText') as string,
   };
+  const targetUserName = formData.get('targetUserName') as string | null;
 
   const result = personContextSchema.safeParse(rawData);
 
@@ -39,12 +40,14 @@ export async function savePersonContext(formData: FormData): Promise<ActionResul
       workspaceId: session.workspaceId,
       userId: session.userId,
       targetSlackUserId,
+      targetUserName: targetUserName || null,
       contextText,
       updatedAt: new Date(),
     } as typeof personContext.$inferInsert;
 
     const updateValues = {
       contextText,
+      targetUserName: targetUserName || null,
       updatedAt: new Date(),
     } as Partial<typeof personContext.$inferInsert>;
 

@@ -20,7 +20,7 @@ export const installations = pgTable('installations', {
   userScopes: text('user_scopes'),
   installedAt: timestamp('installed_at').defaultNow(),
 }, (table) => ({
-  workspaceIdx: index('installations_workspace_id_idx').on(table.workspaceId),
+  workspaceUnique: uniqueIndex('installations_workspace_id_unique').on(table.workspaceId),
 }));
 
 export const users = pgTable('users', {
@@ -115,6 +115,7 @@ export const personContext = pgTable('person_context', {
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
   userId: text('user_id').notNull(), // The user who owns this context
   targetSlackUserId: text('target_slack_user_id').notNull(), // The person they're adding context about
+  targetUserName: text('target_user_name'), // Display name for the target user
   contextText: text('context_text').notNull(), // Free-form notes (max 1000 chars enforced at app level)
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),

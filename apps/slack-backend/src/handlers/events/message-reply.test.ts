@@ -69,7 +69,7 @@ describe('Message Reply Handler', () => {
       test: vi.fn().mockResolvedValue({ ok: true, team_id: 'T123' }),
     },
     ...overrides,
-  } as Partial<WebClient>);
+  } as unknown as Partial<WebClient>);
 
   beforeEach(() => {
     vi.clearAllMocks();

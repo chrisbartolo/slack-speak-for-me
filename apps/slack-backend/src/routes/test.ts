@@ -469,11 +469,11 @@ async function handleTestAI(
 ): Promise<void> {
   try {
     const body = await parseBody(req);
-    const { context, trigger, triggeredBy, workspaceId, userId } = body as {
+    const { context, trigger, triggeredBy, teamId, userId } = body as {
       context?: string;
       trigger?: string;
       triggeredBy?: 'mention' | 'reply' | 'thread' | 'message_action';
-      workspaceId?: string;
+      teamId?: string;
       userId?: string;
     };
 
@@ -485,6 +485,9 @@ async function handleTestAI(
       return;
     }
 
+    // Convert teamId to workspace UUID (create if needed for testing)
+    const workspaceId = await getOrCreateWorkspace(teamId || 'T-TEST');
+
     // Build context messages from the context string
     const contextMessages = context
       ? context.split('\n').filter(Boolean).map((line, idx) => ({
@@ -495,8 +498,8 @@ async function handleTestAI(
       : [];
 
     const result = await generateSuggestion({
-      workspaceId: workspaceId || 'test-workspace',
-      userId: userId || 'test-user',
+      workspaceId,
+      userId: userId || 'U-TEST',
       triggerMessage: trigger,
       contextMessages,
       triggeredBy: triggeredBy || 'mention',
@@ -506,6 +509,7 @@ async function handleTestAI(
       success: true,
       suggestion: result.suggestion,
       processingTimeMs: result.processingTimeMs,
+      personalization: result.personalization,
     });
   } catch (error) {
     logger.error({ error }, 'Test AI generation error');
@@ -525,11 +529,11 @@ async function handleTestRefine(
 ): Promise<void> {
   try {
     const body = await parseBody(req);
-    const { originalSuggestion, refinementRequest, history, workspaceId, userId, suggestionId } = body as {
+    const { originalSuggestion, refinementRequest, history, teamId, userId, suggestionId } = body as {
       originalSuggestion?: string;
       refinementRequest?: string;
       history?: Array<{ suggestion: string; refinementRequest?: string }>;
-      workspaceId?: string;
+      teamId?: string;
       userId?: string;
       suggestionId?: string;
     };
@@ -542,9 +546,12 @@ async function handleTestRefine(
       return;
     }
 
+    // Convert teamId to workspace UUID (create if needed for testing)
+    const workspaceId = await getOrCreateWorkspace(teamId || 'T-TEST');
+
     const result = await refineSuggestion({
-      workspaceId: workspaceId || 'test-workspace',
-      userId: userId || 'test-user',
+      workspaceId,
+      userId: userId || 'U-TEST',
       suggestionId: suggestionId || `test-sug-${Date.now()}`,
       originalSuggestion,
       refinementRequest,

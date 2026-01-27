@@ -61,11 +61,11 @@ export function buildSuggestionBlocks(
           type: 'button',
           text: {
             type: 'plain_text',
-            text: '📋 Copy to Clipboard',
+            text: '📤 Send as Me',
             emoji: true,
           },
-          action_id: 'copy_suggestion',
-          value: suggestionId,
+          action_id: 'send_suggestion',
+          value: JSON.stringify({ suggestionId, suggestion }),
           style: 'primary',
         },
         {
@@ -76,7 +76,7 @@ export function buildSuggestionBlocks(
             emoji: true,
           },
           action_id: 'refine_suggestion',
-          value: suggestionId,
+          value: JSON.stringify({ suggestionId, suggestion }),
         },
         {
           type: 'button',
@@ -95,7 +95,7 @@ export function buildSuggestionBlocks(
       elements: [
         {
           type: 'mrkdwn',
-          text: '_This message is only visible to you. Copy the suggestion and paste it into the conversation when ready._',
+          text: '_Only visible to you. Select the text above to copy, then paste into the conversation._',
         },
       ],
     },

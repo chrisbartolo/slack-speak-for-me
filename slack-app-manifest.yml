@@ -1,0 +1,53 @@
+display_information:
+  name: Slack Speak for Me
+  description: AI-powered response suggestions for workplace messages
+  background_color: "#4A154B"
+
+features:
+  bot_user:
+    display_name: Speak for Me
+    always_online: true
+  shortcuts:
+    - name: Help me respond
+      type: message
+      callback_id: help_me_respond
+      description: Get an AI-suggested response to this message
+  slash_commands:
+    - command: /watch
+      url: https://YOUR_BACKEND_URL/slack/events
+      description: Enable AI suggestions for this conversation
+      should_escape: false
+    - command: /unwatch
+      url: https://YOUR_BACKEND_URL/slack/events
+      description: Disable AI suggestions for this conversation
+      should_escape: false
+
+oauth_config:
+  redirect_urls:
+    - https://YOUR_BACKEND_URL/slack/oauth_redirect
+    - https://YOUR_WEB_PORTAL_URL/callback
+  scopes:
+    user:
+      - openid
+      - profile
+      - chat:write
+    bot:
+      - app_mentions:read
+      - channels:history
+      - channels:read
+      - chat:write
+      - commands
+      - users:read
+
+settings:
+  event_subscriptions:
+    request_url: https://YOUR_BACKEND_URL/slack/events
+    bot_events:
+      - app_mention
+      - message.channels
+  interactivity:
+    is_enabled: true
+    request_url: https://YOUR_BACKEND_URL/slack/events
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

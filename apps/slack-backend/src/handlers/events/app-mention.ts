@@ -1,6 +1,7 @@
 import type { App } from '@slack/bolt';
 import { getContextForMessage } from '../../services/context.js';
 import { queueAIResponse } from '../../jobs/queues.js';
+import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -19,12 +20,19 @@ export function registerAppMentionHandler(app: App) {
         threadTs: event.thread_ts,
       }, 'app_mention event received');
 
-      // Get the workspace/team ID from the client's auth test
+      // Get the Slack team ID from the client's auth test
       const authResult = await client.auth.test();
-      const workspaceId = authResult.team_id as string;
+      const teamId = authResult.team_id as string;
 
+      if (!teamId) {
+        logger.error('Could not determine team ID from auth.test');
+        return;
+      }
+
+      // Look up internal workspace ID from Slack team ID
+      const workspaceId = await getWorkspaceId(teamId);
       if (!workspaceId) {
-        logger.error('Could not determine workspace ID from auth.test');
+        logger.error({ teamId }, 'Workspace not found for team ID');
         return;
       }
 

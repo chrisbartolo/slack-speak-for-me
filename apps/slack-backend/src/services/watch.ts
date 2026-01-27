@@ -1,5 +1,18 @@
-import { db, watchedConversations, threadParticipants } from '@slack-speak/database';
+import { db, watchedConversations, threadParticipants, workspaces } from '@slack-speak/database';
 import { eq, and, sql } from 'drizzle-orm';
+
+/**
+ * Look up internal workspace UUID from Slack team ID
+ */
+export async function getWorkspaceId(teamId: string): Promise<string | null> {
+  const result = await db
+    .select({ id: workspaces.id })
+    .from(workspaces)
+    .where(eq(workspaces.teamId, teamId))
+    .limit(1);
+
+  return result.length > 0 ? result[0].id : null;
+}
 
 /**
  * Watch a conversation for a user

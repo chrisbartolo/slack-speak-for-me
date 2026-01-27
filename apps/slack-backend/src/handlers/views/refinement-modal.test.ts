@@ -31,9 +31,11 @@ describe('Refinement Modal Handler', () => {
     mockViewsUpdate = vi.fn().mockResolvedValue({ ok: true, view: { id: 'V123' } });
 
     mockApp = {
-      view: vi.fn((callbackId: string, handler: Function) => {
-        if (callbackId === 'refinement_modal') {
-          viewHandler = handler;
+      view: vi.fn((callbackId: string | RegExp | object, handler?: Function) => {
+        const cbId = typeof callbackId === 'string' ? callbackId : '';
+        const cb = typeof callbackId === 'function' ? callbackId : handler;
+        if (cbId === 'refinement_modal' && cb) {
+          viewHandler = cb;
         }
       }),
     };

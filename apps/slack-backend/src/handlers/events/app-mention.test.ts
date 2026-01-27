@@ -50,7 +50,7 @@ describe('App Mention Handler', () => {
       test: vi.fn().mockResolvedValue({ ok: true, team_id: 'T789' }),
     },
     ...overrides,
-  } as Partial<WebClient>);
+  } as unknown as Partial<WebClient>);
 
   beforeEach(() => {
     vi.clearAllMocks();

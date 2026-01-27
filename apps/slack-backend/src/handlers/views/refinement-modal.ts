@@ -5,6 +5,8 @@ import { logger } from '../../utils/logger.js';
 interface RefinementMetadata {
   workspaceId: string;
   userId: string;
+  channelId: string;
+  threadTs?: string;
   suggestionId: string;
   currentSuggestion: string;
   history: Array<{
@@ -46,7 +48,7 @@ function truncateHistory(metadata: RefinementMetadata): RefinementMetadata {
 export function registerRefinementModalHandler(app: App): void {
   app.view(
     'refinement_modal',
-    async ({ ack, body, view, context }) => {
+    async ({ ack, body, view, client }) => {
       // Parse metadata
       const metadata: RefinementMetadata = JSON.parse(view.private_metadata || '{}');
 
@@ -120,13 +122,15 @@ export function registerRefinementModalHandler(app: App): void {
         const updatedMetadata = truncateHistory({
           workspaceId: metadata.workspaceId,
           userId: metadata.userId,
+          channelId: metadata.channelId,
+          threadTs: metadata.threadTs,
           suggestionId: metadata.suggestionId,
           currentSuggestion: result.suggestion,
           history: updatedHistory,
         });
 
         // Update modal with refined suggestion
-        await context.client.views.update({
+        await client.views.update({
           view_id: body.view.id,
           view: {
             type: 'modal',
@@ -166,11 +170,16 @@ export function registerRefinementModalHandler(app: App): void {
                     type: 'button',
                     text: {
                       type: 'plain_text',
-                      text: '✅ Copy Final',
+                      text: '📤 Send as Me',
                       emoji: true,
                     },
-                    action_id: 'copy_final_suggestion',
-                    value: metadata.suggestionId,
+                    action_id: 'send_suggestion',
+                    value: JSON.stringify({
+                      suggestionId: metadata.suggestionId,
+                      suggestion: result.suggestion,
+                      channelId: metadata.channelId,
+                      threadTs: metadata.threadTs,
+                    }),
                     style: 'primary',
                   },
                 ],
@@ -180,7 +189,7 @@ export function registerRefinementModalHandler(app: App): void {
                 elements: [
                   {
                     type: 'mrkdwn',
-                    text: `_Round ${updatedHistory.length + 1} • Click "Refine More" to adjust further, or "Copy Final" to use this suggestion_`,
+                    text: `_Round ${updatedHistory.length + 1} • Click "Refine More" to adjust further, or "Send as Me" to post_`,
                   },
                 ],
               },
@@ -212,7 +221,7 @@ export function registerRefinementModalHandler(app: App): void {
         logger.error({ error }, 'Failed to generate refinement');
 
         // Update modal with error
-        await context.client.views.update({
+        await client.views.update({
           view_id: body.view.id,
           view: {
             type: 'modal',

@@ -1,5 +1,5 @@
 import type { App } from '@slack/bolt';
-import { watchConversation, unwatchConversation, isWatching } from '../../services/watch.js';
+import { watchConversation, unwatchConversation, isWatching, getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -19,8 +19,18 @@ export function registerWatchCommands(app: App): void {
 
       const { team_id, user_id, channel_id } = command;
 
+      // Look up internal workspace ID from Slack team ID
+      const workspaceId = await getWorkspaceId(team_id);
+      if (!workspaceId) {
+        await respond({
+          text: '❌ Workspace not found. Please reinstall the app.',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
+
       // Check if already watching
-      const alreadyWatching = await isWatching(team_id, user_id, channel_id);
+      const alreadyWatching = await isWatching(workspaceId, user_id, channel_id);
 
       if (alreadyWatching) {
         await respond({
@@ -31,7 +41,7 @@ export function registerWatchCommands(app: App): void {
       }
 
       // Add watch
-      await watchConversation(team_id, user_id, channel_id);
+      await watchConversation(workspaceId, user_id, channel_id);
 
       await respond({
         text: '✅ Now watching this conversation. You\'ll receive AI suggestions when someone responds to your messages here.',
@@ -39,7 +49,8 @@ export function registerWatchCommands(app: App): void {
       });
 
       logger.info({
-        workspaceId: team_id,
+        workspaceId,
+        teamId: team_id,
         userId: user_id,
         channelId: channel_id,
       }, 'User enabled watch for conversation');
@@ -67,8 +78,18 @@ export function registerWatchCommands(app: App): void {
 
       const { team_id, user_id, channel_id } = command;
 
+      // Look up internal workspace ID from Slack team ID
+      const workspaceId = await getWorkspaceId(team_id);
+      if (!workspaceId) {
+        await respond({
+          text: '❌ Workspace not found. Please reinstall the app.',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
+
       // Check if currently watching
-      const currentlyWatching = await isWatching(team_id, user_id, channel_id);
+      const currentlyWatching = await isWatching(workspaceId, user_id, channel_id);
 
       if (!currentlyWatching) {
         await respond({
@@ -79,7 +100,7 @@ export function registerWatchCommands(app: App): void {
       }
 
       // Remove watch
-      await unwatchConversation(team_id, user_id, channel_id);
+      await unwatchConversation(workspaceId, user_id, channel_id);
 
       await respond({
         text: '🔕 Stopped watching this conversation. You won\'t receive AI suggestions here anymore.',
@@ -87,7 +108,8 @@ export function registerWatchCommands(app: App): void {
       });
 
       logger.info({
-        workspaceId: team_id,
+        workspaceId,
+        teamId: team_id,
         userId: user_id,
         channelId: channel_id,
       }, 'User disabled watch for conversation');

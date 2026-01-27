@@ -14,6 +14,7 @@ import {
   registerDismissSuggestionAction,
   registerRefineSuggestionAction,
   registerCopyFinalSuggestionAction,
+  registerSendSuggestionAction,
   registerRefinementModalHandler,
 } from './handlers/index.js';
 import {
@@ -44,6 +45,7 @@ export const app = new App({
   ],
   installerOptions: {
     directInstall: true,
+    userScopes: ['chat:write'],
   },
   customRoutes: [...healthRoutes, ...testRoutes],
 });
@@ -66,6 +68,7 @@ registerCopySuggestionAction(app);
 registerDismissSuggestionAction(app);
 registerRefineSuggestionAction(app);
 registerCopyFinalSuggestionAction(app);
+registerSendSuggestionAction(app);
 
 // Register view handlers
 registerRefinementModalHandler(app);

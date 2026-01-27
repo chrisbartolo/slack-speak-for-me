@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Trash2, Hash } from 'lucide-react';
+import { useState, useTransition, useEffect } from 'react';
+import { Trash2, Hash, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -25,6 +25,12 @@ interface Conversation {
   watchedAt: Date | null;
 }
 
+interface ChannelInfo {
+  id: string;
+  name: string;
+  isPrivate: boolean;
+}
+
 interface ConversationListProps {
   conversations: Conversation[];
 }
@@ -32,6 +38,33 @@ interface ConversationListProps {
 export function ConversationList({ conversations }: ConversationListProps) {
   const [isPending, startTransition] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [channelNames, setChannelNames] = useState<Record<string, ChannelInfo>>({});
+  const [loadingChannels, setLoadingChannels] = useState(true);
+
+  useEffect(() => {
+    async function fetchChannelNames() {
+      if (conversations.length === 0) {
+        setLoadingChannels(false);
+        return;
+      }
+
+      try {
+        const channelIds = conversations.map((c) => c.channelId).join(',');
+        const response = await fetch(`/api/slack/channels?ids=${channelIds}`);
+        const data = await response.json();
+
+        if (data.channels) {
+          setChannelNames(data.channels);
+        }
+      } catch (error) {
+        console.error('Failed to fetch channel names:', error);
+      } finally {
+        setLoadingChannels(false);
+      }
+    }
+
+    fetchChannelNames();
+  }, [conversations]);
 
   const handleRemove = async (id: string) => {
     setRemovingId(id);
@@ -58,10 +91,22 @@ export function ConversationList({ conversations }: ConversationListProps) {
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gray-100 rounded-lg">
-                <Hash className="h-5 w-5 text-gray-600" />
+                {channelNames[conversation.channelId]?.isPrivate ? (
+                  <Lock className="h-5 w-5 text-gray-600" />
+                ) : (
+                  <Hash className="h-5 w-5 text-gray-600" />
+                )}
               </div>
               <div>
-                <p className="font-medium text-gray-900">{conversation.channelId}</p>
+                <p className="font-medium text-gray-900">
+                  {loadingChannels ? (
+                    <span className="text-gray-400">Loading...</span>
+                  ) : channelNames[conversation.channelId]?.name ? (
+                    `#${channelNames[conversation.channelId].name}`
+                  ) : (
+                    conversation.channelId
+                  )}
+                </p>
                 <p className="text-sm text-gray-500">
                   {conversation.watchedAt
                     ? `Added ${formatDistanceToNow(conversation.watchedAt, { addSuffix: true })}`

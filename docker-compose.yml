@@ -59,6 +59,7 @@ services:
       # Mount source code for hot reload
       - ./apps/slack-backend/src:/app/apps/slack-backend/src:ro
       - ./packages/database/src:/app/packages/database/src:ro
+      - ./packages/database/dist:/app/packages/database/dist:ro
       - ./packages/validation/src:/app/packages/validation/src:ro
       # Mount tsconfig files
       - ./tsconfig.json:/app/tsconfig.json:ro

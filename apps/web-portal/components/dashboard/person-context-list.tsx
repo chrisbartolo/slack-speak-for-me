@@ -23,6 +23,7 @@ import { deletePersonContext } from '@/app/(dashboard)/people/actions';
 interface PersonContext {
   id: string;
   targetSlackUserId: string;
+  targetUserName: string | null;
   contextText: string;
   updatedAt: Date | null;
 }
@@ -65,13 +66,18 @@ export function PersonContextList({ contexts }: PersonContextListProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900">{context.targetSlackUserId}</p>
+                    <p className="font-medium text-gray-900">
+                      {context.targetUserName || context.targetSlackUserId}
+                    </p>
                     {context.updatedAt && (
                       <span className="text-xs text-gray-400">
                         Updated {formatDistanceToNow(context.updatedAt, { addSuffix: true })}
                       </span>
                     )}
                   </div>
+                  {context.targetUserName && (
+                    <p className="text-xs text-gray-400">{context.targetSlackUserId}</p>
+                  )}
                   <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">
                     {context.contextText}
                   </p>

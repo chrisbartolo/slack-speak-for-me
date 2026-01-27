@@ -1,4 +1,5 @@
 import type { App } from '@slack/bolt';
+import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -8,52 +9,74 @@ import { logger } from '../../utils/logger.js';
 export function registerRefineSuggestionAction(app: App): void {
   app.action(
     'refine_suggestion',
-    async ({ ack, body, context }) => {
+    async ({ ack, body, client }) => {
       await ack();
 
       try {
-        // Extract suggestion from button value (suggestionId was passed)
-        // We need to get the suggestion text from the message blocks
-        const message = 'message' in body ? body.message : undefined;
-        if (!message || !('blocks' in message)) {
-          logger.error('Message blocks not found for refine action');
+        // Extract suggestionId and suggestion from action value (JSON)
+        const actionBody = body as { actions: Array<{ value?: string }> };
+        const actionValue = actionBody.actions[0]?.value || '{}';
+
+        let suggestionId = '';
+        let currentSuggestion = '';
+
+        try {
+          const parsed = JSON.parse(actionValue);
+          suggestionId = parsed.suggestionId || '';
+          currentSuggestion = parsed.suggestion || '';
+        } catch {
+          logger.error({ actionValue }, 'Failed to parse refine action value');
           return;
         }
 
-        // Find the section block with the suggestion text
-        const suggestionBlock = message.blocks?.find(
-          (block: any) =>
-            block.type === 'section' && 'text' in block
-        );
+        if (!currentSuggestion) {
+          logger.error('No suggestion in refine action value');
+          return;
+        }
 
-        const currentSuggestion = suggestionBlock?.text?.text || '';
-
-        // Extract suggestionId from action value
-        const actionBody = body as { actions: Array<{ value?: string }> };
-        const suggestionId = actionBody.actions[0]?.value || '';
-
-        // Extract workspaceId and userId from body
-        const workspaceId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
+        // Extract team ID, user ID, channel ID, and trigger_id from body
+        const teamId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
         const userId = 'user' in body && body.user ? (body.user as { id: string }).id : '';
-
-        // Store state in private_metadata (JSON stringified, up to 3000 chars)
-        const metadata = {
-          workspaceId,
-          userId,
-          suggestionId,
-          currentSuggestion,
-          history: [],
-        };
-
-        // Get trigger_id from body
         const triggerId = 'trigger_id' in body ? body.trigger_id : '';
+
+        // Get channel ID and thread_ts from container (for ephemeral messages)
+        const container = 'container' in body ? body.container as { channel_id?: string; message_ts?: string; thread_ts?: string } : null;
+        const channelId = ('channel' in body && body.channel ? (body.channel as { id: string }).id : null) || container?.channel_id || '';
+        const threadTs = container?.thread_ts;
+
         if (!triggerId) {
           logger.error('trigger_id not found in action body');
           return;
         }
 
-        // Open refinement modal using context.client
-        await context.client.views.open({
+        // Convert Slack team ID to internal workspace UUID
+        const internalWorkspaceId = teamId ? await getWorkspaceId(teamId) : null;
+        if (!internalWorkspaceId) {
+          logger.error({ teamId }, 'Workspace not found for refine action');
+          return;
+        }
+
+        // Truncate suggestion if too long for metadata (max 3000 chars total)
+        const maxSuggestionLength = 2500;
+        const truncatedSuggestion = currentSuggestion.length > maxSuggestionLength
+          ? currentSuggestion.substring(0, maxSuggestionLength) + '...'
+          : currentSuggestion;
+
+        // Store state in private_metadata (JSON stringified, up to 3000 chars)
+        const metadata = {
+          workspaceId: internalWorkspaceId,
+          userId,
+          channelId,
+          threadTs,
+          suggestionId,
+          currentSuggestion: truncatedSuggestion,
+          history: [],
+        };
+
+        logger.info({ triggerId, suggestionId, metadataLength: JSON.stringify(metadata).length }, 'Opening refinement modal');
+
+        // Open refinement modal
+        await client.views.open({
           trigger_id: triggerId,
           view: {
             type: 'modal',
@@ -111,8 +134,12 @@ export function registerRefineSuggestionAction(app: App): void {
         });
 
         logger.info({ suggestionId }, 'Refinement modal opened');
-      } catch (error) {
-        logger.error({ error }, 'Failed to open refinement modal');
+      } catch (error: any) {
+        logger.error({
+          error: error?.message || error,
+          code: error?.code,
+          data: error?.data,
+        }, 'Failed to open refinement modal');
       }
     }
   );

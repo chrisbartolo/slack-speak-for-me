@@ -1,3 +1,5 @@
+'use client';
+
 import { Home, Sliders, MessageSquare, Users, FileText, Sparkles } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { UserMenu } from './user-menu';

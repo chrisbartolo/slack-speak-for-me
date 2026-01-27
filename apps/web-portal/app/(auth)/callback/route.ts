@@ -4,30 +4,45 @@ import { exchangeCodeForTokens } from '@/lib/auth/slack-oauth';
 import { db, workspaces } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 
+// Get the base URL for redirects (handles proxy/tunnel scenarios)
+function getBaseUrl(request: NextRequest): string {
+  // Use env var if set, otherwise try to infer from headers
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+  return request.nextUrl.origin;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
+  const baseUrl = getBaseUrl(request);
 
   const storedState = request.cookies.get('oauth_state')?.value;
   const returnUrl = request.cookies.get('oauth_return')?.value || '/';
 
   // Handle OAuth errors
   if (error) {
-    return NextResponse.redirect(new URL(`/login?error=${error}`, request.url));
+    return NextResponse.redirect(new URL(`/login?error=${error}`, baseUrl));
   }
 
   // Verify state parameter (CSRF protection)
   if (!state || state !== storedState) {
     return NextResponse.redirect(
-      new URL('/login?error=invalid_state', request.url)
+      new URL('/login?error=invalid_state', baseUrl)
     );
   }
 
   if (!code) {
     return NextResponse.redirect(
-      new URL('/login?error=missing_code', request.url)
+      new URL('/login?error=missing_code', baseUrl)
     );
   }
 
@@ -38,7 +53,7 @@ export async function GET(request: NextRequest) {
     if (!tokens.ok) {
       console.error('Slack OAuth error:', tokens.error);
       return NextResponse.redirect(
-        new URL('/login?error=oauth_failed', request.url)
+        new URL('/login?error=oauth_failed', baseUrl)
       );
     }
 
@@ -52,7 +67,7 @@ export async function GET(request: NextRequest) {
     if (!workspace) {
       // Workspace not found - user needs to install app first
       return NextResponse.redirect(
-        new URL('/login?error=workspace_not_found', request.url)
+        new URL('/login?error=workspace_not_found', baseUrl)
       );
     }
 
@@ -64,7 +79,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Clear OAuth cookies and redirect
-    const response = NextResponse.redirect(new URL(returnUrl, request.url));
+    const response = NextResponse.redirect(new URL(returnUrl, baseUrl));
     response.cookies.delete('oauth_state');
     response.cookies.delete('oauth_return');
 
@@ -72,7 +87,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('OAuth error:', error);
     return NextResponse.redirect(
-      new URL('/login?error=oauth_failed', request.url)
+      new URL('/login?error=oauth_failed', baseUrl)
     );
   }
 }

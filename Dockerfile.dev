@@ -30,6 +30,9 @@ COPY packages/validation/src ./packages/validation/src
 # Copy drizzle config for migrations
 COPY packages/database/drizzle.config.ts ./packages/database/
 
+# Build the database package (needed for dist exports)
+RUN npm run build --workspace=@slack-speak/database
+
 # Expose the app port
 EXPOSE 3000
 

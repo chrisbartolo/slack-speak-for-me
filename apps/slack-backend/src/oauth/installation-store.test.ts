@@ -94,7 +94,7 @@ describe('Installation Store', () => {
       scopes: ['chat:write', 'commands'],
       id: 'B123',
     },
-    user: { id: 'U123', scopes: ['users:read'] },
+    user: { id: 'U123', token: undefined, scopes: ['users:read'] },
     ...overrides,
   });
 
@@ -309,6 +309,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<false> = {
         teamId: 'T123TEST',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -331,6 +332,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<false> = {
         teamId: 'T123TEST',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -349,6 +351,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<false> = {
         teamId: 'TWORKSPACE',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -379,6 +382,7 @@ describe('Installation Store', () => {
     it('should throw when installation not found', async () => {
       const query: InstallationQuery<false> = {
         teamId: 'TNONEXISTENT',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -406,7 +410,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<true> = {
         teamId: 'TENTERPRISE',
-        enterpriseId: 'EENTERPRISE',
+        enterpriseId: 'EENTERPRISE' as string | undefined,
         isEnterpriseInstall: true,
       };
 
@@ -418,12 +422,13 @@ describe('Installation Store', () => {
 
     it('should return user without token when not stored', async () => {
       const installation = createTestInstallation({
-        user: { id: 'U123', scopes: ['users:read'] }, // No token
+        user: { id: 'U123', token: undefined, scopes: ['users:read'] }, // No token
       });
       await installationStore.storeInstallation(installation);
 
       const query: InstallationQuery<false> = {
         teamId: 'T123TEST',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -442,6 +447,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<false> = {
         teamId: 'T123TEST',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -460,6 +466,7 @@ describe('Installation Store', () => {
       // Verify installation exists
       const query: InstallationQuery<false> = {
         teamId: 'T123TEST',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
       const fetched = await installationStore.fetchInstallation(query);
@@ -477,6 +484,7 @@ describe('Installation Store', () => {
     it('should handle delete of non-existent installation (no-op)', async () => {
       const query: InstallationQuery<false> = {
         teamId: 'TNONEXISTENT',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -490,6 +498,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<false> = {
         teamId: 'T123TEST',
+        enterpriseId: undefined,
         isEnterpriseInstall: false,
       };
 
@@ -524,7 +533,7 @@ describe('Installation Store', () => {
 
       const query: InstallationQuery<true> = {
         teamId: 'TENTDEL',
-        enterpriseId: 'EENTDEL',
+        enterpriseId: 'EENTDEL' as string | undefined,
         isEnterpriseInstall: true,
       };
 
