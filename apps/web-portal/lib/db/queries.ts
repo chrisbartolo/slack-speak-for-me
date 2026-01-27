@@ -1,16 +1,17 @@
 import 'server-only';
 import { cache } from 'react';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
-import { db } from './index.js';
-import {
+import { eq, and, desc, count } from 'drizzle-orm';
+import { db, schema } from './index';
+import { verifySession } from '../auth/dal';
+
+const {
   userStylePreferences,
   messageEmbeddings,
   watchedConversations,
   refinementFeedback,
   personContext,
   reportSettings,
-} from '@slack-speak/database';
-import { verifySession } from '../auth/dal.js';
+} = schema;
 
 /**
  * Get user's style preferences

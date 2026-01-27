@@ -1,10 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/db';
-import { userStylePreferences } from '@slack-speak/database';
+import { db, schema } from '@/lib/db';
 import { verifySession } from '@/lib/auth/dal';
 import { stylePreferencesSchema } from '@/lib/validations/style';
+
+const { userStylePreferences } = schema;
 
 export type ActionResult = {
   success?: boolean;
@@ -40,26 +41,30 @@ export async function updateStylePreferences(formData: FormData): Promise<Action
   const { tone, formality, preferredPhrases, avoidPhrases, customGuidance } = result.data;
 
   // Upsert preferences
+  // Type cast to work around Drizzle ORM type inference issue
+  const values = {
+    workspaceId: session.workspaceId,
+    userId: session.userId,
+    tone,
+    formality,
+    preferredPhrases,
+    avoidPhrases,
+    customGuidance,
+    updatedAt: new Date(),
+  } as typeof userStylePreferences.$inferInsert;
+
   await db
     .insert(userStylePreferences)
-    .values({
-      workspaceId: session.workspaceId,
-      userId: session.userId,
-      tone,
-      formality,
-      preferredPhrases,
-      avoidPhrases,
-      customGuidance,
-      updatedAt: new Date(),
-    })
+    .values(values)
     .onConflictDoUpdate({
       target: [userStylePreferences.workspaceId, userStylePreferences.userId],
+      // Type assertion needed for Drizzle ORM type compatibility
       set: {
-        tone,
-        formality,
-        preferredPhrases,
-        avoidPhrases,
-        customGuidance,
+        tone: tone as string | null,
+        formality: formality as string | null,
+        preferredPhrases: preferredPhrases as string[],
+        avoidPhrases: avoidPhrases as string[],
+        customGuidance: customGuidance as string | null,
         updatedAt: new Date(),
       },
     });

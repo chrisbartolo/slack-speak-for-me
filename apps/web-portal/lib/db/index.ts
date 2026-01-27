@@ -1,11 +1,45 @@
 import 'server-only';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import pkg from 'pg';
-const { Pool } = pkg;
-import * as schema from '@slack-speak/database';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import {
+  workspaces,
+  installations,
+  users,
+  watchedConversations,
+  threadParticipants,
+  userStylePreferences,
+  messageEmbeddings,
+  refinementFeedback,
+  gdprConsent,
+  personContext,
+  reportSettings,
+} from '@slack-speak/database';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+const connectionString = process.env.DATABASE_URL || '';
+
+// Use postgres.js to match the database package
+const queryClient = postgres(connectionString, {
+  max: 10,
+  idle_timeout: 20,
+  connect_timeout: 10,
 });
 
-export const db = drizzle(pool, { schema });
+// Create schema object explicitly for proper type inference
+const schema = {
+  workspaces,
+  installations,
+  users,
+  watchedConversations,
+  threadParticipants,
+  userStylePreferences,
+  messageEmbeddings,
+  refinementFeedback,
+  gdprConsent,
+  personContext,
+  reportSettings,
+};
+
+export const db = drizzle(queryClient, { schema });
+
+// Re-export schema for consistent type usage
+export { schema };
