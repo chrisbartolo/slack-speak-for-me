@@ -18,6 +18,11 @@ const EnvSchema = z.object({
   SLACK_SIGNING_SECRET: z.string().min(1, 'SLACK_SIGNING_SECRET is required'),
   SLACK_STATE_SECRET: z.string().min(32, 'SLACK_STATE_SECRET must be at least 32 characters'),
 
+  // Google OAuth
+  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
+  GOOGLE_REDIRECT_URI: z.string().url().default('http://localhost:3000/oauth/google/callback'),
+
   // Encryption
   ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be 64 hex characters (32 bytes)'),
 
@@ -51,11 +56,14 @@ try {
     console.error('  - SLACK_CLIENT_SECRET');
     console.error('  - SLACK_SIGNING_SECRET');
     console.error('  - SLACK_STATE_SECRET (min 32 characters)');
+    console.error('  - GOOGLE_CLIENT_ID');
+    console.error('  - GOOGLE_CLIENT_SECRET');
     console.error('  - DATABASE_URL');
     console.error('  - ENCRYPTION_KEY (64 hex characters)');
     console.error('  - ANTHROPIC_API_KEY');
     console.error('');
     console.error('Optional (with defaults):');
+    console.error('  - GOOGLE_REDIRECT_URI (default: http://localhost:3000/oauth/google/callback)');
     console.error('  - REDIS_HOST (default: localhost)');
     console.error('  - REDIS_PORT (default: 6379)');
     console.error('  - NODE_ENV (default: development)');
@@ -72,6 +80,18 @@ try {
  */
 export function getEncryptionKey(): Buffer {
   return Buffer.from(env.ENCRYPTION_KEY, 'hex');
+}
+
+export function getGoogleClientId(): string {
+  return env.GOOGLE_CLIENT_ID;
+}
+
+export function getGoogleClientSecret(): string {
+  return env.GOOGLE_CLIENT_SECRET;
+}
+
+export function getGoogleRedirectUri(): string {
+  return env.GOOGLE_REDIRECT_URI;
 }
 
 export { env };
