@@ -8,6 +8,7 @@ import {
   watchedConversations,
   refinementFeedback,
   personContext,
+  reportSettings,
 } from '@slack-speak/database';
 import { verifySession } from '../auth/dal.js';
 
@@ -194,4 +195,24 @@ export const getFeedbackStats = cache(async () => {
     .groupBy(refinementFeedback.refinementType);
 
   return typeStats;
+});
+
+/**
+ * Get user's report settings
+ */
+export const getReportSettings = cache(async () => {
+  const session = await verifySession();
+
+  const [settings] = await db
+    .select()
+    .from(reportSettings)
+    .where(
+      and(
+        eq(reportSettings.workspaceId, session.workspaceId),
+        eq(reportSettings.userId, session.userId)
+      )
+    )
+    .limit(1);
+
+  return settings ?? null;
 });
