@@ -91,7 +91,51 @@ In your Slack app settings (https://api.slack.com/apps):
    - Visit `http://localhost:3000/slack/install`
    - Approve the OAuth permissions
 
-### 4. Verify Installation
+### 4. Configure Google OAuth (for Weekly Reports)
+
+To use the Weekly Reports feature, you need to set up Google OAuth for Sheets access:
+
+1. **Create Google Cloud Project**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Note your project name for later
+
+2. **Enable Google Sheets API**
+   - Go to **APIs & Services** → **Library**
+   - Search for "Google Sheets API"
+   - Click **Enable**
+
+3. **Configure OAuth Consent Screen**
+   - Go to **APIs & Services** → **OAuth consent screen**
+   - Choose **External** (or Internal for Google Workspace)
+   - Fill in app name, support email, and developer email
+   - Add scopes: `https://www.googleapis.com/auth/spreadsheets`
+   - Add test users (your email) if in testing mode
+
+4. **Create OAuth 2.0 Client ID**
+   - Go to **APIs & Services** → **Credentials**
+   - Click **Create Credentials** → **OAuth 2.0 Client ID**
+   - Application type: **Web application**
+   - Name: "Slack Speak for Me"
+   - Authorized redirect URIs:
+     - `http://localhost:3000/oauth/google/callback` (development)
+     - `https://your-domain.com/oauth/google/callback` (production)
+   - Click **Create** and copy the Client ID and Client Secret
+
+5. **Add to Environment**
+
+   Add to your `.env` file:
+   ```bash
+   GOOGLE_CLIENT_ID=your-client-id-here.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-client-secret-here
+   ```
+
+6. **Create a Google Sheet for Reports**
+   - Create a new Google Sheet in your Google Drive
+   - Copy the spreadsheet ID from the URL: `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`
+   - You'll enter this ID in the Web Portal → Reports settings
+
+### 5. Verify Installation
 
 ```bash
 # Check app is running

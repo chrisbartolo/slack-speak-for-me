@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReportSettingsForm } from '@/components/forms/report-settings-form';
 import { getReportSettings, getGoogleIntegration, getWorkflowConfig } from '@/lib/db/queries';
 import { GoogleConnectionCard } from '@/components/dashboard/google-connection-card';
+import { GoogleSetupGuide } from '@/components/dashboard/google-setup-guide';
 import { WorkflowConfigForm } from '@/components/workflow-config-form';
 import { SuccessToast } from '@/components/dashboard/success-toast';
 
@@ -34,6 +35,12 @@ export default async function ReportsPage({
           Configure automated weekly team report generation from workflow submissions.
         </p>
       </div>
+
+      {/* Setup Guide - shows when not fully configured */}
+      <GoogleSetupGuide
+        isConnected={!!googleIntegration}
+        hasSpreadsheet={!!googleIntegration?.spreadsheetId}
+      />
 
       {/* Step 1: Google Connection */}
       <GoogleConnectionCard
