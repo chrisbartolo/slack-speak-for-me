@@ -16,7 +16,7 @@ Web dashboard where users sign in via Slack OAuth, configure personality/tone se
 ### Tech Stack
 - Next.js for frontend (React SSR, API routes, matches Node ecosystem)
 - Slack OAuth for authentication (reuse existing OAuth flow, no separate credentials)
-- Tailwind CSS for styling (utility-first, rapid development)
+- shadcn/ui for components (Radix UI primitives + Tailwind styling)
 - Deployed alongside or integrated with existing slack-backend
 
 ### Dashboard Layout
