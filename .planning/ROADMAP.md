@@ -34,11 +34,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffolding with monorepo, TypeScript, database schema with RLS
-- [ ] 01-02-PLAN.md — OAuth installation store with AES-256-GCM token encryption
-- [ ] 01-03-PLAN.md — BullMQ background job queue with rate limiting
-- [ ] 01-04-PLAN.md — Input validation, prompt injection defense, error handling
-- [ ] 01-05-PLAN.md — Integration wiring and OAuth flow verification
+- [x] 01-01-PLAN.md — Project scaffolding with monorepo, TypeScript, database schema with RLS
+- [x] 01-02-PLAN.md — OAuth installation store with AES-256-GCM token encryption
+- [x] 01-03-PLAN.md — BullMQ background job queue with rate limiting
+- [x] 01-04-PLAN.md — Input validation, prompt injection defense, error handling
+- [x] 01-05-PLAN.md — Integration wiring and OAuth flow verification
 
 ### Phase 2: Core Slack Response Suggestions
 **Goal**: Users receive AI-generated response suggestions via ephemeral messages
@@ -56,15 +56,15 @@ Plans:
 **Plans**: 9 plans in 4 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — Database schema for watched conversations and thread participation tracking
-- [ ] 02-02-PLAN.md — AI suggestion service with Claude integration
-- [ ] 02-03-PLAN.md — Context retrieval service with rate limiting
-- [ ] 02-04-PLAN.md — Event handlers for app mentions and message replies
-- [ ] 02-05-PLAN.md — /watch and /unwatch slash commands
-- [ ] 02-06-PLAN.md — Ephemeral message delivery with Block Kit buttons
-- [ ] 02-07-PLAN.md — "Help me respond" message shortcut and action handlers
-- [ ] 02-08-PLAN.md — Refinement modal with multi-turn AI conversation
-- [ ] 02-09-PLAN.md — End-to-end verification of all success criteria
+- [x] 02-01-PLAN.md — Database schema for watched conversations and thread participation tracking
+- [x] 02-02-PLAN.md — AI suggestion service with Claude integration
+- [x] 02-03-PLAN.md — Context retrieval service with rate limiting
+- [x] 02-04-PLAN.md — Event handlers for app mentions and message replies
+- [x] 02-05-PLAN.md — /watch and /unwatch slash commands
+- [x] 02-06-PLAN.md — Ephemeral message delivery with Block Kit buttons
+- [x] 02-07-PLAN.md — "Help me respond" message shortcut and action handlers
+- [x] 02-08-PLAN.md — Refinement modal with multi-turn AI conversation
+- [x] 02-09-PLAN.md — End-to-end verification of all success criteria
 
 ### Phase 2.1: Testing Infrastructure (INSERTED)
 **Goal**: Comprehensive test coverage ensuring all code works correctly with automated and manual testing
@@ -126,10 +126,19 @@ Plans:
   6. User can configure personality and tone settings that persist across sessions
   7. User can view and manage all monitored channels and watched conversations from web
   8. User can configure weekly report settings including schedule, format, and recipients
-**Plans**: TBD
+**Plans**: 10 plans in 5 waves
 
 Plans:
-- [ ] To be created during plan-phase
+- [ ] 04-01-PLAN.md — Next.js app scaffolding with shadcn/ui and monorepo integration
+- [ ] 04-02-PLAN.md — Database schema update for personContext table
+- [ ] 04-03-PLAN.md — Slack OAuth authentication with JWT sessions
+- [ ] 04-04-PLAN.md — Dashboard layout with sidebar and home page
+- [ ] 04-05-PLAN.md — Style settings page with form validation
+- [ ] 04-06-PLAN.md — Conversations management page
+- [ ] 04-07-PLAN.md — People context management page
+- [ ] 04-08-PLAN.md — AI learning feedback history page
+- [ ] 04-09-PLAN.md — Weekly reports settings page
+- [ ] 04-10-PLAN.md — Human verification checkpoint
 
 ### Phase 5: Weekly Reports
 **Goal**: User receives automated weekly team reports aggregated from workflow submissions via Google Sheets
@@ -162,9 +171,9 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 | 2. Core Slack Response Suggestions | 9/9 | Complete | 2026-01-26 |
 | 2.1. Testing Infrastructure | 10/10 | Complete | 2026-01-26 |
 | 3. AI Personalization | 7/7 | Complete | 2026-01-26 |
-| 4. Web Portal | 0/TBD | Not started | - |
+| 4. Web Portal | 0/10 | Planning complete | - |
 | 5. Weekly Reports | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-01-26*
+*Last updated: 2026-01-27*
