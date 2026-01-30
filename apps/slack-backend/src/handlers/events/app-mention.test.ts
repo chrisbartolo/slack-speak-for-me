@@ -14,6 +14,10 @@ vi.mock('../../services/context.js', () => ({
   ]),
 }));
 
+vi.mock('../../services/watch.js', () => ({
+  getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
+}));
+
 vi.mock('../../utils/logger.js', () => ({
   logger: {
     info: vi.fn(),
@@ -26,6 +30,7 @@ vi.mock('../../utils/logger.js', () => ({
 import { registerAppMentionHandler } from './app-mention.js';
 import { queueAIResponse } from '../../jobs/queues.js';
 import { getContextForMessage } from '../../services/context.js';
+import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 describe('App Mention Handler', () => {
@@ -77,9 +82,10 @@ describe('App Mention Handler', () => {
 
     await eventHandler({ event: mockEvent, client: mockClient });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T789');
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspaceId: 'T789',
+        workspaceId: 'workspace_123',
         userId: 'U123',
         channelId: 'C456',
         messageTs: '1234567890.123456',
@@ -135,7 +141,7 @@ describe('App Mention Handler', () => {
     );
   });
 
-  it('should get workspaceId from auth.test', async () => {
+  it('should get workspaceId from auth.test and look up internal ID', async () => {
     const mockEvent = createMockEvent();
     const authTestMock = vi.fn().mockResolvedValue({ ok: true, team_id: 'TWORKSPACE' });
     const mockClient = createMockClient({
@@ -145,14 +151,15 @@ describe('App Mention Handler', () => {
     await eventHandler({ event: mockEvent, client: mockClient });
 
     expect(authTestMock).toHaveBeenCalled();
+    expect(getWorkspaceId).toHaveBeenCalledWith('TWORKSPACE');
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspaceId: 'TWORKSPACE',
+        workspaceId: 'workspace_123',
       })
     );
   });
 
-  it('should skip if workspaceId cannot be determined', async () => {
+  it('should skip if teamId cannot be determined', async () => {
     const mockEvent = createMockEvent();
     const mockClient = createMockClient({
       auth: { test: vi.fn().mockResolvedValue({ ok: true, team_id: undefined }) },
@@ -161,7 +168,18 @@ describe('App Mention Handler', () => {
     await eventHandler({ event: mockEvent, client: mockClient });
 
     expect(queueAIResponse).not.toHaveBeenCalled();
-    expect(logger.error).toHaveBeenCalledWith('Could not determine workspace ID from auth.test');
+    expect(logger.error).toHaveBeenCalledWith('Could not determine team ID from auth.test');
+  });
+
+  it('should skip if workspace not found for team ID', async () => {
+    vi.mocked(getWorkspaceId).mockResolvedValueOnce(null);
+    const mockEvent = createMockEvent();
+    const mockClient = createMockClient();
+
+    await eventHandler({ event: mockEvent, client: mockClient });
+
+    expect(queueAIResponse).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith({ teamId: 'T789' }, 'Workspace not found for team ID');
   });
 
   it('should skip if user is missing from event', async () => {

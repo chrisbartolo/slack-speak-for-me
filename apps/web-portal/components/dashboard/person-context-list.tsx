@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { PersonContextForm } from '@/components/forms/person-context-form';
-import { deletePersonContext } from '@/app/(dashboard)/people/actions';
+import { deletePersonContext } from '@/app/dashboard/people/actions';
 
 interface PersonContext {
   id: string;

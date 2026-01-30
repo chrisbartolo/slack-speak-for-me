@@ -11,6 +11,7 @@ vi.mock('../../services/watch.js', () => ({
   isWatching: vi.fn().mockResolvedValue(false),
   recordThreadParticipation: vi.fn().mockResolvedValue(undefined),
   isParticipatingInThread: vi.fn().mockResolvedValue(false),
+  getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
 }));
 
 vi.mock('../../services/context.js', () => ({
@@ -32,7 +33,7 @@ vi.mock('../../utils/logger.js', () => ({
 
 import { registerMessageReplyHandler } from './message-reply.js';
 import { queueAIResponse } from '../../jobs/queues.js';
-import { isWatching, recordThreadParticipation, isParticipatingInThread } from '../../services/watch.js';
+import { isWatching, recordThreadParticipation, isParticipatingInThread, getWorkspaceId } from '../../services/watch.js';
 import { getThreadContext } from '../../services/context.js';
 import { logger } from '../../utils/logger.js';
 
@@ -139,7 +140,7 @@ describe('Message Reply Handler', () => {
     expect(queueAIResponse).not.toHaveBeenCalled();
   });
 
-  it('should skip if workspaceId cannot be determined', async () => {
+  it('should skip if teamId cannot be determined', async () => {
     const mockMessage = createMockMessage({ thread_ts: '1234567890.000001' });
     const mockClient = createMockClient({
       auth: { test: vi.fn().mockResolvedValue({ ok: true, team_id: undefined }) },
@@ -148,7 +149,7 @@ describe('Message Reply Handler', () => {
     await messageHandler({ message: mockMessage, client: mockClient });
 
     expect(queueAIResponse).not.toHaveBeenCalled();
-    expect(logger.error).toHaveBeenCalledWith('Could not determine workspace ID from auth.test');
+    expect(logger.error).toHaveBeenCalledWith('Could not determine team ID from auth.test');
   });
 
   it('should record thread participation for thread messages', async () => {
@@ -157,8 +158,9 @@ describe('Message Reply Handler', () => {
 
     await messageHandler({ message: mockMessage, client: mockClient });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T123');
     expect(recordThreadParticipation).toHaveBeenCalledWith(
-      'T123',
+      'workspace_123',
       'U789',
       'C456',
       '1234567890.000001'
@@ -190,8 +192,8 @@ describe('Message Reply Handler', () => {
     await messageHandler({ message: mockMessage, client: mockClient });
 
     // Should check for U123 and U456 (excluding U789 who is the author)
-    expect(isWatching).toHaveBeenCalledWith('T123', 'U123', 'C456');
-    expect(isWatching).toHaveBeenCalledWith('T123', 'U456', 'C456');
+    expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U123', 'C456');
+    expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C456');
   });
 
   it('should queue job only for watching + participating users', async () => {
@@ -220,7 +222,7 @@ describe('Message Reply Handler', () => {
     expect(queueAIResponse).toHaveBeenCalledTimes(1);
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspaceId: 'T123',
+        workspaceId: 'workspace_123',
         userId: 'U123',
         channelId: 'C456',
         triggeredBy: 'thread',
@@ -423,7 +425,7 @@ describe('Message Reply Handler', () => {
 
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspaceId: 'T123',
+        workspaceId: 'workspace_123',
         watchingUser: 'U123',
         replyingUser: 'U789',
         channelId: 'C456',

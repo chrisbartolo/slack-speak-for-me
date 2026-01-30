@@ -14,6 +14,10 @@ vi.mock('../../services/context.js', () => ({
   ]),
 }));
 
+vi.mock('../../services/watch.js', () => ({
+  getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
+}));
+
 vi.mock('../../utils/logger.js', () => ({
   logger: {
     info: vi.fn(),
@@ -25,6 +29,7 @@ vi.mock('../../utils/logger.js', () => ({
 
 import { queueAIResponse } from '../../jobs/queues.js';
 import { getContextForMessage } from '../../services/context.js';
+import { getWorkspaceId } from '../../services/watch.js';
 
 describe('Help Me Respond Shortcut', () => {
   let mockApp: Partial<App>;
@@ -148,7 +153,7 @@ describe('Help Me Respond Shortcut', () => {
     );
   });
 
-  it('should get workspaceId from context.teamId', async () => {
+  it('should get workspaceId from context.teamId and look up internal ID', async () => {
     const ack = vi.fn().mockResolvedValue(undefined);
     const shortcut = {
       user: { id: 'U123' },
@@ -162,9 +167,10 @@ describe('Help Me Respond Shortcut', () => {
 
     await shortcutHandler({ shortcut, ack, client, context });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T_WORKSPACE_ABC');
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspaceId: 'T_WORKSPACE_ABC',
+        workspaceId: 'workspace_123',
       })
     );
   });
@@ -183,6 +189,7 @@ describe('Help Me Respond Shortcut', () => {
 
     await shortcutHandler({ shortcut, ack, client, context });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T123');
     expect(mockPostEphemeral).toHaveBeenCalledWith(
       expect.objectContaining({
         channel: 'C_CHANNEL',
@@ -238,6 +245,7 @@ describe('Help Me Respond Shortcut', () => {
 
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
+        workspaceId: 'workspace_123',
         userId: 'U_USER',
         channelId: 'C_CHAN',
         messageTs: '1234.5678',
@@ -259,6 +267,7 @@ describe('Help Me Respond Shortcut', () => {
 
     await shortcutHandler({ shortcut, ack, client, context });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T123');
     expect(getContextForMessage).toHaveBeenCalledWith(
       client,
       'C123',
@@ -315,6 +324,31 @@ describe('Help Me Respond Shortcut', () => {
     expect(mockPostEphemeral).not.toHaveBeenCalled();
   });
 
+  it('should show error when workspace not found for team ID', async () => {
+    const { logger } = await import('../../utils/logger.js');
+    vi.mocked(getWorkspaceId).mockResolvedValueOnce(null);
+    const ack = vi.fn().mockResolvedValue(undefined);
+    const shortcut = {
+      user: { id: 'U123' },
+      channel: { id: 'C123' },
+      message: { text: 'Message', ts: '1234567890.123456' },
+    };
+    const client = {
+      chat: { postEphemeral: mockPostEphemeral },
+    };
+    const context = { teamId: 'T_UNKNOWN' };
+
+    await shortcutHandler({ shortcut, ack, client, context });
+
+    expect(logger.error).toHaveBeenCalledWith({ teamId: 'T_UNKNOWN' }, 'Workspace not found for team ID');
+    expect(queueAIResponse).not.toHaveBeenCalled();
+    expect(mockPostEphemeral).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.stringContaining('Workspace not found'),
+      })
+    );
+  });
+
   it('should include context messages in job data', async () => {
     const ack = vi.fn().mockResolvedValue(undefined);
     const shortcut = {
@@ -329,8 +363,10 @@ describe('Help Me Respond Shortcut', () => {
 
     await shortcutHandler({ shortcut, ack, client, context });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T123');
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
+        workspaceId: 'workspace_123',
         contextMessages: [
           { userId: 'U123', text: 'Hello', ts: '1234567890.123456' },
           { userId: 'U456', text: 'Hi there', ts: '1234567890.123457' },
@@ -354,6 +390,7 @@ describe('Help Me Respond Shortcut', () => {
 
     await shortcutHandler({ shortcut, ack, client, context });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T123');
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
         channel: 'C_JOB',
@@ -379,8 +416,10 @@ describe('Help Me Respond Shortcut', () => {
 
     await shortcutHandler({ shortcut, ack, client, context });
 
+    expect(getWorkspaceId).toHaveBeenCalledWith('T123');
     expect(queueAIResponse).toHaveBeenCalledWith(
       expect.objectContaining({
+        workspaceId: 'workspace_123',
         triggerMessageText: '',
       })
     );

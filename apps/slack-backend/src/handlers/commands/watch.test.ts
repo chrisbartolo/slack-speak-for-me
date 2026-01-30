@@ -6,6 +6,7 @@ vi.mock('../../services/watch.js', () => ({
   watchConversation: vi.fn().mockResolvedValue(undefined),
   unwatchConversation: vi.fn().mockResolvedValue(undefined),
   isWatching: vi.fn().mockResolvedValue(false),
+  getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
 }));
 
 vi.mock('../../utils/logger.js', () => ({
@@ -18,7 +19,7 @@ vi.mock('../../utils/logger.js', () => ({
 }));
 
 import { registerWatchCommands } from './watch.js';
-import { watchConversation, unwatchConversation, isWatching } from '../../services/watch.js';
+import { watchConversation, unwatchConversation, isWatching, getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 describe('Watch Commands', () => {
@@ -94,8 +95,9 @@ describe('Watch Commands', () => {
 
       await watchHandler({ command, ack, respond });
 
-      expect(isWatching).toHaveBeenCalledWith('T123', 'U456', 'C789');
-      expect(watchConversation).toHaveBeenCalledWith('T123', 'U456', 'C789');
+      expect(getWorkspaceId).toHaveBeenCalledWith('T123');
+      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
+      expect(watchConversation).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
           response_type: 'ephemeral',
@@ -113,7 +115,8 @@ describe('Watch Commands', () => {
 
       await watchHandler({ command, ack, respond });
 
-      expect(isWatching).toHaveBeenCalledWith('T123', 'U456', 'C789');
+      expect(getWorkspaceId).toHaveBeenCalledWith('T123');
+      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
       expect(watchConversation).not.toHaveBeenCalled();
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -134,8 +137,9 @@ describe('Watch Commands', () => {
 
       await watchHandler({ command, ack, respond });
 
-      expect(isWatching).toHaveBeenCalledWith('TWORKSPACE', 'UUSER', 'CCHANNEL');
-      expect(watchConversation).toHaveBeenCalledWith('TWORKSPACE', 'UUSER', 'CCHANNEL');
+      expect(getWorkspaceId).toHaveBeenCalledWith('TWORKSPACE');
+      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
+      expect(watchConversation).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
     });
 
     it('should respond with error message on failure', async () => {
@@ -169,7 +173,7 @@ describe('Watch Commands', () => {
 
       expect(logger.info).toHaveBeenCalledWith(
         expect.objectContaining({
-          workspaceId: 'T123',
+          workspaceId: 'workspace_123',
           userId: 'U456',
           channelId: 'C789',
         }),
@@ -225,8 +229,9 @@ describe('Watch Commands', () => {
 
       await unwatchHandler({ command, ack, respond });
 
-      expect(isWatching).toHaveBeenCalledWith('T123', 'U456', 'C789');
-      expect(unwatchConversation).toHaveBeenCalledWith('T123', 'U456', 'C789');
+      expect(getWorkspaceId).toHaveBeenCalledWith('T123');
+      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
+      expect(unwatchConversation).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
           response_type: 'ephemeral',
@@ -244,7 +249,8 @@ describe('Watch Commands', () => {
 
       await unwatchHandler({ command, ack, respond });
 
-      expect(isWatching).toHaveBeenCalledWith('T123', 'U456', 'C789');
+      expect(getWorkspaceId).toHaveBeenCalledWith('T123');
+      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
       expect(unwatchConversation).not.toHaveBeenCalled();
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -268,8 +274,9 @@ describe('Watch Commands', () => {
 
       await unwatchHandler({ command, ack, respond });
 
-      expect(isWatching).toHaveBeenCalledWith('TWORKSPACE', 'UUSER', 'CCHANNEL');
-      expect(unwatchConversation).toHaveBeenCalledWith('TWORKSPACE', 'UUSER', 'CCHANNEL');
+      expect(getWorkspaceId).toHaveBeenCalledWith('TWORKSPACE');
+      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
+      expect(unwatchConversation).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
     });
 
     it('should respond with error message on failure', async () => {
@@ -306,7 +313,7 @@ describe('Watch Commands', () => {
 
       expect(logger.info).toHaveBeenCalledWith(
         expect.objectContaining({
-          workspaceId: 'T123',
+          workspaceId: 'workspace_123',
           userId: 'U456',
           channelId: 'C789',
         }),

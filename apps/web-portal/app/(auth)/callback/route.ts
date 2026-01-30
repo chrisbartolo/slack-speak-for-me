@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const baseUrl = getBaseUrl(request);
 
   const storedState = request.cookies.get('oauth_state')?.value;
-  const returnUrl = request.cookies.get('oauth_return')?.value || '/';
+  const returnUrl = request.cookies.get('oauth_return')?.value || '/dashboard';
 
   // Handle OAuth errors
   if (error) {

@@ -26,7 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 import { UserSearch } from './user-search';
 import { personContextSchema, type PersonContextInput } from '@/lib/validations/person-context';
-import { savePersonContext } from '@/app/(dashboard)/people/actions';
+import { savePersonContext } from '@/app/dashboard/people/actions';
 
 interface PersonContextFormProps {
   defaultValues?: {

@@ -25,7 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { TagInput } from './tag-input';
 import { stylePreferencesSchema, StylePreferences } from '@/lib/validations/style';
-import { updateStylePreferences } from '@/app/(dashboard)/style/actions';
+import { updateStylePreferences } from '@/app/dashboard/style/actions';
 
 interface StylePreferencesFormProps {
   defaultValues?: Partial<StylePreferences>;

@@ -12,10 +12,38 @@ vi.mock('../../utils/logger.js', () => ({
   },
 }));
 
+// Mock getWorkspaceId
+vi.mock('../../services/watch.js', () => ({
+  getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
+}));
+
+import { logger } from '../../utils/logger.js';
+import { getWorkspaceId } from '../../services/watch.js';
+
 describe('Refine Suggestion Action', () => {
   let mockApp: Partial<App>;
   let actionHandler: Function;
   let mockViewsOpen: ReturnType<typeof vi.fn>;
+
+  const createActionPayload = (overrides: Record<string, any> = {}) => {
+    const suggestion = overrides.suggestion ?? 'This is the current suggestion text';
+    const suggestionId = overrides.suggestionId ?? 'sug_123';
+
+    return {
+      ack: vi.fn().mockResolvedValue(undefined),
+      client: {
+        views: { open: mockViewsOpen },
+      },
+      body: {
+        trigger_id: overrides.trigger_id ?? 'trigger_123',
+        team: overrides.team ?? { id: 'T123' },
+        user: overrides.user ?? { id: 'U456' },
+        channel: overrides.channel ?? { id: 'C789' },
+        actions: [{ value: JSON.stringify({ suggestionId, suggestion }) }],
+        ...overrides.bodyOverrides,
+      },
+    };
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,73 +65,44 @@ describe('Refine Suggestion Action', () => {
   });
 
   it('should call ack() to acknowledge action', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Current suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload();
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
-    expect(ack).toHaveBeenCalled();
+    expect(payload.ack).toHaveBeenCalled();
+  });
+
+  it('should look up workspace ID from team ID', async () => {
+    const payload = createActionPayload({ team: { id: 'T_MY_TEAM' } });
+
+    await actionHandler(payload);
+
+    expect(getWorkspaceId).toHaveBeenCalledWith('T_MY_TEAM');
   });
 
   it('should open views.open modal', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Current suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload();
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(mockViewsOpen).toHaveBeenCalled();
   });
 
   it('should include current suggestion in modal private_metadata', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
     const suggestionText = 'This is the current suggestion text';
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_456' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: suggestionText } },
-        ],
-      },
-    };
+    const payload = createActionPayload({
+      suggestionId: 'sug_456',
+      suggestion: suggestionText,
+    });
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     const viewsOpenCall = mockViewsOpen.mock.calls[0][0];
     const metadata = JSON.parse(viewsOpenCall.view.private_metadata);
 
-    expect(metadata).toEqual({
+    expect(metadata).toMatchObject({
+      workspaceId: 'workspace_123',
+      userId: 'U456',
       suggestionId: 'sug_456',
       currentSuggestion: suggestionText,
       history: [],
@@ -111,23 +110,9 @@ describe('Refine Suggestion Action', () => {
   });
 
   it('should set callback_id to refinement_modal', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload();
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(mockViewsOpen).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -139,23 +124,9 @@ describe('Refine Suggestion Action', () => {
   });
 
   it('should include refinement input block', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload();
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     const viewsOpenCall = mockViewsOpen.mock.calls[0][0];
     const inputBlock = viewsOpenCall.view.blocks.find(
@@ -168,23 +139,9 @@ describe('Refine Suggestion Action', () => {
   });
 
   it('should use trigger_id from body', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'specific_trigger_789',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload({ trigger_id: 'specific_trigger_789' });
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(mockViewsOpen).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -193,96 +150,92 @@ describe('Refine Suggestion Action', () => {
     );
   });
 
-  it('should log error when message blocks not found', async () => {
-    const { logger } = await import('../../utils/logger.js');
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
+  it('should log error when action value cannot be parsed', async () => {
+    const payload = {
+      ack: vi.fn().mockResolvedValue(undefined),
+      client: { views: { open: mockViewsOpen } },
+      body: {
+        trigger_id: 'trigger_123',
+        team: { id: 'T123' },
+        user: { id: 'U456' },
+        actions: [{ value: 'not valid json' }],
       },
     };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      // No message field
+
+    await actionHandler(payload);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({ actionValue: 'not valid json' }),
+      'Failed to parse refine action value'
+    );
+    expect(mockViewsOpen).not.toHaveBeenCalled();
+  });
+
+  it('should log error when suggestion is missing', async () => {
+    const payload = {
+      ack: vi.fn().mockResolvedValue(undefined),
+      client: { views: { open: mockViewsOpen } },
+      body: {
+        trigger_id: 'trigger_123',
+        team: { id: 'T123' },
+        user: { id: 'U456' },
+        actions: [{ value: JSON.stringify({ suggestionId: 'sug_123' }) }],
+      },
     };
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
-    expect(logger.error).toHaveBeenCalledWith('Message blocks not found for refine action');
+    expect(logger.error).toHaveBeenCalledWith('No suggestion in refine action value');
     expect(mockViewsOpen).not.toHaveBeenCalled();
   });
 
   it('should log error when trigger_id not found', async () => {
-    const { logger } = await import('../../utils/logger.js');
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      // No trigger_id
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
+    const payload = {
+      ack: vi.fn().mockResolvedValue(undefined),
+      client: { views: { open: mockViewsOpen } },
+      body: {
+        // No trigger_id
+        team: { id: 'T123' },
+        user: { id: 'U456' },
+        actions: [{ value: JSON.stringify({ suggestionId: 'sug_123', suggestion: 'Test' }) }],
       },
     };
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(logger.error).toHaveBeenCalledWith('trigger_id not found in action body');
     expect(mockViewsOpen).not.toHaveBeenCalled();
   });
 
-  it('should handle views.open failure gracefully', async () => {
-    const { logger } = await import('../../utils/logger.js');
-    const ack = vi.fn().mockResolvedValue(undefined);
-    mockViewsOpen.mockRejectedValue(new Error('API error'));
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
-      },
-    };
+  it('should log error when workspace not found', async () => {
+    vi.mocked(getWorkspaceId).mockResolvedValueOnce(null);
+    const payload = createActionPayload({ team: { id: 'T_UNKNOWN' } });
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(logger.error).toHaveBeenCalledWith(
-      expect.objectContaining({ error: expect.any(Error) }),
+      { teamId: 'T_UNKNOWN' },
+      'Workspace not found for refine action'
+    );
+    expect(mockViewsOpen).not.toHaveBeenCalled();
+  });
+
+  it('should handle views.open failure gracefully', async () => {
+    mockViewsOpen.mockRejectedValueOnce(new Error('API error'));
+    const payload = createActionPayload();
+
+    await actionHandler(payload);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({ error: 'API error' }),
       'Failed to open refinement modal'
     );
   });
 
   it('should log info when modal opened successfully', async () => {
-    const { logger } = await import('../../utils/logger.js');
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_abc' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload({ suggestionId: 'sug_abc' });
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(logger.info).toHaveBeenCalledWith(
       { suggestionId: 'sug_abc' },
@@ -291,23 +244,9 @@ describe('Refine Suggestion Action', () => {
   });
 
   it('should display modal with correct title and buttons', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'section', text: { text: 'Suggestion' } },
-        ],
-      },
-    };
+    const payload = createActionPayload();
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     expect(mockViewsOpen).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -321,29 +260,17 @@ describe('Refine Suggestion Action', () => {
     );
   });
 
-  it('should handle missing suggestion text with fallback', async () => {
-    const ack = vi.fn().mockResolvedValue(undefined);
-    const context = {
-      client: {
-        views: { open: mockViewsOpen },
-      },
-    };
-    const body = {
-      trigger_id: 'trigger_123',
-      actions: [{ value: 'sug_123' }],
-      message: {
-        blocks: [
-          { type: 'header', text: { text: 'Header' } },
-          // No section with text
-        ],
-      },
-    };
+  it('should truncate very long suggestions in metadata', async () => {
+    const longSuggestion = 'A'.repeat(3000);
+    const payload = createActionPayload({ suggestion: longSuggestion });
 
-    await actionHandler({ ack, body, context });
+    await actionHandler(payload);
 
     const viewsOpenCall = mockViewsOpen.mock.calls[0][0];
     const metadata = JSON.parse(viewsOpenCall.view.private_metadata);
 
-    expect(metadata.currentSuggestion).toBe('');
+    // Should be truncated to 2500 chars + '...'
+    expect(metadata.currentSuggestion.length).toBeLessThanOrEqual(2503);
+    expect(metadata.currentSuggestion.endsWith('...')).toBe(true);
   });
 });

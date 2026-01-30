@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { addWorkflowChannel, removeWorkflowChannel } from '@/app/(dashboard)/reports/actions';
+import { addWorkflowChannel, removeWorkflowChannel } from '@/app/dashboard/reports/actions';
 import { useTransition, useState } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';

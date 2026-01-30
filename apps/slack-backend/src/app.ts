@@ -50,6 +50,20 @@ export const app = new App({
   installerOptions: {
     directInstall: true,
     userScopes: ['chat:write'],
+    callbackOptions: {
+      success: (_installation, _options, req, res) => {
+        // Redirect to web portal success page after installation
+        const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
+        res.writeHead(302, { Location: `${webPortalUrl}/install/success` });
+        res.end();
+      },
+      failure: (_error, _options, req, res) => {
+        // Redirect to web portal with error
+        const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
+        res.writeHead(302, { Location: `${webPortalUrl}/?error=install_failed` });
+        res.end();
+      },
+    },
   },
   customRoutes: [...healthRoutes, ...testRoutes],
 });

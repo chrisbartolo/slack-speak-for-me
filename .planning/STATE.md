@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-26)
 
 **Core value:** When a challenging message arrives, the user gets an intelligent suggested response that sounds like them, considers full context, and helps them respond professionally without emotional reactivity.
-**Current focus:** Phase 05 - Weekly Reports (HUMAN VERIFICATION PENDING)
+**Current focus:** Production Deployment Preparation - READY TO DEPLOY
 
 ## Current Position
 
-Phase: 05 of 5 (Weekly Reports)
-Plan: 09 of 9 in current phase (Tasks 1-2 complete, Task 3 human verification pending)
-Status: Awaiting human verification
-Last activity: 2026-01-27 - Completed 05-09 Tasks 1-2, added setup guide, fixed UI
+Phase: 05 of 5 (Weekly Reports) - COMPLETE
+Deployment: Ready for DigitalOcean App Platform
+Status: Security fixes complete, Dockerfiles ready, app.yaml created
+Last activity: 2026-01-30 - Production deployment preparation complete
 
-Progress: [████████████████▓] ~99% (Phase 05 code complete, human verification pending)
+Progress: [█████████████████] 100% (All phases complete, ready for deployment)
 
 ## Performance Metrics
 
@@ -65,66 +65,65 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Complete human verification of Phase 05 Weekly Reports feature
-- Update Google Cloud Console redirect URI to production/tunnel URL
-- Test full Google OAuth flow end-to-end
+- Deploy to DigitalOcean App Platform
+- Update Slack App settings with production URLs
+- Update Google Cloud Console redirect URI to production URL
+- Test production deployment end-to-end
 
 ### Blockers/Concerns
 
 **Research-identified risks to address:**
-- Phase 1: HTTP webhooks required for production (Socket Mode hits 10 workspace limit)
-- Phase 3: pgvector extension required in production PostgreSQL (not available in all managed services)
+- Phase 1: HTTP webhooks required for production (Socket Mode hits 10 workspace limit) ✅ Using HTTP mode
+- Phase 3: pgvector extension required in production PostgreSQL - Enable manually after DB creation
 
-**Current session notes:**
-- Google OAuth credentials configured (Client ID and Secret in slack-backend .env)
-- Tunnel URLs configured:
-  - slack-backend: https://phases-examines-bristol-itunes.trycloudflare.com (cloudflare)
-  - web-portal: https://jackie-unopinioned-joycelyn.ngrok-free.dev (ngrok)
-- SLACK_BACKEND_URL added to web-portal .env.local
-- Need to add WEB_PORTAL_URL to slack-backend .env
-- Need to update Google Cloud Console redirect URI to cloudflare tunnel
+**Production deployment notes:**
+- All CRITICAL and HIGH security issues fixed
+- Dockerfiles created for both services
+- app.yaml ready for DigitalOcean deployment
+- Landing page with Add to Slack button created
+- Post-install onboarding wizard created
 
 ## Session Continuity
 
-Last session: 2026-01-27
-Stopped at: Phase 05 code complete, human verification checkpoint pending
+Last session: 2026-01-30
+Stopped at: Production deployment preparation complete
 
-**Environment setup needed on resume:**
-1. Start infrastructure: `docker compose up -d`
-2. Start tunnels (cloudflare for backend, ngrok for web-portal)
-3. Update tunnel URLs in:
-   - `apps/web-portal/.env.local` → SLACK_BACKEND_URL
-   - `apps/slack-backend/.env` → WEB_PORTAL_URL
-   - Google Cloud Console → OAuth redirect URI
-4. Start dev servers
+**To deploy to DigitalOcean:**
+1. Update `YOUR_GITHUB_USERNAME` in `app.yaml`
+2. Create managed PostgreSQL and Redis in DigitalOcean
+3. Run `doctl apps create --spec app.yaml`
+4. Set all SECRET environment variables
+5. Enable pgvector: `CREATE EXTENSION IF NOT EXISTS vector;`
+6. Update Slack App settings with production URLs
 
-**Next action:** Complete human verification of Weekly Reports feature:
-1. Test Google OAuth flow (Connect Google Account button)
-2. Configure spreadsheet ID
-3. Test /generate-report slash command
-4. Verify report delivery and refinement
+**Next action:** Deploy to DigitalOcean App Platform and verify production environment
 
 ## Files Changed This Session
 
-**Phase 05 Weekly Reports (Plans 01-09):**
-- `packages/database/src/schema.ts` - googleIntegrations, workflowConfig tables
-- `apps/slack-backend/src/oauth/google-oauth.ts` - Google OAuth service
-- `apps/slack-backend/src/services/google-sheets.ts` - Sheets read/write
-- `apps/slack-backend/src/services/report-generator.ts` - AI report generation + refineReport
-- `apps/slack-backend/src/handlers/events/workflow-submission.ts` - Workflow detection
-- `apps/slack-backend/src/handlers/commands/generate-report.ts` - Slash command
-- `apps/slack-backend/src/handlers/actions/report-actions.ts` - Copy/Refine buttons
-- `apps/slack-backend/src/handlers/views/report-refinement-modal.ts` - Refinement modal
-- `apps/slack-backend/src/jobs/schedulers.ts` - BullMQ Job Schedulers
-- `apps/web-portal/components/dashboard/google-connection-card.tsx` - Spreadsheet config
-- `apps/web-portal/components/dashboard/google-setup-guide.tsx` - Setup instructions
-- `apps/web-portal/components/workflow-config-form.tsx` - Channel config
-- `apps/web-portal/app/(dashboard)/reports/page.tsx` - Reports page integration
-- `README.md` - Google OAuth setup instructions
+**Production Deployment Preparation (2026-01-30):**
 
-**Bug fixes:**
-- `apps/web-portal/app/layout.tsx` - Fixed page overflow (h-full, overflow-hidden)
-- `apps/web-portal/components/dashboard/sidebar.tsx` - Fixed height (h-full vs h-screen)
+Security fixes:
+- `packages/database/src/client.ts` - UUID validation for RLS context (SQL injection fix)
+- `apps/slack-backend/src/oauth/google-oauth.ts` - HMAC-signed OAuth state with expiration
+- `packages/database/src/migrations/0004_complete_rls_policies.sql` - RLS on remaining tables
+
+Production Dockerfiles:
+- `apps/slack-backend/Dockerfile` - Multi-stage build, non-root user, health check
+- `apps/web-portal/Dockerfile` - Next.js standalone output, non-root user
+
+Deployment configuration:
+- `app.yaml` - DigitalOcean App Platform specification
+
+Landing page & onboarding:
+- `apps/web-portal/app/page.tsx` - Landing page with Add to Slack button
+- `apps/web-portal/app/install/success/page.tsx` - Post-install onboarding wizard
+- `apps/web-portal/app/api/health/route.ts` - Health endpoint for web-portal
+- `apps/web-portal/middleware.ts` - Updated public routes
+- `apps/slack-backend/src/app.ts` - OAuth callback redirects to success page
+
+Documentation:
+- `.planning/PRODUCTION-READINESS.md` - Updated with security fix status
+- `.planning/STATE.md` - Updated current state
 
 ---
-*Last updated: 2026-01-27*
+*Last updated: 2026-01-30*

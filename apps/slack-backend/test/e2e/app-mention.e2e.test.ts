@@ -103,6 +103,30 @@ vi.mock('../../src/utils/logger.js', () => ({
   },
 }));
 
+// Mock the personalization module to avoid database access
+vi.mock('../../src/services/personalization/index.js', () => ({
+  buildStyleContext: vi.fn().mockResolvedValue({
+    promptText: 'You are a helpful assistant. Respond professionally.',
+    learningPhase: 'initial',
+    usedHistory: false,
+  }),
+  trackRefinement: vi.fn().mockResolvedValue(undefined),
+  getStylePreferences: vi.fn().mockResolvedValue(null),
+  upsertStylePreferences: vi.fn().mockResolvedValue({}),
+  deleteStylePreferences: vi.fn().mockResolvedValue(true),
+  hasConsent: vi.fn().mockResolvedValue(true),
+  grantConsent: vi.fn().mockResolvedValue(undefined),
+  revokeConsent: vi.fn().mockResolvedValue(undefined),
+  getConsentStatus: vi.fn().mockResolvedValue({ hasConsent: true }),
+  requireConsent: vi.fn(),
+  ConsentType: { DATA_COLLECTION: 'data_collection', PERSONALIZATION: 'personalization' },
+  ConsentRequiredError: class ConsentRequiredError extends Error {},
+  storeMessageEmbedding: vi.fn().mockResolvedValue(undefined),
+  findSimilarMessages: vi.fn().mockResolvedValue([]),
+  analyzeWritingPatterns: vi.fn().mockResolvedValue(null),
+  getMessageHistoryCount: vi.fn().mockResolvedValue(0),
+}));
+
 // Import after mocks are set up
 import { registerAppMentionHandler } from '../../src/handlers/events/app-mention.js';
 import { queueAIResponse } from '../../src/jobs/queues.js';
@@ -210,13 +234,13 @@ describe('App Mention E2E', () => {
 
       await eventHandler({ event: mockEvent, client: mockClient });
 
-      // Verify auth.test was called to get workspace ID
+      // Verify auth.test was called to get team ID
       expect(mockClient.auth?.test).toHaveBeenCalled();
 
-      // Verify AI response job was queued with correct data
+      // Verify AI response job was queued with correct data (uses internal workspace UUID)
       expect(queueAIResponse).toHaveBeenCalledWith(
         expect.objectContaining({
-          workspaceId: 'T123',
+          workspaceId, // Internal UUID, not Slack team ID
           userId: 'U456',
           channelId: 'C789',
           messageTs: '1234567890.123456',
@@ -416,7 +440,7 @@ describe('App Mention E2E', () => {
 
       // Verify action IDs
       const actionIds = actionsBlock.elements.map((e) => e.action_id);
-      expect(actionIds).toContain('copy_suggestion');
+      expect(actionIds).toContain('send_suggestion');
       expect(actionIds).toContain('refine_suggestion');
       expect(actionIds).toContain('dismiss_suggestion');
     });

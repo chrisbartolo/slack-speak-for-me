@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { unwatchConversation } from '@/app/(dashboard)/conversations/actions';
+import { unwatchConversation } from '@/app/dashboard/conversations/actions';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 

@@ -1,9 +1,14 @@
 import { google } from 'googleapis';
 import { db, googleIntegrations, encrypt, decrypt } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
-import { getEncryptionKey, getGoogleClientId, getGoogleClientSecret, getGoogleRedirectUri } from '../env.js';
+import { createHmac, randomBytes } from 'crypto';
+import { getEncryptionKey, getGoogleClientId, getGoogleClientSecret, getGoogleRedirectUri, env } from '../env.js';
+import { logger } from '../utils/logger.js';
 
 const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
+
+// State parameter expiration (10 minutes)
+const STATE_EXPIRATION_MS = 10 * 60 * 1000;
 
 /**
  * Creates an OAuth2 client with the configured credentials
@@ -17,7 +22,63 @@ function createOAuth2Client() {
 }
 
 /**
- * Generate Google OAuth consent URL with state parameter
+ * Generate a secure, HMAC-signed state parameter
+ * Includes timestamp for expiration and nonce to prevent replay attacks
+ */
+function generateSecureState(workspaceId: string, userId: string): string {
+  const payload = {
+    workspaceId,
+    userId,
+    ts: Date.now(),
+    nonce: randomBytes(8).toString('hex'),
+  };
+
+  const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = createHmac('sha256', env.SLACK_STATE_SECRET)
+    .update(payloadStr)
+    .digest('base64url');
+
+  return `${payloadStr}.${signature}`;
+}
+
+/**
+ * Validate and decode the HMAC-signed state parameter
+ * @throws Error if signature is invalid or state has expired
+ */
+function validateSecureState(state: string): { workspaceId: string; userId: string } {
+  const parts = state.split('.');
+  if (parts.length !== 2) {
+    throw new Error('Invalid state format');
+  }
+
+  const [payloadStr, providedSignature] = parts;
+
+  // Verify HMAC signature
+  const expectedSignature = createHmac('sha256', env.SLACK_STATE_SECRET)
+    .update(payloadStr)
+    .digest('base64url');
+
+  if (providedSignature !== expectedSignature) {
+    throw new Error('Invalid state signature');
+  }
+
+  // Decode and parse payload
+  const payload = JSON.parse(Buffer.from(payloadStr, 'base64url').toString('utf-8'));
+
+  // Check expiration
+  if (Date.now() - payload.ts > STATE_EXPIRATION_MS) {
+    throw new Error('State parameter has expired');
+  }
+
+  if (!payload.workspaceId || !payload.userId) {
+    throw new Error('Invalid state parameter: missing workspaceId or userId');
+  }
+
+  return { workspaceId: payload.workspaceId, userId: payload.userId };
+}
+
+/**
+ * Generate Google OAuth consent URL with secure state parameter
  *
  * @param workspaceId - Workspace ID for state tracking
  * @param userId - Slack user ID for state tracking
@@ -26,8 +87,8 @@ function createOAuth2Client() {
 export function getGoogleAuthUrl(workspaceId: string, userId: string): string {
   const oauth2Client = createOAuth2Client();
 
-  // Encode state parameter with workspace and user info
-  const state = Buffer.from(JSON.stringify({ workspaceId, userId })).toString('base64');
+  // Generate HMAC-signed state parameter with expiration
+  const state = generateSecureState(workspaceId, userId);
 
   return oauth2Client.generateAuthUrl({
     access_type: 'offline', // Request refresh token
@@ -43,21 +104,11 @@ export function getGoogleAuthUrl(workspaceId: string, userId: string): string {
  * @param code - Authorization code from OAuth callback
  * @param state - State parameter from OAuth callback
  * @returns Object containing workspaceId and userId from state
- * @throws Error if code exchange fails or state is invalid
+ * @throws Error if code exchange fails, state is invalid, or state has expired
  */
 export async function handleGoogleCallback(code: string, state: string): Promise<{ workspaceId: string; userId: string }> {
-  // Decode and validate state parameter
-  let stateData: { workspaceId: string; userId: string };
-  try {
-    const decoded = Buffer.from(state, 'base64').toString('utf-8');
-    stateData = JSON.parse(decoded);
-
-    if (!stateData.workspaceId || !stateData.userId) {
-      throw new Error('Invalid state parameter: missing workspaceId or userId');
-    }
-  } catch (error) {
-    throw new Error('Invalid state parameter');
-  }
+  // Validate HMAC signature and check expiration
+  const stateData = validateSecureState(state);
 
   const oauth2Client = createOAuth2Client();
 
@@ -209,7 +260,7 @@ export async function revokeGoogleAccess(workspaceId: string, userId: string): P
     await oauth2Client.revokeCredentials();
   } catch (error) {
     // Log but don't fail - we still want to remove from our DB
-    console.warn('Failed to revoke Google token:', error);
+    logger.warn({ error }, 'Failed to revoke Google token');
   }
 
   // Remove from database

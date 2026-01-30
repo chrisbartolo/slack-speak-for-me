@@ -101,6 +101,30 @@ vi.mock('../../src/utils/logger.js', () => ({
   },
 }));
 
+// Mock the personalization module to avoid database access
+vi.mock('../../src/services/personalization/index.js', () => ({
+  buildStyleContext: vi.fn().mockResolvedValue({
+    promptText: 'You are a helpful assistant. Respond professionally.',
+    learningPhase: 'initial',
+    usedHistory: false,
+  }),
+  trackRefinement: vi.fn().mockResolvedValue(undefined),
+  getStylePreferences: vi.fn().mockResolvedValue(null),
+  upsertStylePreferences: vi.fn().mockResolvedValue({}),
+  deleteStylePreferences: vi.fn().mockResolvedValue(true),
+  hasConsent: vi.fn().mockResolvedValue(true),
+  grantConsent: vi.fn().mockResolvedValue(undefined),
+  revokeConsent: vi.fn().mockResolvedValue(undefined),
+  getConsentStatus: vi.fn().mockResolvedValue({ hasConsent: true }),
+  requireConsent: vi.fn(),
+  ConsentType: { DATA_COLLECTION: 'data_collection', PERSONALIZATION: 'personalization' },
+  ConsentRequiredError: class ConsentRequiredError extends Error {},
+  storeMessageEmbedding: vi.fn().mockResolvedValue(undefined),
+  findSimilarMessages: vi.fn().mockResolvedValue([]),
+  analyzeWritingPatterns: vi.fn().mockResolvedValue(null),
+  getMessageHistoryCount: vi.fn().mockResolvedValue(0),
+}));
+
 // Import after mocks are set up
 import { registerWatchCommands } from '../../src/handlers/commands/watch.js';
 import { registerMessageReplyHandler } from '../../src/handlers/events/message-reply.js';
@@ -191,8 +215,9 @@ describe('Suggestion Flow E2E', () => {
       const mockAck = vi.fn().mockResolvedValue(undefined);
       const mockRespond = vi.fn().mockResolvedValue(undefined);
 
+      // Use Slack team ID, not internal UUID - handler converts via getWorkspaceId
       const command: SlashCommand = {
-        team_id: workspaceId,
+        team_id: 'T123',
         user_id: 'U456',
         channel_id: 'C789',
         command: '/watch',
@@ -224,8 +249,9 @@ describe('Suggestion Flow E2E', () => {
       const mockAck = vi.fn().mockResolvedValue(undefined);
       const mockRespond = vi.fn().mockResolvedValue(undefined);
 
+      // Use Slack team ID, not internal UUID
       const command: SlashCommand = {
-        team_id: workspaceId,
+        team_id: 'T123',
         user_id: 'U456',
         channel_id: 'C789',
         command: '/watch',
@@ -257,8 +283,9 @@ describe('Suggestion Flow E2E', () => {
       const mockAck = vi.fn().mockResolvedValue(undefined);
       const mockRespond = vi.fn().mockResolvedValue(undefined);
 
+      // Use Slack team ID, not internal UUID
       const command: SlashCommand = {
-        team_id: workspaceId,
+        team_id: 'T123',
         user_id: 'U456',
         channel_id: 'C789',
         command: '/unwatch',
@@ -287,8 +314,9 @@ describe('Suggestion Flow E2E', () => {
       const mockAck = vi.fn().mockResolvedValue(undefined);
       const mockRespond = vi.fn().mockResolvedValue(undefined);
 
+      // Use Slack team ID, not internal UUID
       const command: SlashCommand = {
-        team_id: workspaceId,
+        team_id: 'T123',
         user_id: 'U456',
         channel_id: 'C789',
         command: '/unwatch',
@@ -326,9 +354,10 @@ describe('Suggestion Flow E2E', () => {
       await watchConversation(workspaceId, 'U123', 'C789');
       await recordThreadParticipation(workspaceId, 'U123', 'C789', '1234567890.000100');
 
+      // Use Slack team ID in auth.test - handler converts via getWorkspaceId
       const mockClient: Partial<WebClient> = {
         auth: {
-          test: vi.fn().mockResolvedValue({ ok: true, team_id: workspaceId }),
+          test: vi.fn().mockResolvedValue({ ok: true, team_id: 'T123' }),
         },
       } as unknown as Partial<WebClient>;
 
@@ -358,9 +387,10 @@ describe('Suggestion Flow E2E', () => {
       // U123 participates but doesn't watch
       await recordThreadParticipation(workspaceId, 'U123', 'C789', '1234567890.000100');
 
+      // Use Slack team ID in auth.test
       const mockClient: Partial<WebClient> = {
         auth: {
-          test: vi.fn().mockResolvedValue({ ok: true, team_id: workspaceId }),
+          test: vi.fn().mockResolvedValue({ ok: true, team_id: 'T123' }),
         },
       } as unknown as Partial<WebClient>;
 
@@ -381,9 +411,10 @@ describe('Suggestion Flow E2E', () => {
     it('should not trigger for bot messages', async () => {
       await watchConversation(workspaceId, 'U123', 'C789');
 
+      // Use Slack team ID in auth.test
       const mockClient: Partial<WebClient> = {
         auth: {
-          test: vi.fn().mockResolvedValue({ ok: true, team_id: workspaceId }),
+          test: vi.fn().mockResolvedValue({ ok: true, team_id: 'T123' }),
         },
       } as unknown as Partial<WebClient>;
 
@@ -402,9 +433,10 @@ describe('Suggestion Flow E2E', () => {
     });
 
     it('should record thread participation when user posts in thread', async () => {
+      // Use Slack team ID in auth.test
       const mockClient: Partial<WebClient> = {
         auth: {
-          test: vi.fn().mockResolvedValue({ ok: true, team_id: workspaceId }),
+          test: vi.fn().mockResolvedValue({ ok: true, team_id: 'T123' }),
         },
       } as unknown as Partial<WebClient>;
 
@@ -467,20 +499,21 @@ describe('Suggestion Flow E2E', () => {
         trigger_id: 'trigger_123',
       } as unknown as MessageShortcut;
 
+      // Use Slack team ID, handler converts via getWorkspaceId
       await shortcutHandler({
         shortcut,
         ack: mockAck,
         client: mockClient,
-        context: { teamId: workspaceId },
+        context: { teamId: 'T123' },
       });
 
       // Verify ack was called
       expect(mockAck).toHaveBeenCalled();
 
-      // Verify AI response was queued
+      // Verify AI response was queued with internal workspace UUID
       expect(mockQueueAIResponse).toHaveBeenCalledWith(
         expect.objectContaining({
-          workspaceId,
+          workspaceId, // Internal UUID, not Slack team ID
           userId: 'U456',
           channelId: 'C789',
           triggeredBy: 'message_action',
@@ -518,11 +551,12 @@ describe('Suggestion Flow E2E', () => {
         trigger_id: 'trigger_123',
       } as unknown as MessageShortcut;
 
+      // Use Slack team ID, handler converts via getWorkspaceId
       await shortcutHandler({
         shortcut,
         ack: mockAck,
         client: mockClient,
-        context: { teamId: workspaceId },
+        context: { teamId: 'T123' },
       });
 
       // Should still queue AI response
@@ -534,14 +568,14 @@ describe('Suggestion Flow E2E', () => {
     let refineActionHandler: (args: {
       ack: () => Promise<void>;
       body: BlockAction;
-      context: { client: Partial<WebClient> };
+      client: Partial<WebClient>;
     }) => Promise<void>;
 
     let refinementModalHandler: (args: {
       ack: (response?: { response_action: string; view?: unknown; errors?: Record<string, string> }) => Promise<void>;
       body: ViewSubmitAction;
       view: { private_metadata: string; state: { values: Record<string, Record<string, { value: string }>> } };
-      context: { client: Partial<WebClient> };
+      client: Partial<WebClient>;
     }) => Promise<void>;
 
     beforeEach(() => {
@@ -570,18 +604,21 @@ describe('Suggestion Flow E2E', () => {
         },
       } as unknown as Partial<WebClient>;
 
+      // New format: JSON-encoded value with suggestionId and suggestion
+      const actionValue = JSON.stringify({
+        suggestionId: 'sug_123',
+        suggestion: 'Current suggestion text',
+      });
+
       const body: BlockAction = {
         trigger_id: 'trigger_123',
-        actions: [{ value: 'sug_123' }],
-        message: {
-          blocks: [
-            { type: 'header', text: { text: 'Suggestion' } },
-            { type: 'section', text: { type: 'mrkdwn', text: 'Current suggestion text' } },
-          ],
-        },
+        team: { id: 'T123' }, // Slack team ID for workspace lookup
+        user: { id: 'U456' },
+        channel: { id: 'C789' },
+        actions: [{ value: actionValue }],
       } as unknown as BlockAction;
 
-      await refineActionHandler({ ack: mockAck, body, context: { client: mockClient } });
+      await refineActionHandler({ ack: mockAck, body, client: mockClient });
 
       // Verify ack was called
       expect(mockAck).toHaveBeenCalled();
@@ -610,6 +647,8 @@ describe('Suggestion Flow E2E', () => {
       } as unknown as Partial<WebClient>;
 
       const metadata = {
+        workspaceId,
+        userId: 'U456',
         suggestionId: 'sug_123',
         currentSuggestion: 'Original suggestion',
         history: [],
@@ -636,7 +675,7 @@ describe('Suggestion Flow E2E', () => {
         ack: mockAck,
         body,
         view,
-        context: { client: mockClient },
+        client: mockClient,
       });
 
       // Verify ack was called with response_action: update
@@ -673,6 +712,8 @@ describe('Suggestion Flow E2E', () => {
       const mockClient: Partial<WebClient> = {} as Partial<WebClient>;
 
       const metadata = {
+        workspaceId,
+        userId: 'U456',
         suggestionId: 'sug_123',
         currentSuggestion: 'Original',
         history: [],
@@ -695,7 +736,7 @@ describe('Suggestion Flow E2E', () => {
         ack: mockAck,
         body: { view: { id: 'V123' } } as unknown as ViewSubmitAction,
         view,
-        context: { client: mockClient },
+        client: mockClient,
       });
 
       // Verify ack was called with errors

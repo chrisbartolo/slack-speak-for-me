@@ -29,7 +29,10 @@ export default function LoginPage({
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Speak For Me</CardTitle>
+          <Link href="/" className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-2xl">💬</span>
+            <span className="font-bold text-xl">Speak for Me</span>
+          </Link>
           <CardDescription>
             Sign in to manage your AI response settings
           </CardDescription>

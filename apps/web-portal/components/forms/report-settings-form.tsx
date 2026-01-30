@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { reportSettingsSchema, ReportSettings } from '@/lib/validations/report-settings';
-import { saveReportSettings, ActionResult } from '@/app/(dashboard)/reports/actions';
+import { saveReportSettings, ActionResult } from '@/app/dashboard/reports/actions';
 
 const daysOfWeek = [
   { value: '0', label: 'Sunday' },

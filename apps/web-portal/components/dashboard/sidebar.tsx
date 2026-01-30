@@ -14,12 +14,12 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
-        <NavItem href="/" icon={Home} label="Dashboard" />
-        <NavItem href="/style" icon={Sliders} label="Style Settings" />
-        <NavItem href="/conversations" icon={MessageSquare} label="Conversations" />
-        <NavItem href="/people" icon={Users} label="People" />
-        <NavItem href="/feedback" icon={Sparkles} label="AI Learning" />
-        <NavItem href="/reports" icon={FileText} label="Reports" />
+        <NavItem href="/dashboard" icon={Home} label="Dashboard" />
+        <NavItem href="/dashboard/style" icon={Sliders} label="Style Settings" />
+        <NavItem href="/dashboard/conversations" icon={MessageSquare} label="Conversations" />
+        <NavItem href="/dashboard/people" icon={Users} label="People" />
+        <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
+        <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
       </nav>
 
       {/* User Menu */}

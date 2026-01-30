@@ -66,13 +66,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(refineSuggestion).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -100,13 +98,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(refineSuggestion).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -134,13 +130,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(ack).toHaveBeenCalledWith({
       response_action: 'errors',
@@ -170,13 +164,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(ack).toHaveBeenCalledWith({
       response_action: 'errors',
@@ -206,13 +198,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     // First ack call should be the loading state
     expect(ack).toHaveBeenCalledWith(
@@ -235,6 +225,8 @@ describe('Refinement Modal Handler', () => {
   it('should call refineSuggestion with correct params', async () => {
     const metadata = {
       suggestionId: 'sug_123',
+      workspaceId: 'W123',
+      userId: 'U123',
       currentSuggestion: 'Original suggestion text',
       history: [{ suggestion: 'Previous', refinementRequest: 'First request' }],
     };
@@ -251,19 +243,19 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
-    expect(refineSuggestion).toHaveBeenCalledWith({
-      originalSuggestion: 'Original suggestion text',
-      refinementRequest: 'Make it shorter',
-      history: [{ suggestion: 'Previous', refinementRequest: 'First request' }],
-    });
+    expect(refineSuggestion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        originalSuggestion: 'Original suggestion text',
+        refinementRequest: 'Make it shorter',
+        history: [{ suggestion: 'Previous', refinementRequest: 'First request' }],
+      })
+    );
   });
 
   it('should update modal with refined suggestion', async () => {
@@ -285,13 +277,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(mockViewsUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -329,13 +319,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     const updateCall = mockViewsUpdate.mock.calls[0][0];
     const updatedMetadata = JSON.parse(updateCall.view.private_metadata);
@@ -370,13 +358,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     const updateCall = mockViewsUpdate.mock.calls[0][0];
     const updatedMetadata = JSON.parse(updateCall.view.private_metadata);
@@ -415,13 +401,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     const updateCall = mockViewsUpdate.mock.calls[0][0];
     const updatedMetadata = JSON.parse(updateCall.view.private_metadata);
@@ -455,13 +439,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(logger.error).toHaveBeenCalledWith(
       expect.objectContaining({ error: expect.any(Error) }),
@@ -484,7 +466,7 @@ describe('Refinement Modal Handler', () => {
     );
   });
 
-  it('should include Copy Final button in refined view', async () => {
+  it('should include Send as Me button in refined view', async () => {
     const metadata = {
       suggestionId: 'sug_123',
       currentSuggestion: 'Original',
@@ -503,13 +485,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     const updateCall = mockViewsUpdate.mock.calls[0][0];
     const actionsBlock = updateCall.view.blocks.find(
@@ -517,11 +497,11 @@ describe('Refinement Modal Handler', () => {
     );
 
     expect(actionsBlock).toBeDefined();
-    const copyButton = actionsBlock.elements.find(
-      (el: any) => el.action_id === 'copy_final_suggestion'
+    const sendButton = actionsBlock.elements.find(
+      (el: any) => el.action_id === 'send_suggestion'
     );
-    expect(copyButton).toBeDefined();
-    expect(copyButton.style).toBe('primary');
+    expect(sendButton).toBeDefined();
+    expect(sendButton.style).toBe('primary');
   });
 
   it('should log refinement round number', async () => {
@@ -547,13 +527,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -577,13 +555,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     // Should still call refineSuggestion with parsed values (empty defaults)
     expect(refineSuggestion).toHaveBeenCalledWith(
@@ -614,13 +590,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     expect(mockViewsUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -650,13 +624,11 @@ describe('Refinement Modal Handler', () => {
         },
       },
     };
-    const context = {
-      client: {
-        views: { update: mockViewsUpdate },
-      },
+    const client = {
+      views: { update: mockViewsUpdate },
     };
 
-    await viewHandler({ ack, body, view, context });
+    await viewHandler({ ack, body, view, client });
 
     const updateCall = mockViewsUpdate.mock.calls[0][0];
     const contextBlock = updateCall.view.blocks.find(

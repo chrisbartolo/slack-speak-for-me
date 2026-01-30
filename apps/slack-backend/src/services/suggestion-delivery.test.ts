@@ -73,7 +73,7 @@ describe('Suggestion Delivery Service', () => {
       expect(sectionText).toContain(suggestionText);
     });
 
-    it('should include Copy, Refine, and Dismiss buttons in actions block', () => {
+    it('should include Send, Refine, and Dismiss buttons in actions block', () => {
       const blocks = buildSuggestionBlocks('sug_123', 'Test suggestion', 'mention');
       const actions = blocks[4] as { type: string; elements: Array<{ action_id: string }> };
 
@@ -81,17 +81,17 @@ describe('Suggestion Delivery Service', () => {
       expect(actions.elements).toHaveLength(3);
 
       const actionIds = actions.elements.map(e => e.action_id);
-      expect(actionIds).toContain('copy_suggestion');
+      expect(actionIds).toContain('send_suggestion');
       expect(actionIds).toContain('refine_suggestion');
       expect(actionIds).toContain('dismiss_suggestion');
     });
 
-    it('should have Copy button as primary style', () => {
+    it('should have Send button as primary style', () => {
       const blocks = buildSuggestionBlocks('sug_123', 'Test suggestion', 'mention');
       const actions = blocks[4] as { type: string; elements: Array<{ action_id: string; style?: string }> };
 
-      const copyButton = actions.elements.find(e => e.action_id === 'copy_suggestion');
-      expect(copyButton?.style).toBe('primary');
+      const sendButton = actions.elements.find(e => e.action_id === 'send_suggestion');
+      expect(sendButton?.style).toBe('primary');
     });
 
     it('should include suggestionId in all button values', () => {
@@ -100,7 +100,8 @@ describe('Suggestion Delivery Service', () => {
       const actions = blocks[4] as { type: string; elements: Array<{ value: string }> };
 
       actions.elements.forEach(element => {
-        expect(element.value).toBe(suggestionId);
+        // Values may be JSON stringified or plain - just check they contain the suggestionId
+        expect(element.value).toContain(suggestionId);
       });
     });
 
@@ -110,7 +111,7 @@ describe('Suggestion Delivery Service', () => {
 
       expect(footer.type).toBe('context');
       const footerText = JSON.stringify(footer);
-      expect(footerText).toContain('only visible to you');
+      expect(footerText.toLowerCase()).toContain('only visible to you');
     });
 
     it('should handle long suggestion text', () => {

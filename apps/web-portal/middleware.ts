@@ -2,14 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from '@/lib/auth/session';
 
 const protectedRoutes = [
-  '/',
-  '/style',
-  '/conversations',
-  '/people',
-  '/reports',
-  '/feedback',
+  '/dashboard',
 ];
-const publicRoutes = ['/login', '/callback'];
+const publicRoutes = ['/', '/login', '/callback', '/install'];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -33,9 +28,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from login page
+  // Redirect authenticated users away from login page to dashboard
   if (isPublicRoute && session?.userId && path === '/login') {
-    return NextResponse.redirect(new URL('/', request.nextUrl));
+    return NextResponse.redirect(new URL('/dashboard', request.nextUrl));
   }
 
   return NextResponse.next();
