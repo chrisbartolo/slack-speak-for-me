@@ -2,43 +2,25 @@
 # Multi-stage build for optimal image size
 
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Builder
 # ============================================
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies for native modules
 RUN apk add --no-cache libc6-compat
 
-# Copy package files for all workspaces
-COPY package*.json ./
-COPY apps/slack-backend/package*.json ./apps/slack-backend/
-COPY packages/database/package*.json ./packages/database/
-COPY packages/validation/package*.json ./packages/validation/
+# Copy entire source (needed for workspace resolution)
+COPY . .
 
 # Install all dependencies
-RUN npm ci --workspace=slack-backend --include-workspace-root
-
-# ============================================
-# Stage 2: Builder
-# ============================================
-FROM node:20-alpine AS builder
-WORKDIR /app
-
-# Copy dependencies from previous stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/slack-backend/node_modules ./apps/slack-backend/node_modules
-COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
-COPY --from=deps /app/packages/validation/node_modules ./packages/validation/node_modules
-
-# Copy source code
-COPY . .
+RUN npm ci
 
 # Build all packages
 RUN npm run build --workspaces --if-present
 
 # ============================================
-# Stage 3: Runner
+# Stage 2: Runner
 # ============================================
 FROM node:20-alpine AS runner
 WORKDIR /app

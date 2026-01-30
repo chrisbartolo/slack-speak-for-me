@@ -2,34 +2,19 @@
 # Multi-stage build for optimal image size
 
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Builder
 # ============================================
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies for native modules
 RUN apk add --no-cache libc6-compat
 
-# Copy package files for all workspaces
-COPY package*.json ./
-COPY apps/web-portal/package*.json ./apps/web-portal/
-COPY packages/database/package*.json ./packages/database/
-COPY packages/validation/package*.json ./packages/validation/
+# Copy entire source (needed for workspace resolution)
+COPY . .
 
 # Install all dependencies
 RUN npm ci
-
-# ============================================
-# Stage 2: Builder
-# ============================================
-FROM node:20-alpine AS builder
-WORKDIR /app
-
-# Copy dependencies from previous stage
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy source code
-COPY . .
 
 # Build database package first
 RUN npm run build --workspace=@slack-speak/database
@@ -39,7 +24,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build --workspace=web-portal
 
 # ============================================
-# Stage 3: Runner
+# Stage 2: Runner
 # ============================================
 FROM node:20-alpine AS runner
 WORKDIR /app
