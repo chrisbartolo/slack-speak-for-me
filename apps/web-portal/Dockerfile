@@ -16,8 +16,9 @@ COPY . .
 # Install all dependencies
 RUN npm ci
 
-# Build database package first
+# Build packages in correct order (database first, then others depend on it)
 RUN npm run build --workspace=@slack-speak/database
+RUN npm run build --workspace=@slack-speak/validation
 
 # Build the Next.js app (uses standalone output)
 ENV NEXT_TELEMETRY_DISABLED=1
