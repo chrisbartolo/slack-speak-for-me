@@ -178,7 +178,7 @@ jobs:
       - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
-    run_command: npm run db:push --workspace=@slack-speak/database
+    run_command: cd packages/database && npx drizzle-kit push
 
 # ============================================
 # Databases
