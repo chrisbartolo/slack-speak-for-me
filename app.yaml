@@ -52,16 +52,10 @@ services:
         scope: RUN_TIME
         type: SECRET
 
-      # Redis
-      - key: REDIS_HOST
+      # Redis - use full connection URL (rediss://user:pass@host:port)
+      - key: REDIS_URL
         scope: RUN_TIME
         type: SECRET
-      - key: REDIS_PORT
-        scope: RUN_TIME
-        value: "25061"
-      - key: REDIS_TLS
-        scope: RUN_TIME
-        value: "true"
 
       # Slack OAuth
       - key: SLACK_CLIENT_ID
