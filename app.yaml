@@ -59,6 +59,9 @@ services:
       - key: REDIS_PORT
         scope: RUN_TIME
         value: "25061"
+      - key: REDIS_TLS
+        scope: RUN_TIME
+        value: "true"
 
       # Slack OAuth
       - key: SLACK_CLIENT_ID

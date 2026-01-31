@@ -11,6 +11,7 @@ const EnvSchema = z.object({
   // Redis
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_TLS: z.coerce.boolean().default(false),
 
   // Slack OAuth
   SLACK_CLIENT_ID: z.string().min(1, 'SLACK_CLIENT_ID is required'),

@@ -8,6 +8,7 @@ export const redis = new Redis({
   host: env.REDIS_HOST,
   port: env.REDIS_PORT,
   maxRetriesPerRequest: null, // Required for BullMQ
+  tls: env.REDIS_TLS ? {} : undefined,
 });
 
 redis.on('error', (err: Error) => {
