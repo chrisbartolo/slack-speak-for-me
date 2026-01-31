@@ -1,11 +1,11 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 
 export default function LoginPage({
@@ -30,7 +30,13 @@ export default function LoginPage({
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link href="/" className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl">💬</span>
+            <Image
+              src="/images/emblem.png"
+              alt="Speak for Me"
+              width={32}
+              height={32}
+              className="rounded"
+            />
             <span className="font-bold text-xl">Speak for Me</span>
           </Link>
           <CardDescription>
