@@ -5,16 +5,31 @@
 See: .planning/PROJECT.md (updated 2026-01-26)
 
 **Core value:** When a challenging message arrives, the user gets an intelligent suggested response that sounds like them, considers full context, and helps them respond professionally without emotional reactivity.
-**Current focus:** Production Deployment Preparation - READY TO DEPLOY
+**Current focus:** Production Deployment - LIVE
 
 ## Current Position
 
 Phase: 05 of 5 (Weekly Reports) - COMPLETE
-Deployment: Ready for DigitalOcean App Platform
-Status: Security fixes complete, Dockerfiles ready, app.yaml created
-Last activity: 2026-01-30 - Production deployment preparation complete
+Deployment: **LIVE** on DigitalOcean App Platform
+Status: App deployed and operational
+Last activity: 2026-01-31 - Production deployment complete
 
-Progress: [█████████████████] 100% (All phases complete, ready for deployment)
+Progress: [█████████████████] 100% (All phases complete, deployed to production)
+
+## Production Deployment
+
+**URL:** https://slack-speak-for-me-z3w85.ondigitalocean.app
+**App ID:** 5c38593d-ecac-43f7-9c82-bbbf39dc13bb
+**Region:** NYC
+
+**Services:**
+- slack-backend: Handles /slack, /oauth, /health routes
+- web-portal: Handles /, /api, /login, /dashboard, /callback, /install routes
+- db-migrate: Pre-deploy job runs `drizzle-kit push`
+
+**Infrastructure:**
+- PostgreSQL: DigitalOcean Managed Database (doadmin user)
+- Redis/Valkey: DigitalOcean Managed Database (TLS enabled)
 
 ## Performance Metrics
 
@@ -65,10 +80,13 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Deploy to DigitalOcean App Platform
-- Update Slack App settings with production URLs
+- ✅ Deploy to DigitalOcean App Platform - DONE
+- Configure Slack App settings with production redirect URLs:
+  - OAuth Redirect: `https://slack-speak-for-me-z3w85.ondigitalocean.app/slack/oauth_redirect`
+  - Web Portal Login: `https://slack-speak-for-me-z3w85.ondigitalocean.app/callback`
 - Update Google Cloud Console redirect URI to production URL
-- Test production deployment end-to-end
+- Generate logo and marketing imagery
+- Test production deployment end-to-end with actual Slack workspace
 
 ### Blockers/Concerns
 
@@ -77,28 +95,49 @@ Recent decisions affecting current work:
 - Phase 3: pgvector extension required in production PostgreSQL - Enable manually after DB creation
 
 **Production deployment notes:**
-- All CRITICAL and HIGH security issues fixed
-- Dockerfiles created for both services
-- app.yaml ready for DigitalOcean deployment
-- Landing page with Add to Slack button created
-- Post-install onboarding wizard created
+- All CRITICAL and HIGH security issues fixed ✅
+- Dockerfiles created for both services ✅
+- app.yaml ready and deployed ✅
+- Landing page with Add to Slack button created ✅
+- Post-install onboarding wizard created ✅
+- Page scrolling fixed (removed overflow-hidden from layout) ✅
 
 ## Session Continuity
 
-Last session: 2026-01-30
-Stopped at: Production deployment preparation complete
+Last session: 2026-01-31
+Stopped at: Production deployment complete, app live
 
-**To deploy to DigitalOcean:**
-1. Update `YOUR_GITHUB_USERNAME` in `app.yaml`
-2. Create managed PostgreSQL and Redis in DigitalOcean
-3. Run `doctl apps create --spec app.yaml`
-4. Set all SECRET environment variables
-5. Enable pgvector: `CREATE EXTENSION IF NOT EXISTS vector;`
-6. Update Slack App settings with production URLs
+**Deployment Issues Resolved (2026-01-31):**
+1. TypeScript .d.ts files not generating in Docker → Added explicit `composite: false`, `declaration: true` to package tsconfigs
+2. npm workspaces not found in Docker → Changed to direct `npx drizzle-kit push` command
+3. Self-signed certificate errors → Different fixes for pg vs postgres.js libraries:
+   - Migration (pg): `?sslmode=require&uselibpqcompat=true`
+   - Runtime (postgres.js): `ssl: { rejectUnauthorized: false }`
+4. Validation package loading TypeScript at runtime → Fixed package.json to point to dist/
+5. Routing conflicts → Reorganized routes: slack-backend handles /slack, /oauth, /health; web-portal handles everything else
+6. Page not scrolling → Removed `overflow-hidden` from layout.tsx body
 
-**Next action:** Deploy to DigitalOcean App Platform and verify production environment
+**Next action:** Configure Slack App redirect URLs in Slack App settings, then test full OAuth flow
 
 ## Files Changed This Session
+
+**Production Deployment (2026-01-31):**
+
+TypeScript/Build fixes:
+- `packages/database/tsconfig.json` - Added explicit `composite: false`, `declaration: true` for Docker builds
+- `packages/validation/tsconfig.json` - Same fix as database package
+- `packages/validation/package.json` - Changed to point to compiled JS (`./dist/index.js`)
+- `apps/slack-backend/Dockerfile` - Changed to sequential builds in dependency order
+
+Database/Redis SSL:
+- `packages/database/src/client.ts` - Added SSL support for DigitalOcean managed PostgreSQL
+- `apps/slack-backend/src/env.ts` - Added REDIS_URL and REDIS_TLS environment variables
+- `apps/slack-backend/src/jobs/connection.ts` - Support both REDIS_URL and REDIS_HOST/PORT configs
+
+Routing/UI fixes:
+- `app.yaml` - Reorganized routes, added actual secret values (gitignored)
+- `apps/web-portal/app/layout.tsx` - Removed `overflow-hidden` to fix scrolling
+- `.gitignore` - Added `app.yaml` to protect secrets
 
 **Production Deployment Preparation (2026-01-30):**
 
@@ -126,4 +165,4 @@ Documentation:
 - `.planning/STATE.md` - Updated current state
 
 ---
-*Last updated: 2026-01-30*
+*Last updated: 2026-01-31*
