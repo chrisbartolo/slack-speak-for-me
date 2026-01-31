@@ -3,7 +3,7 @@ import { generateOAuthState, getSlackOAuthUrl } from '@/lib/auth/slack-oauth';
 
 export async function GET(request: NextRequest) {
   const state = generateOAuthState();
-  const returnUrl = request.nextUrl.searchParams.get('return') || '/';
+  const returnUrl = request.nextUrl.searchParams.get('return') || '/dashboard';
 
   const response = NextResponse.redirect(getSlackOAuthUrl(state));
 
