@@ -20,6 +20,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: Weekly Reports** - Automated team report aggregation and formatting
 - [x] **Phase 6: Production Polish & Admin** - Bug fixes, UX improvements, and admin management
 - [x] **Phase 7: Monetization & Pricing** - Pricing page, trials, subscription lifecycle
+- [ ] **Phase 8: Production Security & Compliance** - GDPR, security hardening, audit logging
+- [ ] **Phase 9: Portal/Admin UX Polish** - Brand styling, expandable nav, mobile responsive
+- [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions
 
 ## Phase Details
 
@@ -221,10 +224,60 @@ Plans:
 - [x] 07-06-PLAN.md — Final verification and Core Web Vitals check
 - [x] 07-07-PLAN.md — Email notifications for billing events (Resend)
 
+### Phase 8: Production Security & Compliance
+**Goal**: GDPR compliance, security hardening, and production-ready infrastructure
+**Depends on**: Phase 7
+**Requirements**: GDPR-01, GDPR-02, GDPR-03, SEC-01, SEC-02, SEC-03, SEC-04
+**Success Criteria** (what must be TRUE):
+  1. Privacy Policy and Terms of Service pages exist and are linked from footer
+  2. Users can export all their data via API endpoint
+  3. Users can delete their account and all associated data ("right to be forgotten")
+  4. Cookie consent banner appears for tracking cookies (if any)
+  5. Security headers (CSP, HSTS, X-Frame-Options) configured on all responses
+  6. Rate limiting protects all public endpoints from abuse
+  7. Audit logging tracks security-relevant events (logins, data exports, deletions)
+  8. Dependency vulnerability scanning runs in CI pipeline
+**Plans**: TBD (run /gsd:plan-phase 8 to break down)
+
+Plans:
+- [ ] TBD
+
+### Phase 9: Portal/Admin UX Polish
+**Goal**: Apply brand styling throughout dashboard and improve admin navigation
+**Depends on**: Phase 8
+**Requirements**: UX-01, UX-02, UX-03, UX-04
+**Success Criteria** (what must be TRUE):
+  1. Dashboard uses warm cream background (#FFFDF7) and blue-indigo gradient accents
+  2. Admin sidebar shows expandable subpages (Organizations, Users, Billing)
+  3. Dashboard is fully responsive on mobile devices
+  4. Loading states and error handling provide clear feedback to users
+  5. Consistent button styles (gradient CTAs, ghost secondary) across all pages
+  6. Cards use consistent shadow and hover effects
+**Plans**: TBD (run /gsd:plan-phase 9 to break down)
+
+Plans:
+- [ ] TBD
+
+### Phase 10: Calendar Integration
+**Goal**: AI can check calendar availability and suggest meeting times in responses
+**Depends on**: Phase 9
+**Requirements**: CAL-01, CAL-02, CAL-03, CAL-04, CAL-05
+**Success Criteria** (what must be TRUE):
+  1. User can connect Google Calendar via OAuth from web portal
+  2. AI detects meeting requests in conversation context
+  3. AI checks user's calendar availability for suggested time slots
+  4. AI includes 2-3 available time slots in response suggestions when relevant
+  5. User can configure calendar preferences (working hours, timezone, buffer time)
+  6. Meeting creation action available after copying suggestion
+**Plans**: TBD (run /gsd:plan-phase 10 to break down)
+
+Plans:
+- [ ] TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -236,6 +289,9 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 5. Weekly Reports | 8/9 | Human verification | - |
 | 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
 | 7. Monetization & Pricing | 7/7 | Complete | 2026-02-01 |
+| 8. Production Security & Compliance | 0/? | Not started | - |
+| 9. Portal/Admin UX Polish | 0/? | Not started | - |
+| 10. Calendar Integration | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-01-26*

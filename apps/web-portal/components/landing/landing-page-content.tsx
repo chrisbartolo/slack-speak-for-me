@@ -37,7 +37,7 @@ function FAQSection() {
       <div className="text-center mb-16">
         <h2 className="text-3xl font-bold text-gray-900 inline-block">
           Frequently Asked Questions
-          <BrushUnderline className="w-full mt-1" />
+          <BrushUnderline className="w-full mt-1 opacity-50" />
         </h2>
         <p className="mt-4 text-gray-600">Everything you need to know about Speak for Me</p>
       </div>
@@ -177,7 +177,7 @@ export function LandingPageContent() {
               Craft Perfect Slack Responses with{' '}
               <span className="inline-block">
                 <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">AI</span>
-                <BrushUnderlineThick className="w-full mt-1" />
+                <BrushUnderlineThick className="w-full mt-1 opacity-50" />
               </span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
@@ -238,7 +238,7 @@ export function LandingPageContent() {
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold text-gray-900 inline-block">
             How It Works
-            <BrushUnderline className="w-full mt-1" />
+            <BrushUnderline className="w-full mt-1 opacity-50" />
           </h2>
           <p className="mt-4 text-gray-600">Three simple ways to get AI-powered response suggestions</p>
         </div>
@@ -288,7 +288,7 @@ export function LandingPageContent() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 inline-block">
               Why Speak for Me?
-              <BrushUnderline className="w-full mt-1" />
+              <BrushUnderline className="w-full mt-1 opacity-50" />
             </h2>
           </div>
 
@@ -379,7 +379,7 @@ export function LandingPageContent() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
         <h2 className="text-3xl font-bold text-gray-900 mb-6 inline-block">
           Ready to communicate better?
-          <BrushUnderline className="w-full mt-1" />
+          <BrushUnderline className="w-full mt-1 opacity-50" />
         </h2>
         <p className="text-gray-600 mb-8 max-w-xl mx-auto">
           Join teams who use Speak for Me to handle difficult workplace conversations with confidence.
