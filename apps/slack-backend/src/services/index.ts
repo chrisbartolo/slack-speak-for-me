@@ -49,3 +49,11 @@ export {
   type RefineReportOptions,
   type RefineReportResult,
 } from './report-generator.js';
+
+// Feedback tracker - suggestion acceptance/refinement/dismissal tracking
+export {
+  trackFeedback,
+  trackAcceptance,
+  trackRefinement,
+  trackDismissal,
+} from './feedback-tracker.js';
