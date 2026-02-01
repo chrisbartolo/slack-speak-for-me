@@ -3,6 +3,7 @@ import { decrypt } from '@/lib/auth/session';
 
 const protectedRoutes = [
   '/dashboard',
+  '/admin', // Admin routes require auth; role check happens at page level via requireAdmin()
 ];
 const publicRoutes = ['/', '/login', '/callback', '/install'];
 
