@@ -1,0 +1,83 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # IMPORTANT: Run audit BEFORE npm ci to avoid executing potentially malicious postinstall scripts
+      - name: Audit dependencies
+        run: npx audit-ci@^7 --config ./audit-ci.jsonc
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Run npm audit for additional report (doesn't fail build)
+      - name: Generate npm audit report
+        run: npm audit --audit-level=moderate || true
+        continue-on-error: true
+
+  # Create issue for new vulnerabilities found on scheduled runs
+  notify-on-failure:
+    needs: dependency-audit
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create security issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'security,automated',
+              state: 'open'
+            });
+
+            // Don't create duplicate issues
+            const existingIssue = issues.data.find(
+              issue => issue.title.includes('Dependency vulnerabilities detected')
+            );
+
+            if (!existingIssue) {
+              const body = [
+                '## Automated Security Scan Failed',
+                '',
+                'The weekly security scan found vulnerabilities in project dependencies.',
+                '',
+                '**Action Required:**',
+                '1. Run `npm audit` locally to see details',
+                '2. Update vulnerable packages with `npm update` or `npm audit fix`',
+                '3. If no fix is available, add advisory to allowlist in `audit-ci.jsonc` with justification',
+                '',
+                `**Workflow Run:** [View Details](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+                '',
+                '*This issue was automatically created by the security workflow.*'
+              ].join('\n');
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Security: Dependency vulnerabilities detected',
+                body: body,
+                labels: ['security', 'automated', 'dependencies']
+              });
+            }
