@@ -237,10 +237,16 @@ Plans:
   6. Rate limiting protects all public endpoints from abuse
   7. Audit logging tracks security-relevant events (logins, data exports, deletions)
   8. Dependency vulnerability scanning runs in CI pipeline
-**Plans**: TBD (run /gsd:plan-phase 8 to break down)
+**Plans**: 7 plans in 2 waves
 
 Plans:
-- [ ] TBD
+- [ ] 08-01-PLAN.md — Security headers and cookie consent banner
+- [ ] 08-02-PLAN.md — Audit logs schema and logger service
+- [ ] 08-03-PLAN.md — Rate limiting middleware with Redis store
+- [ ] 08-04-PLAN.md — Privacy Policy and Terms of Service pages with footer
+- [ ] 08-05-PLAN.md — GDPR data export endpoint
+- [ ] 08-06-PLAN.md — GDPR data deletion endpoint
+- [ ] 08-07-PLAN.md — CI vulnerability scanning workflow
 
 ### Phase 9: Portal/Admin UX Polish
 **Goal**: Apply brand styling throughout dashboard and improve admin navigation
@@ -289,7 +295,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 5. Weekly Reports | 8/9 | Human verification | - |
 | 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
 | 7. Monetization & Pricing | 7/7 | Complete | 2026-02-01 |
-| 8. Production Security & Compliance | 0/? | Not started | - |
+| 8. Production Security & Compliance | 0/7 | Planned | - |
 | 9. Portal/Admin UX Polish | 0/? | Not started | - |
 | 10. Calendar Integration | 0/? | Not started | - |
 
