@@ -205,3 +205,21 @@ export const workflowConfig = pgTable('workflow_config', {
   uniqueConfig: uniqueIndex('workflow_config_unique_idx').on(table.workspaceId, table.userId, table.channelId),
   channelIdx: index('workflow_config_channel_idx').on(table.workspaceId, table.channelId),
 }));
+
+export const suggestionFeedback = pgTable('suggestion_feedback', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+  suggestionId: text('suggestion_id').notNull(), // Unique ID for the suggestion
+  action: text('action').notNull(), // 'accepted' | 'refined' | 'dismissed' | 'sent'
+  originalText: text('original_text'), // The AI suggestion text
+  finalText: text('final_text'), // Final text after any modifications
+  triggerContext: text('trigger_context'), // The message that triggered the suggestion
+  channelId: text('channel_id'), // Where the suggestion was triggered
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: index('suggestion_feedback_workspace_user_idx').on(table.workspaceId, table.userId),
+  createdAtIdx: index('suggestion_feedback_created_at_idx').on(table.createdAt),
+  actionIdx: index('suggestion_feedback_action_idx').on(table.action),
+  suggestionIdx: uniqueIndex('suggestion_feedback_suggestion_idx').on(table.suggestionId, table.action),
+}));
