@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 08 of 8 (Production Security & Compliance)
-Plan: 01 of 7
+Plan: 03 of 7
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-01 - Completed 08-01-PLAN.md (Security Headers & Cookie Consent)
+Last activity: 2026-02-01 - Completed 08-03-PLAN.md (Rate Limiting)
 
-Progress: [████████████████████░░░░░░░░░░░░] 85% (42/49 plans complete)
+Progress: [█████████████████████░░░░░░░░░░░] 88% (44/50 plans complete)
 
 ## Production Deployment
 
@@ -51,7 +51,7 @@ Progress: [████████████████████░░░
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
 | 06 - Production Polish | 8 | 25 min | 3.1 min |
 | 07 - Monetization & Pricing | 7 | 25 min | 3.6 min |
-| 08 - Production Security | 1/7 | 2 min | 2.0 min |
+| 08 - Production Security | 3/7 | 18 min | 6.0 min |
 
 *Phase 8 in progress*
 
@@ -127,6 +127,9 @@ Recent decisions affecting current work:
 - Phase 8 Plan 01: CSP allows unsafe-inline and unsafe-eval for Stripe compatibility
 - Phase 8 Plan 01: 365-day cookie consent expiry for compliance
 - Phase 8 Plan 01: react-cookie-consent library for GDPR banner implementation
+- Phase 8 Plan 03: withRateLimit() adapter pattern - Express middleware adapted for Bolt Node HTTP handlers
+- Phase 8 Plan 03: Memory store fallback - graceful degradation when Redis unavailable
+- Phase 8 Plan 03: Standard rate limit headers - RateLimit-* headers (not legacy X-RateLimit-*)
 
 ### Pending Todos
 
@@ -159,7 +162,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 08-01-PLAN.md (Security Headers & Cookie Consent)
+Stopped at: Completed 08-03-PLAN.md (Rate Limiting)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -314,6 +317,11 @@ Documentation:
 - `apps/web-portal/next.config.ts` - Security headers configuration (CSP, HSTS, X-Frame-Options, etc.)
 - `apps/web-portal/components/cookie-consent.tsx` - GDPR cookie consent banner component
 - `apps/web-portal/app/layout.tsx` - Added CookieConsentBanner to root layout
+
+**Phase 8 Plan 03 (2026-02-01):**
+- `apps/slack-backend/src/middleware/rate-limiter.ts` - Rate limiting middleware with Redis store, withRateLimit() adapter
+- `apps/slack-backend/src/handlers/health.ts` - Applied rate limiters to health and OAuth routes
+- `apps/slack-backend/package.json` - Added express-rate-limit and rate-limit-redis dependencies
 
 ---
 *Last updated: 2026-02-01*
