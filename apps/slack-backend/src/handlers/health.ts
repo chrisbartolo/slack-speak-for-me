@@ -4,6 +4,11 @@ import { redis } from '../jobs/connection.js';
 import { aiResponseQueue } from '../jobs/queues.js';
 import { logger } from '../utils/logger.js';
 import { sql } from 'drizzle-orm';
+import {
+  apiRateLimiter,
+  authRateLimiter,
+  withRateLimit,
+} from '../middleware/rate-limiter.js';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -96,104 +101,118 @@ async function handleReadinessProbe(_req: IncomingMessage, res: ServerResponse):
 }
 
 /**
+ * Google OAuth start handler - initiates Google OAuth flow.
+ */
+async function handleGoogleOAuthStart(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    const url = new URL(req.url || '', `http://${req.headers.host}`);
+    const workspaceId = url.searchParams.get('workspaceId');
+    const userId = url.searchParams.get('userId');
+
+    if (!workspaceId || !userId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing workspaceId or userId' }));
+      return;
+    }
+
+    const { getGoogleAuthUrl } = await import('../oauth/google-oauth.js');
+    const authUrl = getGoogleAuthUrl(workspaceId, userId);
+
+    res.writeHead(302, { Location: authUrl });
+    res.end();
+  } catch (err) {
+    logger.error({ err }, 'Failed to generate Google auth URL');
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to start Google OAuth' }));
+  }
+}
+
+/**
+ * Google OAuth callback handler - handles Google OAuth callback.
+ */
+async function handleGoogleOAuthCallback(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  try {
+    const url = new URL(req.url || '', `http://${req.headers.host}`);
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    const error = url.searchParams.get('error');
+
+    const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
+
+    if (error) {
+      logger.error({ error }, 'Google OAuth error');
+      res.writeHead(302, {
+        Location: `${webPortalUrl}/reports?error=google_auth_failed`
+      });
+      res.end();
+      return;
+    }
+
+    if (!code || !state) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing code or state parameter' }));
+      return;
+    }
+
+    // Import and call handleGoogleCallback from google-oauth service
+    const { handleGoogleCallback } = await import('../oauth/google-oauth.js');
+    await handleGoogleCallback(code, state);
+
+    // Redirect back to web portal reports page with success
+    res.writeHead(302, {
+      Location: `${webPortalUrl}/reports?google_connected=true`
+    });
+    res.end();
+  } catch (err) {
+    logger.error({ err }, 'Google OAuth callback failed');
+    const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
+    res.writeHead(302, {
+      Location: `${webPortalUrl}/reports?error=google_auth_failed`
+    });
+    res.end();
+  }
+}
+
+/**
  * Custom routes for Bolt app health endpoints.
  * Pass these to the App constructor's customRoutes option.
  *
  * Endpoints:
- * - GET /health/live: Liveness probe (is the app running?)
- * - GET /health/ready: Readiness probe (are all dependencies healthy?)
- * - GET /oauth/google/start: Initiate Google OAuth flow
- * - GET /oauth/google/callback: Handle Google OAuth callback
+ * - GET /health/live: Liveness probe (is the app running?) - rate limited
+ * - GET /health/ready: Readiness probe (are all dependencies healthy?) - rate limited
+ * - GET /oauth/google/start: Initiate Google OAuth flow - auth rate limited
+ * - GET /oauth/google/callback: Handle Google OAuth callback - auth rate limited
+ *
+ * Rate limits:
+ * - Health endpoints: 100 req/15min (apiRateLimiter)
+ * - OAuth endpoints: 10 req/hour (authRateLimiter)
  */
 export const healthRoutes = [
   {
     path: '/health/live',
     method: 'GET',
-    handler: handleLivenessProbe,
+    handler: withRateLimit(apiRateLimiter, handleLivenessProbe),
   },
   {
     path: '/health/ready',
     method: 'GET',
-    handler: (req: IncomingMessage, res: ServerResponse) => {
+    handler: withRateLimit(apiRateLimiter, (req: IncomingMessage, res: ServerResponse) => {
       handleReadinessProbe(req, res).catch((error) => {
         logger.error({ err: error }, 'Readiness probe error');
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'error', message: 'Internal server error' }));
       });
-    },
+    }),
   },
   {
     path: '/oauth/google/start',
     method: ['GET'],
-    handler: async (req: IncomingMessage, res: ServerResponse) => {
-      try {
-        const url = new URL(req.url || '', `http://${req.headers.host}`);
-        const workspaceId = url.searchParams.get('workspaceId');
-        const userId = url.searchParams.get('userId');
-
-        if (!workspaceId || !userId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Missing workspaceId or userId' }));
-          return;
-        }
-
-        const { getGoogleAuthUrl } = await import('../oauth/google-oauth.js');
-        const authUrl = getGoogleAuthUrl(workspaceId, userId);
-
-        res.writeHead(302, { Location: authUrl });
-        res.end();
-      } catch (err) {
-        logger.error({ err }, 'Failed to generate Google auth URL');
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Failed to start Google OAuth' }));
-      }
-    },
+    handler: withRateLimit(authRateLimiter, handleGoogleOAuthStart),
   },
   {
     path: '/oauth/google/callback',
     method: ['GET'],
-    handler: async (req: IncomingMessage, res: ServerResponse) => {
-      try {
-        const url = new URL(req.url || '', `http://${req.headers.host}`);
-        const code = url.searchParams.get('code');
-        const state = url.searchParams.get('state');
-        const error = url.searchParams.get('error');
-
-        const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
-
-        if (error) {
-          logger.error({ error }, 'Google OAuth error');
-          res.writeHead(302, {
-            Location: `${webPortalUrl}/reports?error=google_auth_failed`
-          });
-          res.end();
-          return;
-        }
-
-        if (!code || !state) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Missing code or state parameter' }));
-          return;
-        }
-
-        // Import and call handleGoogleCallback from google-oauth service
-        const { handleGoogleCallback } = await import('../oauth/google-oauth.js');
-        await handleGoogleCallback(code, state);
-
-        // Redirect back to web portal reports page with success
-        res.writeHead(302, {
-          Location: `${webPortalUrl}/reports?google_connected=true`
-        });
-        res.end();
-      } catch (err) {
-        logger.error({ err }, 'Google OAuth callback failed');
-        const webPortalUrl = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
-        res.writeHead(302, {
-          Location: `${webPortalUrl}/reports?error=google_auth_failed`
-        });
-        res.end();
-      }
-    },
+    handler: withRateLimit(authRateLimiter, handleGoogleOAuthCallback),
   },
 ];
 

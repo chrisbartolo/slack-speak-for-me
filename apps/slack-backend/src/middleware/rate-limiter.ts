@@ -1,10 +1,16 @@
 import rateLimit, { type RateLimitRequestHandler } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { Redis } from 'ioredis';
+import type { IncomingMessage, ServerResponse } from 'http';
 import { env } from '../env.js';
 import pino from 'pino';
 
 const logger = pino({ name: 'rate-limiter' });
+
+/**
+ * Node HTTP handler type used by Bolt custom routes.
+ */
+type NodeHttpHandler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
 
 /**
  * Create a Redis client for rate limiting.
@@ -112,3 +118,97 @@ export const gdprRateLimiter = createRateLimiter({
   prefix: 'rl:gdpr:',
   message: { error: 'Data export/deletion limit reached. Try again tomorrow.' },
 });
+
+/**
+ * Create an Express-compatible mock for Node HTTP handlers.
+ * This allows express-rate-limit middleware to work with Bolt custom routes.
+ */
+function createExpressMock(req: IncomingMessage, res: ServerResponse) {
+  // Extract IP from various sources (proxy headers, connection)
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = typeof forwarded === 'string'
+    ? forwarded.split(',')[0].trim()
+    : req.socket?.remoteAddress || '127.0.0.1';
+
+  // Parse URL for path
+  const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+
+  // Create Express-like request object
+  const expressReq = Object.assign(req, {
+    ip,
+    path: url.pathname,
+    app: { get: () => undefined }, // Minimal app mock
+  });
+
+  // Create Express-like response object
+  const expressRes = Object.assign(res, {
+    status: (code: number) => {
+      res.statusCode = code;
+      return expressRes;
+    },
+    json: (data: unknown) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+      return expressRes;
+    },
+    set: (name: string, value: string) => {
+      res.setHeader(name, value);
+      return expressRes;
+    },
+    setHeader: (name: string, value: string | number | readonly string[]) => {
+      res.setHeader(name, value);
+      return expressRes;
+    },
+  });
+
+  return { expressReq, expressRes };
+}
+
+/**
+ * Wrap a Node HTTP handler with rate limiting.
+ * Applies the specified rate limiter before the handler executes.
+ *
+ * @param limiter - The rate limiter to apply (apiRateLimiter, authRateLimiter, or gdprRateLimiter)
+ * @param handler - The original Node HTTP handler
+ * @returns A new handler that applies rate limiting first
+ */
+export function withRateLimit(
+  limiter: RateLimitRequestHandler,
+  handler: NodeHttpHandler
+): NodeHttpHandler {
+  return async (req: IncomingMessage, res: ServerResponse) => {
+    const { expressReq, expressRes } = createExpressMock(req, res);
+
+    return new Promise<void>((resolve) => {
+      // Run the rate limiter middleware
+      // @ts-expect-error - We're adapting Node HTTP to Express-like interface
+      limiter(expressReq, expressRes, async (err?: Error) => {
+        if (err) {
+          logger.error({ err }, 'Rate limiter error');
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Internal server error' }));
+          resolve();
+          return;
+        }
+
+        // If response was already sent (rate limited), don't call handler
+        if (res.writableEnded) {
+          resolve();
+          return;
+        }
+
+        // Call the original handler
+        try {
+          await handler(req, res);
+        } catch (handlerErr) {
+          logger.error({ err: handlerErr }, 'Handler error after rate limit check');
+          if (!res.writableEnded) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+          }
+        }
+        resolve();
+      });
+    });
+  };
+}
