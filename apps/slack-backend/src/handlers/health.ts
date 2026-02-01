@@ -5,7 +5,6 @@ import { aiResponseQueue } from '../jobs/queues.js';
 import { logger } from '../utils/logger.js';
 import { sql } from 'drizzle-orm';
 import {
-  apiRateLimiter,
   authRateLimiter,
   withRateLimit,
 } from '../middleware/rate-limiter.js';
@@ -178,31 +177,33 @@ async function handleGoogleOAuthCallback(req: IncomingMessage, res: ServerRespon
  * Pass these to the App constructor's customRoutes option.
  *
  * Endpoints:
- * - GET /health/live: Liveness probe (is the app running?) - rate limited
- * - GET /health/ready: Readiness probe (are all dependencies healthy?) - rate limited
+ * - GET /health/live: Liveness probe (is the app running?) - NO rate limiting
+ * - GET /health/ready: Readiness probe (are all dependencies healthy?) - NO rate limiting
  * - GET /oauth/google/start: Initiate Google OAuth flow - auth rate limited
  * - GET /oauth/google/callback: Handle Google OAuth callback - auth rate limited
  *
+ * Health probes are NOT rate limited - they're used by container orchestration
+ * and must remain reliable for health monitoring.
+ *
  * Rate limits:
- * - Health endpoints: 100 req/15min (apiRateLimiter)
  * - OAuth endpoints: 10 req/hour (authRateLimiter)
  */
 export const healthRoutes = [
   {
     path: '/health/live',
     method: 'GET',
-    handler: withRateLimit(apiRateLimiter, handleLivenessProbe),
+    handler: handleLivenessProbe,
   },
   {
     path: '/health/ready',
     method: 'GET',
-    handler: withRateLimit(apiRateLimiter, (req: IncomingMessage, res: ServerResponse) => {
+    handler: (req: IncomingMessage, res: ServerResponse) => {
       handleReadinessProbe(req, res).catch((error) => {
         logger.error({ err: error }, 'Readiness probe error');
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'error', message: 'Internal server error' }));
       });
-    }),
+    },
   },
   {
     path: '/oauth/google/start',

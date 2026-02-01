@@ -86,6 +86,9 @@ function createExpressMock(req: IncomingMessage, res: ServerResponse) {
   // Parse URL for path
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
+  // Capture original methods before overwriting to avoid infinite recursion
+  const originalSetHeader = res.setHeader.bind(res);
+
   // Create Express-like request object
   const expressReq = Object.assign(req, {
     ip,
@@ -93,26 +96,32 @@ function createExpressMock(req: IncomingMessage, res: ServerResponse) {
     app: { get: () => undefined }, // Minimal app mock
   });
 
-  // Create Express-like response object
-  const expressRes = Object.assign(res, {
-    status: (code: number) => {
+  // Create Express-like response object with chainable methods
+  const expressRes = {
+    // Preserve all original response properties/methods
+    ...res,
+    statusCode: res.statusCode,
+    status: function(code: number) {
       res.statusCode = code;
-      return expressRes;
+      return this;
     },
-    json: (data: unknown) => {
-      res.setHeader('Content-Type', 'application/json');
+    json: function(data: unknown) {
+      originalSetHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(data));
-      return expressRes;
+      return this;
     },
-    set: (name: string, value: string) => {
-      res.setHeader(name, value);
-      return expressRes;
+    set: function(name: string, value: string) {
+      originalSetHeader(name, value);
+      return this;
     },
-    setHeader: (name: string, value: string | number | readonly string[]) => {
-      res.setHeader(name, value);
-      return expressRes;
+    setHeader: function(name: string, value: string | number | readonly string[]) {
+      originalSetHeader(name, value);
+      return this;
     },
-  });
+    writeHead: res.writeHead.bind(res),
+    end: res.end.bind(res),
+    writableEnded: res.writableEnded,
+  };
 
   return { expressReq, expressRes };
 }
