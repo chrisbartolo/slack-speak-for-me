@@ -94,13 +94,19 @@ export const getRefinementCount = cache(async () => {
 });
 
 /**
- * Full list of watched conversations
+ * Full list of watched conversations with channel info
  */
 export const getWatchedConversations = cache(async () => {
   const session = await verifySession();
 
   const conversations = await db
-    .select()
+    .select({
+      id: watchedConversations.id,
+      channelId: watchedConversations.channelId,
+      channelName: watchedConversations.channelName,
+      channelType: watchedConversations.channelType,
+      watchedAt: watchedConversations.watchedAt,
+    })
     .from(watchedConversations)
     .where(
       and(
