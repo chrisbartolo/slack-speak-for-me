@@ -2,6 +2,7 @@ import 'server-only';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import {
+  organizations,
   workspaces,
   installations,
   users,
@@ -28,6 +29,7 @@ const queryClient = postgres(connectionString, {
 
 // Create schema object explicitly for proper type inference
 const schema = {
+  organizations,
   workspaces,
   installations,
   users,
