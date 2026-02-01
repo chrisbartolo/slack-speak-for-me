@@ -1,7 +1,8 @@
 import type { Installation, InstallationQuery } from '@slack/bolt';
-import { db, workspaces, installations, encrypt, decrypt } from '@slack-speak/database';
+import { db, workspaces, installations, organizations, users, encrypt, decrypt } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
 import { getEncryptionKey } from '../env.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Custom installation store that encrypts OAuth tokens before storing in PostgreSQL
@@ -30,6 +31,15 @@ export const installationStore = {
       ? encrypt(installation.user.token, encryptionKey)
       : null;
 
+    // Check if workspace already exists
+    const existingWorkspace = await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.teamId, teamId || ''))
+      .limit(1);
+
+    const isNewInstall = existingWorkspace.length === 0;
+
     // Upsert workspace
     const [workspace] = await db
       .insert(workspaces)
@@ -47,6 +57,45 @@ export const installationStore = {
         },
       })
       .returning();
+
+    // For new installations, create organization and admin user
+    if (isNewInstall) {
+      logger.info({ teamId, workspaceId: workspace.id }, 'New workspace installation - creating organization');
+
+      // Create organization for this workspace
+      const [org] = await db
+        .insert(organizations)
+        .values({
+          name: installation.team?.name || 'My Organization',
+          slug: teamId || crypto.randomUUID(),
+          planId: 'free',
+          seatCount: 1,
+          subscriptionStatus: 'trialing',
+        })
+        .returning();
+
+      // Link workspace to organization
+      await db
+        .update(workspaces)
+        .set({ organizationId: org.id })
+        .where(eq(workspaces.id, workspace.id));
+
+      // Create admin user for the installer
+      if (installation.user?.id) {
+        await db
+          .insert(users)
+          .values({
+            workspaceId: workspace.id,
+            slackUserId: installation.user.id,
+            role: 'admin',
+          })
+          .onConflictDoNothing();
+
+        logger.info({ userId: installation.user.id, workspaceId: workspace.id }, 'Created admin user for installer');
+      }
+
+      logger.info({ orgId: org.id, workspaceId: workspace.id }, 'Organization created and linked');
+    }
 
     // Insert or update installation
     await db

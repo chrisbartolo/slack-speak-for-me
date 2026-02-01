@@ -1,12 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, ExternalLink } from 'lucide-react';
+import { CreditCard, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { requireAdmin, getOrganization } from '@/lib/auth/admin';
 import { getSubscription } from '@/lib/stripe';
+import { UpgradeButton } from '@/components/admin/upgrade-button';
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ success?: string; canceled?: string }>;
+}) {
   const session = await requireAdmin();
+  const params = await searchParams;
 
   if (!session.organizationId) {
     return (
@@ -49,6 +55,8 @@ export default async function BillingPage() {
     trialing: 'bg-blue-100 text-blue-700',
   };
 
+  const needsUpgrade = !org?.stripeSubscriptionId || org?.subscriptionStatus === 'canceled';
+
   return (
     <div className="p-8 space-y-6">
       <div>
@@ -57,6 +65,32 @@ export default async function BillingPage() {
           Subscription and payment settings for {org?.name}
         </p>
       </div>
+
+      {params.success && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <p className="text-green-800">
+                Payment successful! Your subscription is now active.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {params.canceled && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <XCircle className="h-5 w-5 text-yellow-600" />
+              <p className="text-yellow-800">
+                Payment was canceled. You can try again when ready.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -95,23 +129,23 @@ export default async function BillingPage() {
             <CardTitle>Manage Subscription</CardTitle>
             <CardDescription>Update payment and subscription settings</CardDescription>
           </CardHeader>
-          <CardContent>
-            {org?.stripeCustomerId ? (
+          <CardContent className="space-y-4">
+            {needsUpgrade ? (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upgrade to Pro to unlock all features and support development.
+                  </p>
+                </div>
+                <UpgradeButton />
+              </div>
+            ) : (
               <form action="/api/stripe/portal" method="POST">
                 <Button type="submit" className="w-full">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Open Customer Portal
                 </Button>
               </form>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  No Stripe customer yet.
-                </p>
-                <Button disabled>
-                  Upgrade to Pro
-                </Button>
-              </div>
             )}
           </CardContent>
         </Card>

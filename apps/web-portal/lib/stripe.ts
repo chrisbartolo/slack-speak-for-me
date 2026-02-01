@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 // Lazy initialization to avoid build-time errors
 let stripeClient: Stripe | null = null;
 
-function getStripe(): Stripe {
+export function getStripe(): Stripe {
   if (!stripeClient) {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error('STRIPE_SECRET_KEY is required');
