@@ -196,26 +196,29 @@ Plans:
 - [x] 06-09-PLAN.md — Stripe billing integration with Customer Portal
 
 ### Phase 7: Monetization & Pricing
-**Goal**: Complete monetization flow with pricing page, trial management, and subscription lifecycle
+**Goal**: Complete monetization flow with SEO-driven public pages, pricing, trial management, and subscription lifecycle
 **Depends on**: Phase 6
-**Requirements**: BILLING-01, BILLING-02, BILLING-03, BILLING-04, BILLING-05, BILLING-06
+**Requirements**: BILLING-01, BILLING-02, BILLING-03, BILLING-04, BILLING-05, BILLING-06, BILLING-07, SEO-01, SEO-02, SEO-03, SEO-04, SEO-05, SEO-06
 **Success Criteria** (what must be TRUE):
-  1. Public pricing page shows plans with features and pricing
-  2. Users can start a free trial without payment
-  3. Trial expiration prompts upgrade or feature lockout
-  4. Stripe Checkout creates subscription on upgrade
-  5. Webhooks handle subscription lifecycle (upgrade, downgrade, cancel, failed payment)
-  6. Usage tracking enforces seat limits
-  7. Billing emails sent for invoices, failed payments, subscription changes
-**Plans**: TBD (to be planned)
+  1. Public pricing page shows plans with features and SEO-optimized content
+  2. Landing page has FAQ section with FAQPage schema markup
+  3. Speakable and SoftwareApplication JSON-LD schemas implemented
+  4. Users can start a free trial without payment (14 days)
+  5. Trial expiration prompts upgrade or feature lockout
+  6. Stripe Checkout creates subscription on upgrade
+  7. Webhooks handle subscription lifecycle (upgrade, downgrade, cancel, failed payment)
+  8. Usage tracking enforces seat limits
+  9. Sitemap.xml and robots.txt configured for SEO
+  10. Core Web Vitals optimized for SEO ranking
+**Plans**: 6 plans in 3 waves
 
 Plans:
-- [ ] 07-01-PLAN.md — Public pricing page with plan comparison
-- [ ] 07-02-PLAN.md — Trial management and expiration flow
-- [ ] 07-03-PLAN.md — Subscription enforcement and feature gating
-- [ ] 07-04-PLAN.md — Seat-based usage tracking and limits
-- [ ] 07-05-PLAN.md — Webhook handlers for full subscription lifecycle
-- [ ] 07-06-PLAN.md — Email notifications for billing events
+- [ ] 07-01-PLAN.md — Pricing page with SoftwareApplication JSON-LD schema
+- [ ] 07-02-PLAN.md — Landing page FAQ and SEO files (sitemap, robots)
+- [ ] 07-03-PLAN.md — Trial checkout without payment required
+- [ ] 07-04-PLAN.md — Full webhook subscription lifecycle handling
+- [ ] 07-05-PLAN.md — Seat enforcement and trial status display
+- [ ] 07-06-PLAN.md — Final verification and Core Web Vitals check
 
 ## Progress
 
@@ -231,7 +234,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Web Portal | 9/10 | In progress | - |
 | 5. Weekly Reports | 8/9 | Human verification | - |
 | 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
-| 7. Monetization & Pricing | 0/6 | Not started | - |
+| 7. Monetization & Pricing | 0/6 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-26*
