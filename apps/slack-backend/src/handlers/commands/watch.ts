@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger.js';
  */
 export function registerWatchCommands(app: App): void {
   // /watch command - enable AI suggestions for this conversation
-  app.command('/watch', async ({ command, ack, respond }) => {
+  app.command('/watch', async ({ command, ack, respond, client }) => {
     try {
       // Acknowledge command immediately (3-second requirement)
       await ack();
@@ -40,8 +40,24 @@ export function registerWatchCommands(app: App): void {
         return;
       }
 
-      // Add watch
-      await watchConversation(workspaceId, user_id, channel_id);
+      // Get channel info for display name and type
+      let channelName: string | undefined;
+      let channelType: string | undefined;
+      try {
+        const channelInfo = await client.conversations.info({ channel: channel_id });
+        if (channelInfo.channel) {
+          channelName = channelInfo.channel.name;
+          channelType = channelInfo.channel.is_im ? 'im' :
+                        channelInfo.channel.is_mpim ? 'mpim' :
+                        channelInfo.channel.is_private ? 'group' : 'channel';
+        }
+      } catch (e) {
+        // Proceed without name if API fails (e.g., bot not in channel)
+        logger.warn({ error: e, channel: channel_id }, 'Failed to get channel info');
+      }
+
+      // Add watch with channel info
+      await watchConversation(workspaceId, user_id, channel_id, channelName, channelType);
 
       await respond({
         text: '✅ Now watching this conversation. You\'ll receive AI suggestions when someone responds to your messages here.',
@@ -53,6 +69,8 @@ export function registerWatchCommands(app: App): void {
         teamId: team_id,
         userId: user_id,
         channelId: channel_id,
+        channelName,
+        channelType,
       }, 'User enabled watch for conversation');
 
     } catch (error) {

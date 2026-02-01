@@ -17,17 +17,28 @@ export async function getWorkspaceId(teamId: string): Promise<string | null> {
 /**
  * Watch a conversation for a user
  * Uses upsert pattern to handle duplicate watches gracefully
+ * Stores channel name and type for display and DM handling
  */
 export async function watchConversation(
   workspaceId: string,
   userId: string,
-  channelId: string
+  channelId: string,
+  channelName?: string,
+  channelType?: string
 ): Promise<void> {
   await db.insert(watchedConversations).values({
     workspaceId,
     userId,
     channelId,
-  }).onConflictDoNothing();
+    channelName,
+    channelType,
+  }).onConflictDoUpdate({
+    target: [watchedConversations.workspaceId, watchedConversations.userId, watchedConversations.channelId],
+    set: {
+      channelName,  // Update if channel was renamed
+      channelType,
+    },
+  });
 }
 
 /**
@@ -138,4 +149,23 @@ export async function isParticipatingInThread(
   ).limit(1);
 
   return result.length > 0;
+}
+
+/**
+ * Get all users who are watching a specific channel
+ * Used for DM message handling to find who should receive suggestions
+ */
+export async function getWatchersForChannel(
+  workspaceId: string,
+  channelId: string
+): Promise<string[]> {
+  const results = await db.select({
+    userId: watchedConversations.userId,
+  }).from(watchedConversations).where(
+    and(
+      eq(watchedConversations.workspaceId, workspaceId),
+      eq(watchedConversations.channelId, channelId)
+    )
+  );
+  return results.map(r => r.userId);
 }
