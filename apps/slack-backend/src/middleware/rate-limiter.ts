@@ -49,6 +49,7 @@ const redisClient = createRedisClient();
 
 /**
  * Create a rate limiter with Redis store (or memory fallback).
+ * Falls back to memory store if Redis is unavailable or not ready.
  */
 function createRateLimiter(options: {
   windowMs: number;
@@ -56,15 +57,22 @@ function createRateLimiter(options: {
   prefix: string;
   message: { error: string };
 }): RateLimitRequestHandler {
-  const store = redisClient
-    ? new RedisStore({
+  let store: RedisStore | undefined;
+
+  if (redisClient) {
+    try {
+      store = new RedisStore({
         // @ts-expect-error - ioredis call() has compatible signature with rate-limit-redis
         sendCommand: (command: string, ...args: string[]) => redisClient.call(command, ...args),
         prefix: options.prefix,
-      })
-    : undefined;
+      });
+    } catch (err) {
+      logger.warn({ err, prefix: options.prefix }, 'Failed to create Redis store, falling back to memory');
+      store = undefined;
+    }
+  }
 
-  if (!redisClient) {
+  if (!store) {
     logger.warn(`Rate limiter "${options.prefix}" using memory store (not distributed)`);
   }
 
