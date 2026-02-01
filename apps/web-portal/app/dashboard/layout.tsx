@@ -1,4 +1,5 @@
 import { verifySession } from '@/lib/auth/dal';
+import { isAdmin } from '@/lib/auth/admin';
 import { Sidebar } from '@/components/dashboard/sidebar';
 
 export default async function DashboardLayout({
@@ -9,9 +10,12 @@ export default async function DashboardLayout({
   // Verify authentication - will redirect to /login if not authenticated
   await verifySession();
 
+  // Check if user is admin for sidebar display
+  const adminStatus = await isAdmin();
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar />
+      <Sidebar isAdmin={adminStatus} />
       <main className="flex-1 overflow-auto">
         {children}
       </main>

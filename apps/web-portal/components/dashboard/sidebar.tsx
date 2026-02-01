@@ -1,10 +1,14 @@
 'use client';
 
-import { Home, Sliders, MessageSquare, Users, FileText, Sparkles } from 'lucide-react';
+import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, Settings } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { UserMenu } from './user-menu';
 
-export function Sidebar() {
+interface SidebarProps {
+  isAdmin?: boolean;
+}
+
+export function Sidebar({ isAdmin }: SidebarProps) {
   return (
     <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
       {/* Header */}
@@ -20,6 +24,13 @@ export function Sidebar() {
         <NavItem href="/dashboard/people" icon={Users} label="People" />
         <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
         <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
+
+        {/* Admin section - only visible for admins */}
+        {isAdmin && (
+          <div className="border-t border-border pt-4 mt-4">
+            <NavItem href="/admin" icon={Settings} label="Admin" />
+          </div>
+        )}
       </nav>
 
       {/* User Menu */}
