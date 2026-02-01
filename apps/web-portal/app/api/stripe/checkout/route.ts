@@ -48,6 +48,9 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
+    // Get base URL - fallback to production URL if env not set
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
+
     // Create Checkout Session
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -58,8 +61,8 @@ export async function POST(request: Request) {
           quantity: org.seatCount || 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/admin/billing?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/admin/billing?canceled=true`,
+      success_url: `${baseUrl}/admin/billing?success=true`,
+      cancel_url: `${baseUrl}/admin/billing?canceled=true`,
       metadata: {
         organizationId: org.id,
         planId: 'pro',

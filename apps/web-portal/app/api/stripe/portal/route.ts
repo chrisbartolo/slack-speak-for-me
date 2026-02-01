@@ -16,9 +16,10 @@ export async function POST() {
       return NextResponse.json({ error: 'No Stripe customer' }, { status: 400 });
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
     const portalSession = await createPortalSession(
       org.stripeCustomerId,
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/admin/billing`
+      `${baseUrl}/admin/billing`
     );
 
     return NextResponse.redirect(portalSession.url);
