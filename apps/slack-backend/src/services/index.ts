@@ -57,3 +57,18 @@ export {
   trackRefinement,
   trackDismissal,
 } from './feedback-tracker.js';
+
+// Audit logger - security-relevant event logging
+export {
+  logAuditEvent,
+  auditLogin,
+  auditLogout,
+  auditDataExport,
+  auditDataDeletion,
+  auditSettingsChange,
+  auditOAuthConnected,
+  auditOAuthDisconnected,
+  auditSubscriptionCreated,
+  auditSubscriptionCancelled,
+  type AuditLogEntry,
+} from './audit-logger.js';
