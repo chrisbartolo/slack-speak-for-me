@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, Settings } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { UserMenu } from './user-menu';
@@ -13,7 +14,16 @@ export function Sidebar({ isAdmin }: SidebarProps) {
     <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
       {/* Header */}
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold">Speak For Me</h1>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/logo.png"
+            alt="Speak for Me"
+            width={40}
+            height={40}
+            className="rounded-lg"
+          />
+          <h1 className="text-xl font-bold">Speak For Me</h1>
+        </div>
       </div>
 
       {/* Navigation */}

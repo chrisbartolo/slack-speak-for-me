@@ -89,11 +89,11 @@ export function LandingPageContent() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <Image
-                src="/images/emblem.png"
+                src="/logo.png"
                 alt="Speak for Me"
                 width={32}
                 height={32}
-                className="rounded"
+                className="rounded-lg"
               />
               <span className="font-bold text-xl">Speak for Me</span>
             </div>
@@ -312,11 +312,11 @@ export function LandingPageContent() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
               <Image
-                src="/images/emblem.png"
+                src="/logo.png"
                 alt="Speak for Me"
                 width={24}
                 height={24}
-                className="rounded"
+                className="rounded-lg"
               />
               <span className="font-semibold">Speak for Me</span>
             </div>
