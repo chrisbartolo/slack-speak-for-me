@@ -91,6 +91,8 @@ Recent decisions affecting current work:
 - Phase 6 Plan 05: 4-column stat grid for balanced layout with new counters
 - Phase 6 Plan 05: Expandable cards only for refined items (accepted/dismissed have no diff to show)
 - Phase 6 Plan 05: Backward compatible FeedbackItem interface supporting both old and new data formats
+- Phase 6 Plan 04: Track refinement at AI generation time rather than modal close
+- Phase 6 Plan 04: Original text extracted from history[0] for multi-round refinements
 
 ### Pending Todos
 
@@ -214,6 +216,11 @@ Documentation:
 **Phase 6 Plan 05 (2026-02-01):**
 - `apps/web-portal/app/dashboard/feedback/page.tsx` - Added suggestion stats queries, 4-column grid, updated Recent Suggestions section
 - `apps/web-portal/components/dashboard/feedback-list.tsx` - ActionBadge component, FeedbackItemCard with expandable details
+
+**Phase 6 Plan 04 (2026-02-01):**
+- `apps/slack-backend/src/handlers/actions/copy-suggestion.ts` - Added trackAcceptance call before responding
+- `apps/slack-backend/src/handlers/actions/dismiss-suggestion.ts` - Added trackDismissal call before message deletion
+- `apps/slack-backend/src/handlers/views/refinement-modal.ts` - Added trackRefinement call after AI generates refined suggestion
 
 ---
 *Last updated: 2026-02-01*
