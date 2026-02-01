@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
-Plan: 07 of ? (admin foundation)
+Plan: 02 of ? (DM support and own-message filtering)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 6 execution in progress
-Last activity: 2026-02-01 - Completed 06-07-PLAN.md
+Last activity: 2026-02-01 - Completed 06-02-PLAN.md
 
 Progress: [██████████████░░░] 88% (Phase 6 in progress)
 
@@ -82,6 +82,9 @@ Recent decisions affecting current work:
 - Phase 6 Plan 01: isWatching check before context retrieval - Avoids unnecessary Slack API calls
 - Phase 6 Plan 07: Two-layer auth pattern - Middleware for session, page-level requireAdmin() for role check
 - Phase 6 Plan 07: Organization-workspace hierarchy - Organizations group workspaces for billing
+- Phase 6 Plan 02: Channel type detection via channel_type field or channel ID prefix (D for DMs)
+- Phase 6 Plan 02: onConflictDoNothing fallback for backward compatibility when channel info unavailable
+- Phase 6 Plan 02: DM handling returns early to avoid thread processing
 
 ### Pending Todos
 
@@ -114,7 +117,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 06-07-PLAN.md
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -184,6 +187,16 @@ Documentation:
 - `apps/web-portal/lib/auth/admin.ts` - Created admin auth middleware (requireAdmin, isAdmin, getOrganization)
 - `apps/web-portal/lib/db/index.ts` - Added organizations to schema exports
 - `apps/web-portal/middleware.ts` - Added /admin to protectedRoutes
+
+**Phase 6 Plan 02 (2026-02-01):**
+- `packages/database/src/schema.ts` - Added channelName and channelType columns to watchedConversations
+- `apps/slack-backend/src/services/watch.ts` - Added getWatchersForChannel(), updated watchConversation() signature
+- `apps/slack-backend/src/handlers/commands/watch.ts` - Fetch channel info via conversations.info API
+- `apps/slack-backend/src/handlers/events/message-reply.ts` - DM detection and handling, own-message filtering
+- `apps/slack-backend/src/jobs/types.ts` - Added 'dm' to triggeredBy union type
+- `apps/slack-backend/src/services/ai.ts` - Added 'dm' to SuggestionContext.triggeredBy
+- `apps/slack-backend/src/services/suggestion-delivery.ts` - Added 'dm' label for trigger context
+- `apps/slack-backend/test/helpers/db.ts` - Updated test schema with new columns and organizations table
 
 ---
 *Last updated: 2026-02-01*
