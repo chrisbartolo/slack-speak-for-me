@@ -39,6 +39,8 @@ export const watchedConversations = pgTable('watched_conversations', {
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
   userId: text('user_id').notNull(),
   channelId: text('channel_id').notNull(),
+  channelName: text('channel_name'),  // Display name for UI (e.g., "#general")
+  channelType: text('channel_type'),  // 'channel' | 'group' | 'im' | 'mpim'
   watchedAt: timestamp('watched_at').defaultNow(),
 }, (table) => ({
   workspaceUserIdx: index('watched_conversations_workspace_user_idx').on(table.workspaceId, table.userId),
