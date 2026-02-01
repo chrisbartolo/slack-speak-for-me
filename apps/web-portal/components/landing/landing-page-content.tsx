@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { BrushUnderline } from '@/components/ui/brush-underline';
+import { BrushUnderline, BrushUnderlineThick } from '@/components/ui/brush-underline';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { faqItems } from '@/lib/seo/schemas';
 
@@ -34,11 +34,9 @@ function FAQSection() {
   return (
     <section id="faq" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-4">
+        <h2 className="text-3xl font-bold text-gray-900 inline-block">
           Frequently Asked Questions
-          <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
-            <BrushUnderline width={280} />
-          </span>
+          <BrushUnderline className="w-full mt-1" />
         </h2>
         <p className="mt-4 text-gray-600">Everything you need to know about Speak for Me</p>
       </div>
@@ -135,11 +133,9 @@ export function LandingPageContent() {
           <div>
             <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Craft Perfect Slack Responses with{' '}
-              <span className="relative inline-block pb-3">
+              <span className="inline-block">
                 <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">AI</span>
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
-                  <BrushUnderline width={70} />
-                </span>
+                <BrushUnderlineThick className="w-full mt-1" />
               </span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
@@ -198,11 +194,9 @@ export function LandingPageContent() {
       {/* Features Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-4">
+          <h2 className="text-3xl font-bold text-gray-900 inline-block">
             How It Works
-            <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
-              <BrushUnderline width={180} />
-            </span>
+            <BrushUnderline className="w-full mt-1" />
           </h2>
           <p className="mt-4 text-gray-600">Three simple ways to get AI-powered response suggestions</p>
         </div>
@@ -250,11 +244,9 @@ export function LandingPageContent() {
       <section className="bg-white py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-4">
+            <h2 className="text-3xl font-bold text-gray-900 inline-block">
               Why Speak for Me?
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
-                <BrushUnderline width={220} />
-              </span>
+              <BrushUnderline className="w-full mt-1" />
             </h2>
           </div>
 
@@ -343,13 +335,11 @@ export function LandingPageContent() {
 
       {/* CTA Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 inline-block relative pb-4">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6 inline-block">
           Ready to communicate better?
-          <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
-            <BrushUnderline width={320} />
-          </span>
+          <BrushUnderline className="w-full mt-1" />
         </h2>
-        <p className="text-gray-600 mb-8 max-w-xl mx-auto mt-4">
+        <p className="text-gray-600 mb-8 max-w-xl mx-auto">
           Join teams who use Speak for Me to handle difficult workplace conversations with confidence.
         </p>
         <a href={slackInstallUrl}>

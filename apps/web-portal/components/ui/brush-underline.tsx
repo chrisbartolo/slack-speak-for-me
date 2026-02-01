@@ -1,27 +1,30 @@
 'use client';
 
-import Image from 'next/image';
-
 interface BrushUnderlineProps {
   className?: string;
-  width?: number;
 }
 
-export function BrushUnderline({ className = '', width = 200 }: BrushUnderlineProps) {
-  // Aspect ratio from the trimmed image: 2605x1014 ≈ 2.57:1
-  // But we want it thinner for underline effect, so use roughly 5:1
-  const height = Math.round(width / 5);
-
+export function BrushUnderline({ className = '' }: BrushUnderlineProps) {
   return (
-    <Image
-      src="/images/brush-underline-final.png"
-      alt=""
-      width={width}
-      height={height}
-      className={className}
+    <span
+      className={`block h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-400 ${className}`}
       style={{
-        objectFit: 'contain',
-        objectPosition: 'center bottom',
+        // Slight skew and varied border-radius for hand-drawn feel
+        transform: 'skewX(-2deg)',
+        borderRadius: '40% 60% 50% 50% / 80% 80% 60% 60%',
+      }}
+    />
+  );
+}
+
+// Thicker variant for larger text like "AI"
+export function BrushUnderlineThick({ className = '' }: BrushUnderlineProps) {
+  return (
+    <span
+      className={`block h-3 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-400 ${className}`}
+      style={{
+        transform: 'skewX(-3deg)',
+        borderRadius: '50% 40% 60% 50% / 70% 90% 50% 70%',
       }}
     />
   );
