@@ -18,7 +18,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: AI Personalization** - Style learning and iterative refinement
 - [x] **Phase 4: Web Portal** - Dashboard for settings, history, and management
 - [ ] **Phase 5: Weekly Reports** - Automated team report aggregation and formatting
-- [ ] **Phase 6: Production Polish & Admin** - Bug fixes, UX improvements, and admin management
+- [x] **Phase 6: Production Polish & Admin** - Bug fixes, UX improvements, and admin management
+- [ ] **Phase 7: Monetization & Pricing** - Pricing page, trials, subscription lifecycle
 
 ## Phase Details
 
@@ -184,20 +185,42 @@ Plans:
 **Plans**: 9 plans in 6 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — Fix app_mention to check /watch status before triggering
-- [ ] 06-02-PLAN.md — Fix own-message filtering and DM watch support
-- [ ] 06-03-PLAN.md — Suggestion feedback schema and tracking service
-- [ ] 06-04-PLAN.md — Wire feedback tracking into action handlers
-- [ ] 06-05-PLAN.md — AI Learning tab with accepted vs refined stats
-- [ ] 06-06-PLAN.md — Conversations page with cached names and actions
-- [ ] 06-07-PLAN.md — Admin foundation with org schema and auth middleware
-- [ ] 06-08-PLAN.md — Admin organization and user management pages
-- [ ] 06-09-PLAN.md — Stripe billing integration with Customer Portal
+- [x] 06-01-PLAN.md — Fix app_mention to check /watch status before triggering
+- [x] 06-02-PLAN.md — Fix own-message filtering and DM watch support
+- [x] 06-03-PLAN.md — Suggestion feedback schema and tracking service
+- [x] 06-04-PLAN.md — Wire feedback tracking into action handlers
+- [x] 06-05-PLAN.md — AI Learning tab with accepted vs refined stats
+- [x] 06-06-PLAN.md — Conversations page with cached names and actions
+- [x] 06-07-PLAN.md — Admin foundation with org schema and auth middleware
+- [x] 06-08-PLAN.md — Admin organization and user management pages
+- [x] 06-09-PLAN.md — Stripe billing integration with Customer Portal
+
+### Phase 7: Monetization & Pricing
+**Goal**: Complete monetization flow with pricing page, trial management, and subscription lifecycle
+**Depends on**: Phase 6
+**Requirements**: BILLING-01, BILLING-02, BILLING-03, BILLING-04, BILLING-05, BILLING-06
+**Success Criteria** (what must be TRUE):
+  1. Public pricing page shows plans with features and pricing
+  2. Users can start a free trial without payment
+  3. Trial expiration prompts upgrade or feature lockout
+  4. Stripe Checkout creates subscription on upgrade
+  5. Webhooks handle subscription lifecycle (upgrade, downgrade, cancel, failed payment)
+  6. Usage tracking enforces seat limits
+  7. Billing emails sent for invoices, failed payments, subscription changes
+**Plans**: TBD (to be planned)
+
+Plans:
+- [ ] 07-01-PLAN.md — Public pricing page with plan comparison
+- [ ] 07-02-PLAN.md — Trial management and expiration flow
+- [ ] 07-03-PLAN.md — Subscription enforcement and feature gating
+- [ ] 07-04-PLAN.md — Seat-based usage tracking and limits
+- [ ] 07-05-PLAN.md — Webhook handlers for full subscription lifecycle
+- [ ] 07-06-PLAN.md — Email notifications for billing events
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -207,7 +230,8 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6
 | 3. AI Personalization | 7/7 | Complete | 2026-01-26 |
 | 4. Web Portal | 9/10 | In progress | - |
 | 5. Weekly Reports | 8/9 | Human verification | - |
-| 6. Production Polish & Admin | 0/9 | Not started | - |
+| 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
+| 7. Monetization & Pricing | 0/6 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-26*
