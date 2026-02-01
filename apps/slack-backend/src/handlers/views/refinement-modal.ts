@@ -1,4 +1,5 @@
 import type { App } from '@slack/bolt';
+import { trackRefinement } from '../../services/feedback-tracker.js';
 import { refineSuggestion } from '../../services/index.js';
 import { logger } from '../../utils/logger.js';
 
@@ -108,6 +109,21 @@ export function registerRefinementModalHandler(app: App): void {
           roundNumber: metadata.history.length + 1,
           processingTimeMs: result.processingTimeMs,
         }, 'Refinement generated');
+
+        // Get the original suggestion (first in history, or current if this is first refinement)
+        const originalText = metadata.history.length > 0
+          ? metadata.history[0].suggestion
+          : metadata.currentSuggestion;
+
+        // Track refinement feedback (user modified the suggestion)
+        await trackRefinement(
+          metadata.workspaceId,
+          metadata.userId,
+          metadata.suggestionId,
+          originalText,
+          result.suggestion,
+          metadata.channelId
+        );
 
         // Update history
         const updatedHistory = [
