@@ -1,0 +1,13 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  // Fail on moderate or higher vulnerabilities
+  "moderate": true,
+  // Output format
+  "output-format": "text",
+  // Allow specific advisories if needed (with justification)
+  "allowlist": [
+    // Example: "GHSA-xxxx-xxxx-xxxx" // Reason: No fix available, mitigated by X
+  ]
+  // Skip dev dependencies for faster scans (optional - uncomment to enable)
+  // "skip-dev": true
+}
