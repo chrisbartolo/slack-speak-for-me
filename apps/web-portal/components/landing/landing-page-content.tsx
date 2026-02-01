@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { BrushUnderline, BrushUnderlineThick } from '@/components/ui/brush-underline';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { faqItems } from '@/lib/seo/schemas';
+import { Footer } from '@/components/footer';
 
 function ErrorBanner() {
   const searchParams = useSearchParams();
@@ -391,37 +392,8 @@ export function LandingPageContent() {
         </a>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200/50 bg-white py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Speak for Me"
-                width={28}
-                height={28}
-                className="rounded-lg"
-              />
-              <span className="font-semibold text-gray-900">Speak for Me</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/pricing" className="hover:text-gray-900">
-                Pricing
-              </Link>
-              <Link href="/#faq" className="hover:text-gray-900">
-                FAQ
-              </Link>
-              <a href="mailto:support@speakforme.app" className="hover:text-gray-900">
-                Support
-              </a>
-            </div>
-            <p className="text-gray-500 text-sm">
-              Powered by Claude AI
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer with legal links */}
+      <Footer />
     </div>
   );
 }
