@@ -10,7 +10,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Monorepo** with npm workspaces
 - **apps/slack-backend** - Slack Bolt app with OAuth, event handlers, job processing
+- **apps/web-portal** - Next.js dashboard for settings, history, and management
 - **packages/database** - Drizzle ORM with PostgreSQL, RLS for multi-tenant isolation
+
+## Branding
+
+See `BRANDING.md` for the complete style guide including:
+- Color palette (blue-indigo gradient primary)
+- Logo (brushstroke "S" calligraphic style)
+- UI elements (SVG brush underlines)
+- Image generation prompts used
 
 ## Development Setup
 
@@ -119,6 +128,9 @@ npm run db:studio --workspace=@slack-speak-for-me/database    # Open Drizzle Stu
 
 - `.planning/ROADMAP.md` - Project phases and progress
 - `.planning/PROJECT.md` - Requirements and decisions
+- `BRANDING.md` - Brand style guide and image generation prompts
 - `apps/slack-backend/src/app.ts` - Main Bolt app configuration
 - `apps/slack-backend/src/services/ai.ts` - Claude AI integration
+- `apps/web-portal/components/ui/brush-underline.tsx` - SVG brush underline component
+- `apps/web-portal/components/landing/landing-page-content.tsx` - Landing page
 - `packages/database/src/schema.ts` - Database schema
