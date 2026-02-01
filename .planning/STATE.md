@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 07 of 7 (Monetization & Pricing) - IN PROGRESS
-Plan: 04 of N (Subscription lifecycle webhooks)
+Plan: 05 of N (Seat enforcement and subscription banners)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 7 execution in progress
-Last activity: 2026-02-01 - Completed 07-04-PLAN.md
+Last activity: 2026-02-01 - Completed 07-05-PLAN.md
 
-Progress: [████████████████░] 96% (Phase 7 in progress)
+Progress: [████████████████░] 97% (Phase 7 in progress)
 
 ## Production Deployment
 
@@ -112,6 +112,9 @@ Recent decisions affecting current work:
 - Phase 7 Plan 04: trial_will_end logs only - email reminders can be added later
 - Phase 7 Plan 04: invoice.payment_failed logs only - Stripe handles retry logic
 - Phase 7 Plan 04: trialEndsAt converted from Unix timestamp (seconds) to JS Date
+- Phase 7 Plan 05: past_due status allows access while Stripe handles retries
+- Phase 7 Plan 05: Trial warning threshold at 3 days (shows warning instead of info)
+- Phase 7 Plan 05: Organization fetched via workspace for subscription status
 
 ### Pending Todos
 
@@ -144,7 +147,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 07-04-PLAN.md
+Stopped at: Completed 07-05-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -275,6 +278,10 @@ Documentation:
 **Phase 7 Plan 04 (2026-02-01):**
 - `apps/web-portal/lib/billing/trial.ts` - Trial state helper functions (getTrialStatus, isTrialExpired, formatTrialDaysRemaining)
 - `apps/web-portal/app/api/stripe/webhook/route.ts` - Extended with trial_will_end, paused, resumed, invoice handlers and trialEndsAt tracking
+
+**Phase 7 Plan 05 (2026-02-01):**
+- `apps/web-portal/lib/billing/seat-enforcement.ts` - Seat limit and subscription access checking service
+- `apps/web-portal/app/dashboard/layout.tsx` - Dashboard layout with subscription status banner
 
 ---
 *Last updated: 2026-02-01*
