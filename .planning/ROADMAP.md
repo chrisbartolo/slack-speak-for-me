@@ -259,10 +259,14 @@ Plans:
   4. Loading states and error handling provide clear feedback to users
   5. Consistent button styles (gradient CTAs, ghost secondary) across all pages
   6. Cards use consistent shadow and hover effects
-**Plans**: TBD (run /gsd:plan-phase 9 to break down)
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] TBD
+- [ ] 09-01-PLAN.md — Brand colors, gradient button, card hover effects
+- [ ] 09-02-PLAN.md — Expandable admin navigation with NavGroup
+- [ ] 09-03-PLAN.md — Mobile responsive layout with drawer navigation
+- [ ] 09-04-PLAN.md — Loading skeletons and error boundaries
+- [ ] 09-05-PLAN.md — Human verification checkpoint
 
 ### Phase 10: Calendar Integration
 **Goal**: AI can check calendar availability and suggest meeting times in responses
@@ -296,7 +300,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
 | 7. Monetization & Pricing | 7/7 | Complete | 2026-02-01 |
 | 8. Production Security & Compliance | 7/7 | Complete | 2026-02-01 |
-| 9. Portal/Admin UX Polish | 0/? | Not started | - |
+| 9. Portal/Admin UX Polish | 0/5 | Planned | - |
 | 10. Calendar Integration | 0/? | Not started | - |
 
 ---
