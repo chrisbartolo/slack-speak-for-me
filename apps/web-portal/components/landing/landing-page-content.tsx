@@ -34,9 +34,11 @@ function FAQSection() {
   return (
     <section id="faq" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-3">
+        <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-4">
           Frequently Asked Questions
-          <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64" />
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+            <BrushUnderline width={280} />
+          </span>
         </h2>
         <p className="mt-4 text-gray-600">Everything you need to know about Speak for Me</p>
       </div>
@@ -133,9 +135,11 @@ export function LandingPageContent() {
           <div>
             <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Craft Perfect Slack Responses with{' '}
-              <span className="relative inline-block pb-2">
+              <span className="relative inline-block pb-3">
                 <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">AI</span>
-                <BrushUnderline className="absolute bottom-0 left-0 w-full" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+                  <BrushUnderline width={70} />
+                </span>
               </span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
@@ -194,9 +198,11 @@ export function LandingPageContent() {
       {/* Features Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-3">
+          <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-4">
             How It Works
-            <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-40" />
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+              <BrushUnderline width={180} />
+            </span>
           </h2>
           <p className="mt-4 text-gray-600">Three simple ways to get AI-powered response suggestions</p>
         </div>
@@ -244,9 +250,11 @@ export function LandingPageContent() {
       <section className="bg-white py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-3">
+            <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-4">
               Why Speak for Me?
-              <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-52" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+                <BrushUnderline width={220} />
+              </span>
             </h2>
           </div>
 
@@ -335,9 +343,11 @@ export function LandingPageContent() {
 
       {/* CTA Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 inline-block relative pb-3">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4 inline-block relative pb-4">
           Ready to communicate better?
-          <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-72" />
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+            <BrushUnderline width={320} />
+          </span>
         </h2>
         <p className="text-gray-600 mb-8 max-w-xl mx-auto mt-4">
           Join teams who use Speak for Me to handle difficult workplace conversations with confidence.
