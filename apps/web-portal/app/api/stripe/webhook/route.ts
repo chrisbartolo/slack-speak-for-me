@@ -42,10 +42,53 @@ export async function POST(request: NextRequest) {
             stripeSubscriptionId: subscription.id,
             subscriptionStatus: subscription.status,
             seatCount: subscription.items.data[0]?.quantity || 1,
+            trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
             updatedAt: new Date(),
           })
           .where(eq(organizations.stripeCustomerId, customerId));
 
+        console.log(`Subscription ${event.type === 'customer.subscription.created' ? 'created' : 'updated'} for customer ${customerId}, status: ${subscription.status}`);
+        break;
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        // Sent 3 days before trial ends
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+        // Log for now - could queue email reminder job in future
+        console.log(`Trial ending soon for customer ${customerId}, trial_end: ${subscription.trial_end}`);
+        break;
+      }
+
+      case 'customer.subscription.paused': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        await db
+          .update(organizations)
+          .set({
+            subscriptionStatus: 'paused',
+            updatedAt: new Date(),
+          })
+          .where(eq(organizations.stripeCustomerId, customerId));
+
+        console.log(`Subscription paused for customer ${customerId}`);
+        break;
+      }
+
+      case 'customer.subscription.resumed': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        await db
+          .update(organizations)
+          .set({
+            subscriptionStatus: 'active',
+            updatedAt: new Date(),
+          })
+          .where(eq(organizations.stripeCustomerId, customerId));
+
+        console.log(`Subscription resumed for customer ${customerId}`);
         break;
       }
 
@@ -83,6 +126,33 @@ export async function POST(request: NextRequest) {
             .where(eq(organizations.id, session.metadata.organizationId));
         }
 
+        console.log(`Checkout completed for customer ${customerId}`);
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        // Log failure - Stripe handles retry automatically
+        console.log(`Payment failed for customer ${customerId}, invoice ${invoice.id}`);
+        break;
+      }
+
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        // Ensure status is active after successful payment
+        await db
+          .update(organizations)
+          .set({
+            subscriptionStatus: 'active',
+            updatedAt: new Date(),
+          })
+          .where(eq(organizations.stripeCustomerId, customerId));
+
+        console.log(`Invoice paid for customer ${customerId}, invoice ${invoice.id}`);
         break;
       }
 
