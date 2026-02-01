@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
-Plan: 08 of 9 (Admin panel with org and user management)
+Phase: 07 of 7 (Monetization & Pricing) - IN PROGRESS
+Plan: 03 of N (Trial period support)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 6 execution in progress
-Last activity: 2026-02-01 - Completed 06-08-PLAN.md
+Status: Phase 7 execution in progress
+Last activity: 2026-02-01 - Completed 07-03-PLAN.md
 
-Progress: [███████████████░░] 94% (Phase 6 in progress)
+Progress: [████████████████░] 95% (Phase 7 in progress)
 
 ## Production Deployment
 
@@ -99,6 +99,10 @@ Recent decisions affecting current work:
 - Phase 6 Plan 08: Organization-scoped queries - admin sees only their own organization
 - Phase 6 Plan 08: Sidebar receives isAdmin as prop from async layout for conditional rendering
 - Phase 6 Plan 08: Settings icon for admin navigation in sidebar
+- Phase 7 Plan 03: 14-day default trial period via TRIAL_DAYS environment variable
+- Phase 7 Plan 03: missing_payment_method: pause keeps subscription recoverable
+- Phase 7 Plan 03: Backward compatible with legacy STRIPE_PRICE_ID env var
+- Phase 7 Plan 03: startTrial defaults to true if no existing subscription
 
 ### Pending Todos
 
@@ -131,7 +135,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 06-08-PLAN.md
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -241,6 +245,11 @@ Documentation:
 - `apps/web-portal/app/admin/users/page.tsx` - Workspace users with role badges
 - `apps/web-portal/components/dashboard/sidebar.tsx` - Added isAdmin prop and conditional admin link
 - `apps/web-portal/app/dashboard/layout.tsx` - Added isAdmin check and prop passing
+
+**Phase 7 Plan 03 (2026-02-01):**
+- `packages/database/src/schema.ts` - Added trialEndsAt column to organizations table
+- `apps/web-portal/lib/stripe.ts` - Added createTrialCheckout function with trial settings
+- `apps/web-portal/app/api/stripe/checkout/route.ts` - Added planId/startTrial support, plan-based pricing
 
 ---
 *Last updated: 2026-02-01*
