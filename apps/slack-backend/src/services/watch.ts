@@ -26,19 +26,28 @@ export async function watchConversation(
   channelName?: string,
   channelType?: string
 ): Promise<void> {
-  await db.insert(watchedConversations).values({
+  const insertQuery = db.insert(watchedConversations).values({
     workspaceId,
     userId,
     channelId,
     channelName,
     channelType,
-  }).onConflictDoUpdate({
-    target: [watchedConversations.workspaceId, watchedConversations.userId, watchedConversations.channelId],
-    set: {
-      channelName,  // Update if channel was renamed
-      channelType,
-    },
   });
+
+  // If we have channel info to update, use onConflictDoUpdate
+  // Otherwise, use onConflictDoNothing to maintain backward compatibility
+  if (channelName !== undefined || channelType !== undefined) {
+    const setValues: Record<string, string | undefined> = {};
+    if (channelName !== undefined) setValues.channelName = channelName;
+    if (channelType !== undefined) setValues.channelType = channelType;
+
+    await insertQuery.onConflictDoUpdate({
+      target: [watchedConversations.workspaceId, watchedConversations.userId, watchedConversations.channelId],
+      set: setValues,
+    });
+  } else {
+    await insertQuery.onConflictDoNothing();
+  }
 }
 
 /**

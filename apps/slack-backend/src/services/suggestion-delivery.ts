@@ -7,7 +7,7 @@ interface SuggestionDeliveryOptions {
   userId: string;
   suggestionId: string;
   suggestion: string;
-  triggerContext: 'mention' | 'reply' | 'thread' | 'message_action';
+  triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm';
 }
 
 /**
@@ -16,7 +16,7 @@ interface SuggestionDeliveryOptions {
 export function buildSuggestionBlocks(
   suggestionId: string,
   suggestion: string,
-  triggerContext: 'mention' | 'reply' | 'thread' | 'message_action'
+  triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm'
 ): (Block | KnownBlock)[] {
   // Map trigger context to user-friendly text
   const contextLabels: Record<typeof triggerContext, string> = {
@@ -24,6 +24,7 @@ export function buildSuggestionBlocks(
     reply: 'someone replied to you',
     thread: 'new activity in a thread you\'re following',
     message_action: 'you requested a suggestion',
+    dm: 'someone messaged you directly',
   };
 
   return [

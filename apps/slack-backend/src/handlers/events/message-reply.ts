@@ -1,5 +1,5 @@
 import type { App } from '@slack/bolt';
-import { isWatching, recordThreadParticipation, isParticipatingInThread, getWorkspaceId } from '../../services/watch.js';
+import { isWatching, recordThreadParticipation, isParticipatingInThread, getWorkspaceId, getWatchersForChannel } from '../../services/watch.js';
 import { getContextForMessage, getThreadContext } from '../../services/context.js';
 import { queueAIResponse } from '../../jobs/queues.js';
 import { logger } from '../../utils/logger.js';
@@ -36,6 +36,7 @@ export function registerMessageReplyHandler(app: App) {
         ts: string;
         channel: string;
         thread_ts?: string;
+        channel_type?: string;  // 'im' | 'mpim' | 'channel' | 'group'
       };
 
       if (!typedMessage.user || !typedMessage.text || !typedMessage.ts) {
@@ -47,11 +48,17 @@ export function registerMessageReplyHandler(app: App) {
       const userId = typedMessage.user;
       const threadTs = typedMessage.thread_ts;
 
+      // Detect DM conversations - channel_type is 'im' or channel ID starts with 'D'
+      const channelType = typedMessage.channel_type;
+      const isDM = channelType === 'im' || channelId.startsWith('D');
+
       logger.debug({
         channel: channelId,
         user: userId,
         ts: messageTs,
         threadTs,
+        channelType,
+        isDM,
       }, 'message event received');
 
       // Get the Slack team ID from the client's auth test
@@ -79,6 +86,41 @@ export function registerMessageReplyHandler(app: App) {
           channelId,
           threadTs,
         }, 'Recorded thread participation');
+      }
+
+      // Handle DM conversations - trigger for watchers when message is from other party
+      if (isDM && !threadTs) {
+        // Get all users watching this DM channel
+        const watchers = await getWatchersForChannel(workspaceId, channelId);
+
+        for (const watcherUserId of watchers) {
+          // Skip if watcher is the message author (don't suggest for own messages)
+          if (watcherUserId === userId) {
+            logger.debug({ user: watcherUserId }, 'Skipping DM - user is message author');
+            continue;
+          }
+
+          // Get context messages for the DM
+          const contextMessages = await getContextForMessage(client, channelId, messageTs);
+
+          // Queue AI suggestion for the watcher
+          const job = await queueAIResponse({
+            workspaceId,
+            userId: watcherUserId,
+            channelId,
+            messageTs,
+            triggerMessageText: typedMessage.text,
+            contextMessages,
+            triggeredBy: 'dm',
+          });
+
+          logger.info({
+            jobId: job.id,
+            watchingUser: watcherUserId,
+            channelId,
+          }, 'AI response job queued for DM message');
+        }
+        return;
       }
 
       // Check if this message is a reply to someone we're watching

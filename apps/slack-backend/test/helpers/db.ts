@@ -18,11 +18,28 @@ let testDb: ReturnType<typeof drizzle<typeof schema>> | null = null;
  * Note: PGlite uses gen_random_uuid() for UUID generation (no extension needed)
  */
 const createTablesSQL = `
+  CREATE TABLE organizations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    subscription_status TEXT,
+    plan_id TEXT,
+    seat_count INTEGER DEFAULT 1,
+    billing_email TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+  );
+  CREATE UNIQUE INDEX organizations_slug_idx ON organizations(slug);
+  CREATE INDEX organizations_stripe_customer_idx ON organizations(stripe_customer_id);
+
   CREATE TABLE workspaces (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id TEXT NOT NULL UNIQUE,
     enterprise_id TEXT,
     name TEXT,
+    organization_id UUID REFERENCES organizations(id),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -55,6 +72,8 @@ const createTablesSQL = `
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
     user_id TEXT NOT NULL,
     channel_id TEXT NOT NULL,
+    channel_name TEXT,
+    channel_type TEXT,
     watched_at TIMESTAMP DEFAULT NOW()
   );
   CREATE INDEX watched_conversations_workspace_user_idx ON watched_conversations(workspace_id, user_id);
@@ -256,6 +275,7 @@ export async function clearAllTables() {
     TRUNCATE TABLE users CASCADE;
     TRUNCATE TABLE installations CASCADE;
     TRUNCATE TABLE workspaces CASCADE;
+    TRUNCATE TABLE organizations CASCADE;
   `);
 }
 

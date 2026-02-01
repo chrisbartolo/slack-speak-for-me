@@ -12,6 +12,7 @@ vi.mock('../../services/watch.js', () => ({
   recordThreadParticipation: vi.fn().mockResolvedValue(undefined),
   isParticipatingInThread: vi.fn().mockResolvedValue(false),
   getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
+  getWatchersForChannel: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../services/context.js', () => ({
@@ -33,8 +34,8 @@ vi.mock('../../utils/logger.js', () => ({
 
 import { registerMessageReplyHandler } from './message-reply.js';
 import { queueAIResponse } from '../../jobs/queues.js';
-import { isWatching, recordThreadParticipation, isParticipatingInThread, getWorkspaceId } from '../../services/watch.js';
-import { getThreadContext } from '../../services/context.js';
+import { isWatching, recordThreadParticipation, isParticipatingInThread, getWorkspaceId, getWatchersForChannel } from '../../services/watch.js';
+import { getThreadContext, getContextForMessage } from '../../services/context.js';
 import { logger } from '../../utils/logger.js';
 
 // Define a generic message type for testing
@@ -47,6 +48,7 @@ type TestMessage = {
   thread_ts?: string;
   bot_id?: string;
   subtype?: string;
+  channel_type?: string;  // 'im' | 'mpim' | 'channel' | 'group'
 };
 
 describe('Message Reply Handler', () => {
@@ -78,6 +80,7 @@ describe('Message Reply Handler', () => {
     // Reset mocks to default behavior
     vi.mocked(isWatching).mockResolvedValue(false);
     vi.mocked(isParticipatingInThread).mockResolvedValue(false);
+    vi.mocked(getWatchersForChannel).mockResolvedValue([]);
 
     // Capture the handler when registered
     mockApp = {
@@ -433,5 +436,128 @@ describe('Message Reply Handler', () => {
       }),
       'Detected reply in watched thread'
     );
+  });
+
+  // DM conversation tests
+  describe('DM conversation handling', () => {
+    it('should trigger DM suggestion when watched and message is from other user', async () => {
+      const mockMessage = createMockMessage({
+        user: 'U789', // Other user sends message
+        channel: 'D123456', // DM channel ID starts with D
+        channel_type: 'im',
+      });
+      const mockClient = createMockClient();
+
+      // U123 is watching this DM
+      vi.mocked(getWatchersForChannel).mockResolvedValueOnce(['U123']);
+      vi.mocked(getContextForMessage).mockResolvedValueOnce([]);
+
+      await messageHandler({ message: mockMessage, client: mockClient });
+
+      expect(getWatchersForChannel).toHaveBeenCalledWith('workspace_123', 'D123456');
+      expect(queueAIResponse).toHaveBeenCalledTimes(1);
+      expect(queueAIResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workspaceId: 'workspace_123',
+          userId: 'U123', // The watcher
+          channelId: 'D123456',
+          triggeredBy: 'dm',
+        })
+      );
+    });
+
+    it('should not trigger DM suggestion when message is from watcher', async () => {
+      const mockMessage = createMockMessage({
+        user: 'U123', // Watcher sends the message
+        channel: 'D123456',
+        channel_type: 'im',
+      });
+      const mockClient = createMockClient();
+
+      // U123 is watching this DM
+      vi.mocked(getWatchersForChannel).mockResolvedValueOnce(['U123']);
+
+      await messageHandler({ message: mockMessage, client: mockClient });
+
+      // Should not queue because U123 is the author
+      expect(queueAIResponse).not.toHaveBeenCalled();
+      expect(logger.debug).toHaveBeenCalledWith(
+        { user: 'U123' },
+        'Skipping DM - user is message author'
+      );
+    });
+
+    it('should detect DM by channel ID starting with D', async () => {
+      const mockMessage = createMockMessage({
+        user: 'U789',
+        channel: 'D999999', // Starts with D
+        // No channel_type - rely on channel ID detection
+      });
+      const mockClient = createMockClient();
+
+      vi.mocked(getWatchersForChannel).mockResolvedValueOnce(['U123']);
+      vi.mocked(getContextForMessage).mockResolvedValueOnce([]);
+
+      await messageHandler({ message: mockMessage, client: mockClient });
+
+      expect(queueAIResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          triggeredBy: 'dm',
+        })
+      );
+    });
+
+    it('should handle multiple watchers in DM (edge case)', async () => {
+      const mockMessage = createMockMessage({
+        user: 'U789', // Other user
+        channel: 'D123456',
+        channel_type: 'im',
+      });
+      const mockClient = createMockClient();
+
+      // Both U123 and U456 watching (unlikely in DM, but possible)
+      vi.mocked(getWatchersForChannel).mockResolvedValueOnce(['U123', 'U456']);
+      vi.mocked(getContextForMessage).mockResolvedValue([]);
+
+      await messageHandler({ message: mockMessage, client: mockClient });
+
+      // Should queue for both watchers
+      expect(queueAIResponse).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not process DM as thread message', async () => {
+      const mockMessage = createMockMessage({
+        user: 'U789',
+        channel: 'D123456',
+        channel_type: 'im',
+        // No thread_ts
+      });
+      const mockClient = createMockClient();
+
+      vi.mocked(getWatchersForChannel).mockResolvedValueOnce(['U123']);
+      vi.mocked(getContextForMessage).mockResolvedValueOnce([]);
+
+      await messageHandler({ message: mockMessage, client: mockClient });
+
+      // Should NOT call thread-related functions
+      expect(getThreadContext).not.toHaveBeenCalled();
+      expect(isParticipatingInThread).not.toHaveBeenCalled();
+    });
+
+    it('should skip DM handling if no one is watching', async () => {
+      const mockMessage = createMockMessage({
+        user: 'U789',
+        channel: 'D123456',
+        channel_type: 'im',
+      });
+      const mockClient = createMockClient();
+
+      // No watchers
+      vi.mocked(getWatchersForChannel).mockResolvedValueOnce([]);
+
+      await messageHandler({ message: mockMessage, client: mockClient });
+
+      expect(queueAIResponse).not.toHaveBeenCalled();
+    });
   });
 });

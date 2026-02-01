@@ -9,7 +9,7 @@ export interface AIResponseJobData {
     text: string;
     ts: string;
   }>;
-  triggeredBy: 'mention' | 'reply' | 'thread' | 'message_action';
+  triggeredBy: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm';
 }
 
 export interface AIResponseJobResult {

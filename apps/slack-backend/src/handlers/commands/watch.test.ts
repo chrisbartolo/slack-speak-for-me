@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { App, SlashCommand, AckFn, RespondFn } from '@slack/bolt';
+import type { WebClient } from '@slack/web-api';
 
 // Mock dependencies before importing handler
 vi.mock('../../services/watch.js', () => ({
@@ -28,11 +29,13 @@ describe('Watch Commands', () => {
     command: Partial<SlashCommand>;
     ack: AckFn<void>;
     respond: RespondFn;
+    client: Partial<WebClient>;
   }) => Promise<void>;
   let unwatchHandler: (args: {
     command: Partial<SlashCommand>;
     ack: AckFn<void>;
     respond: RespondFn;
+    client: Partial<WebClient>;
   }) => Promise<void>;
 
   const createMockCommand = (overrides: Partial<SlashCommand> = {}): Partial<SlashCommand> => ({
@@ -45,6 +48,21 @@ describe('Watch Commands', () => {
     trigger_id: 'trigger_123',
     ...overrides,
   });
+
+  const createMockClient = (): Partial<WebClient> => ({
+    conversations: {
+      info: vi.fn().mockResolvedValue({
+        ok: true,
+        channel: {
+          id: 'C789',
+          name: 'test-channel',
+          is_im: false,
+          is_mpim: false,
+          is_private: false,
+        },
+      }),
+    },
+  } as unknown as Partial<WebClient>);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -76,8 +94,9 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand();
+      const client = createMockClient();
 
-      await watchHandler({ command, ack, respond });
+      await watchHandler({ command, ack, respond, client });
 
       expect(ack).toHaveBeenCalled();
       // ack should be called before any other async operations
@@ -90,14 +109,22 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand();
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(false);
 
-      await watchHandler({ command, ack, respond });
+      await watchHandler({ command, ack, respond, client });
 
       expect(getWorkspaceId).toHaveBeenCalledWith('T123');
       expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
-      expect(watchConversation).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
+      // watchConversation now takes 5 params: workspaceId, userId, channelId, channelName?, channelType?
+      expect(watchConversation).toHaveBeenCalledWith(
+        'workspace_123',
+        'U456',
+        'C789',
+        expect.anything(), // channelName (may be undefined)
+        expect.anything()  // channelType (may be undefined)
+      );
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
           response_type: 'ephemeral',
@@ -110,10 +137,11 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand();
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
 
-      await watchHandler({ command, ack, respond });
+      await watchHandler({ command, ack, respond, client });
 
       expect(getWorkspaceId).toHaveBeenCalledWith('T123');
       expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
@@ -134,23 +162,32 @@ describe('Watch Commands', () => {
         user_id: 'UUSER',
         channel_id: 'CCHANNEL',
       });
+      const client = createMockClient();
 
-      await watchHandler({ command, ack, respond });
+      await watchHandler({ command, ack, respond, client });
 
       expect(getWorkspaceId).toHaveBeenCalledWith('TWORKSPACE');
       expect(isWatching).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
-      expect(watchConversation).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
+      // watchConversation now takes 5 params: workspaceId, userId, channelId, channelName?, channelType?
+      expect(watchConversation).toHaveBeenCalledWith(
+        'workspace_123',
+        'UUSER',
+        'CCHANNEL',
+        expect.anything(), // channelName
+        expect.anything()  // channelType
+      );
     });
 
     it('should respond with error message on failure', async () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand();
+      const client = createMockClient();
       const testError = new Error('Database error');
 
       vi.mocked(watchConversation).mockRejectedValueOnce(testError);
 
-      await watchHandler({ command, ack, respond });
+      await watchHandler({ command, ack, respond, client });
 
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -168,8 +205,9 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand();
+      const client = createMockClient();
 
-      await watchHandler({ command, ack, respond });
+      await watchHandler({ command, ack, respond, client });
 
       expect(logger.info).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -187,11 +225,12 @@ describe('Watch Commands', () => {
         .mockRejectedValueOnce(new Error('Respond failed'))
         .mockResolvedValueOnce(undefined);
       const command = createMockCommand();
+      const client = createMockClient();
 
       vi.mocked(watchConversation).mockRejectedValueOnce(new Error('Watch error'));
 
       // Should not throw even if respond fails
-      await expect(watchHandler({ command, ack, respond })).resolves.not.toThrow();
+      await expect(watchHandler({ command, ack, respond, client })).resolves.not.toThrow();
 
       expect(logger.error).toHaveBeenCalledWith(
         expect.objectContaining({ error: expect.any(Error) }),
@@ -209,10 +248,11 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand({ command: '/unwatch' });
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
 
-      await unwatchHandler({ command, ack, respond });
+      await unwatchHandler({ command, ack, respond, client });
 
       expect(ack).toHaveBeenCalled();
       expect(ack.mock.invocationCallOrder[0]).toBeLessThan(
@@ -224,10 +264,11 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand({ command: '/unwatch' });
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
 
-      await unwatchHandler({ command, ack, respond });
+      await unwatchHandler({ command, ack, respond, client });
 
       expect(getWorkspaceId).toHaveBeenCalledWith('T123');
       expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
@@ -244,10 +285,11 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand({ command: '/unwatch' });
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(false);
 
-      await unwatchHandler({ command, ack, respond });
+      await unwatchHandler({ command, ack, respond, client });
 
       expect(getWorkspaceId).toHaveBeenCalledWith('T123');
       expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U456', 'C789');
@@ -269,10 +311,11 @@ describe('Watch Commands', () => {
         user_id: 'UUSER',
         channel_id: 'CCHANNEL',
       });
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
 
-      await unwatchHandler({ command, ack, respond });
+      await unwatchHandler({ command, ack, respond, client });
 
       expect(getWorkspaceId).toHaveBeenCalledWith('TWORKSPACE');
       expect(isWatching).toHaveBeenCalledWith('workspace_123', 'UUSER', 'CCHANNEL');
@@ -283,12 +326,13 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand({ command: '/unwatch' });
+      const client = createMockClient();
       const testError = new Error('Database error');
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
       vi.mocked(unwatchConversation).mockRejectedValueOnce(testError);
 
-      await unwatchHandler({ command, ack, respond });
+      await unwatchHandler({ command, ack, respond, client });
 
       expect(respond).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -306,10 +350,11 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand({ command: '/unwatch' });
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
 
-      await unwatchHandler({ command, ack, respond });
+      await unwatchHandler({ command, ack, respond, client });
 
       expect(logger.info).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -327,12 +372,13 @@ describe('Watch Commands', () => {
         .mockRejectedValueOnce(new Error('Respond failed'))
         .mockResolvedValueOnce(undefined);
       const command = createMockCommand({ command: '/unwatch' });
+      const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
       vi.mocked(unwatchConversation).mockRejectedValueOnce(new Error('Unwatch error'));
 
       // Should not throw even if respond fails
-      await expect(unwatchHandler({ command, ack, respond })).resolves.not.toThrow();
+      await expect(unwatchHandler({ command, ack, respond, client })).resolves.not.toThrow();
 
       expect(logger.error).toHaveBeenCalledWith(
         expect.objectContaining({ error: expect.any(Error) }),
