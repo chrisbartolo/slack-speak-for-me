@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 08 of 8 (Production Security & Compliance)
-Plan: 06 of 7
+Plan: 07 of 7
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-01 - Completed 08-05-PLAN.md (GDPR Data Export)
+Last activity: 2026-02-01 - Completed 08-06-PLAN.md (GDPR Data Deletion)
 
-Progress: [███████████████████████░░░░░░░░░] 94% (47/50 plans complete)
+Progress: [████████████████████████░░░░░░░░] 96% (48/50 plans complete)
 
 ## Production Deployment
 
@@ -51,7 +51,7 @@ Progress: [███████████████████████
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
 | 06 - Production Polish | 8 | 25 min | 3.1 min |
 | 07 - Monetization & Pricing | 7 | 25 min | 3.6 min |
-| 08 - Production Security | 6/7 | 30 min | 5.0 min |
+| 08 - Production Security | 7/7 | 33 min | 4.7 min |
 
 *Phase 8 in progress*
 
@@ -136,6 +136,10 @@ Recent decisions affecting current work:
 - Phase 8 Plan 05: Parallel Promise.all queries for data export - Efficient aggregation from 12+ tables
 - Phase 8 Plan 05: OAuth tokens redacted in export - Show connected status only, never export tokens
 - Phase 8 Plan 05: Client-side download trigger - Fetch JSON then create Blob for download
+- Phase 8 Plan 06: Consent records preserved with revokedAt timestamp for compliance audit trail
+- Phase 8 Plan 06: FK-safe deletion order - Leaf tables (embeddings, participants) before parent tables (users)
+- Phase 8 Plan 06: Confirmation text 'DELETE MY ACCOUNT' required for API and UI
+- Phase 8 Plan 06: Session destroyed after deletion to force logout
 
 ### Pending Todos
 
@@ -168,7 +172,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 08-05-PLAN.md (GDPR Data Export)
+Stopped at: Completed 08-06-PLAN.md (GDPR Data Deletion)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -347,6 +351,11 @@ Documentation:
 - `apps/web-portal/app/api/gdpr/export/route.ts` - GDPR export API endpoint with audit logging
 - `apps/web-portal/app/dashboard/settings/page.tsx` - Settings page with Data & Privacy section
 - `apps/web-portal/components/dashboard/sidebar.tsx` - Added Settings link to navigation
+
+**Phase 8 Plan 06 (2026-02-01):**
+- `apps/web-portal/lib/gdpr/data-deletion.ts` - Transactional deletion from 12+ user tables
+- `apps/web-portal/app/api/gdpr/delete/route.ts` - GDPR deletion API with confirmation and audit logging
+- `apps/web-portal/app/dashboard/settings/page.tsx` - Added Danger Zone with delete account dialog
 
 ---
 *Last updated: 2026-02-01*
