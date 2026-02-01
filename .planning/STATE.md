@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
-Plan: 06 of ? (Conversations page enhancement)
+Plan: 08 of 9 (Admin panel with org and user management)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 6 execution in progress
-Last activity: 2026-02-01 - Completed 06-06-PLAN.md
+Last activity: 2026-02-01 - Completed 06-08-PLAN.md
 
-Progress: [██████████████░░░] 92% (Phase 6 in progress)
+Progress: [███████████████░░] 94% (Phase 6 in progress)
 
 ## Production Deployment
 
@@ -96,6 +96,9 @@ Recent decisions affecting current work:
 - Phase 6 Plan 06: Use channelName/channelType from database props instead of API fetch
 - Phase 6 Plan 06: DMs don't have # prefix in display name
 - Phase 6 Plan 06: Refresh parameter enables one-time backfill for legacy data
+- Phase 6 Plan 08: Organization-scoped queries - admin sees only their own organization
+- Phase 6 Plan 08: Sidebar receives isAdmin as prop from async layout for conditional rendering
+- Phase 6 Plan 08: Settings icon for admin navigation in sidebar
 
 ### Pending Todos
 
@@ -128,7 +131,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 06-06-PLAN.md
+Stopped at: Completed 06-08-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -229,6 +232,15 @@ Documentation:
 - `apps/web-portal/lib/db/queries.ts` - Explicit select for channelName, channelType fields
 - `apps/web-portal/components/dashboard/conversation-list.tsx` - Removed API fetch, added channel type icons and action buttons
 - `apps/web-portal/app/api/slack/channels/route.ts` - Added refresh parameter for legacy data backfill
+
+**Phase 6 Plan 08 (2026-02-01):**
+- `apps/web-portal/lib/db/admin-queries.ts` - Cached queries for organizations, workspaces, users
+- `apps/web-portal/app/admin/layout.tsx` - Admin layout with requireAdmin protection
+- `apps/web-portal/app/admin/page.tsx` - Admin dashboard with navigation cards
+- `apps/web-portal/app/admin/organizations/page.tsx` - Organization list with plan details
+- `apps/web-portal/app/admin/users/page.tsx` - Workspace users with role badges
+- `apps/web-portal/components/dashboard/sidebar.tsx` - Added isAdmin prop and conditional admin link
+- `apps/web-portal/app/dashboard/layout.tsx` - Added isAdmin check and prop passing
 
 ---
 *Last updated: 2026-02-01*
