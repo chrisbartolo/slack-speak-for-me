@@ -18,6 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: AI Personalization** - Style learning and iterative refinement
 - [x] **Phase 4: Web Portal** - Dashboard for settings, history, and management
 - [ ] **Phase 5: Weekly Reports** - Automated team report aggregation and formatting
+- [ ] **Phase 6: Production Polish & Admin** - Bug fixes, UX improvements, and admin management
 
 ## Phase Details
 
@@ -168,10 +169,35 @@ Plans:
 - [x] 05-08-PLAN.md — Web portal spreadsheet and workflow configuration
 - [ ] 05-09-PLAN.md — Final integration and human verification
 
+### Phase 6: Production Polish & Admin
+**Goal**: Fix production bugs, improve UX, and add admin management capabilities
+**Depends on**: Phase 5
+**Requirements**: ADMIN-01, ADMIN-02, ADMIN-03, ADMIN-04, ADMIN-05, ADMIN-06, ADMIN-07
+**Success Criteria** (what must be TRUE):
+  1. Bot only responds to messages in channels where /watch is active (not on app_mention alone)
+  2. Bot does not respond to user's own messages
+  3. /watch works correctly in DM conversations
+  4. Web portal shows channel names instead of channel IDs
+  5. Conversations page allows inline context, suggest, refine, and training actions
+  6. AI Learning tab shows accurate feedback types (accepted vs refined) with timestamps
+  7. Admin can view and manage organizations, users, and billing
+**Plans**: 9 plans in 6 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — Fix app_mention to check /watch status before triggering
+- [ ] 06-02-PLAN.md — Fix own-message filtering and DM watch support
+- [ ] 06-03-PLAN.md — Suggestion feedback schema and tracking service
+- [ ] 06-04-PLAN.md — Wire feedback tracking into action handlers
+- [ ] 06-05-PLAN.md — AI Learning tab with accepted vs refined stats
+- [ ] 06-06-PLAN.md — Conversations page with cached names and actions
+- [ ] 06-07-PLAN.md — Admin foundation with org schema and auth middleware
+- [ ] 06-08-PLAN.md — Admin organization and user management pages
+- [ ] 06-09-PLAN.md — Stripe billing integration with Customer Portal
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -181,7 +207,8 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 3 → 4 → 5
 | 3. AI Personalization | 7/7 | Complete | 2026-01-26 |
 | 4. Web Portal | 9/10 | In progress | - |
 | 5. Weekly Reports | 8/9 | Human verification | - |
+| 6. Production Polish & Admin | 0/9 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-01-27*
+*Last updated: 2026-02-01*
