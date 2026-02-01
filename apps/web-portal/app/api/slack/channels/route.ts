@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { installations, workspaces } from '@slack-speak/database';
-import { eq } from 'drizzle-orm';
+import { installations, workspaces, watchedConversations } from '@slack-speak/database';
+import { eq, and } from 'drizzle-orm';
 import { decrypt } from '@slack-speak/database';
 
 function getEncryptionKey(): Buffer {
@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const channelIds = searchParams.get('ids')?.split(',').filter(Boolean) || [];
+    const refresh = searchParams.get('refresh') === 'true';
 
     // Get the installation for this workspace
     const [installation] = await db
@@ -73,6 +74,34 @@ export async function GET(request: NextRequest) {
           }
         })
       );
+
+      // If refresh=true, update channel names in watchedConversations table
+      // This backfills legacy data that was added before channel caching
+      if (refresh && Object.keys(channels).length > 0) {
+        await Promise.all(
+          Object.entries(channels).map(async ([channelId, info]) => {
+            try {
+              // Determine channel type from API response
+              const channelType = info.isPrivate ? 'group' : 'channel';
+
+              await db
+                .update(watchedConversations)
+                .set({
+                  channelName: info.name,
+                  channelType: channelType,
+                })
+                .where(
+                  and(
+                    eq(watchedConversations.channelId, channelId),
+                    eq(watchedConversations.workspaceId, session.workspaceId)
+                  )
+                );
+            } catch (error) {
+              console.error(`Error updating channel ${channelId} in database:`, error);
+            }
+          })
+        );
+      }
 
       return NextResponse.json({ channels });
     }
