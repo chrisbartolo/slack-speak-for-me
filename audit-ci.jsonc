@@ -6,7 +6,11 @@
   "output-format": "text",
   // Allow specific advisories if needed (with justification)
   "allowlist": [
-    // Example: "GHSA-xxxx-xxxx-xxxx" // Reason: No fix available, mitigated by X
+    // False positive: Our workspace package apps/web-portal shares name with malicious npm package
+    "GHSA-j5w4-487q-4xp5",
+    // esbuild vulnerability only affects dev server (local dev only), not production builds
+    // Fix requires drizzle-kit major version upgrade - tracked for next dependency update
+    "GHSA-67mh-4wv8-2f99"
   ]
   // Skip dev dependencies for faster scans (optional - uncomment to enable)
   // "skip-dev": true
