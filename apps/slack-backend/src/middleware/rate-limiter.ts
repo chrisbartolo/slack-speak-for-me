@@ -1,8 +1,5 @@
 import rateLimit, { type RateLimitRequestHandler } from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
-import { Redis } from 'ioredis';
 import type { IncomingMessage, ServerResponse } from 'http';
-import { env } from '../env.js';
 import pino from 'pino';
 
 const logger = pino({ name: 'rate-limiter' });
@@ -13,43 +10,9 @@ const logger = pino({ name: 'rate-limiter' });
 type NodeHttpHandler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
 
 /**
- * Create a Redis client for rate limiting.
- * Uses REDIS_URL if available, otherwise REDIS_HOST/PORT.
- * TLS is enabled for production Redis instances.
- */
-function createRedisClient(): Redis | null {
-  try {
-    const redis = env.REDIS_URL
-      ? new Redis(env.REDIS_URL, {
-          enableOfflineQueue: false,
-        })
-      : new Redis({
-          host: env.REDIS_HOST,
-          port: env.REDIS_PORT,
-          tls: env.REDIS_TLS ? {} : undefined,
-          enableOfflineQueue: false,
-        });
-
-    redis.on('error', (err: Error) => {
-      logger.error({ err }, 'Rate limiter Redis connection error');
-    });
-
-    redis.on('ready', () => {
-      logger.info('Rate limiter Redis connected');
-    });
-
-    return redis;
-  } catch (err) {
-    logger.warn({ err }, 'Failed to create Redis client for rate limiting, using memory store');
-    return null;
-  }
-}
-
-const redisClient = createRedisClient();
-
-/**
- * Create a rate limiter with Redis store (or memory fallback).
- * Falls back to memory store if Redis is unavailable or not ready.
+ * Create a rate limiter with memory store.
+ * Uses in-memory store for simplicity and reliability.
+ * For distributed rate limiting across multiple instances, Redis store can be added later.
  */
 function createRateLimiter(options: {
   windowMs: number;
@@ -57,31 +20,13 @@ function createRateLimiter(options: {
   prefix: string;
   message: { error: string };
 }): RateLimitRequestHandler {
-  let store: RedisStore | undefined;
-
-  if (redisClient) {
-    try {
-      store = new RedisStore({
-        // @ts-expect-error - ioredis call() has compatible signature with rate-limit-redis
-        sendCommand: (command: string, ...args: string[]) => redisClient.call(command, ...args),
-        prefix: options.prefix,
-      });
-    } catch (err) {
-      logger.warn({ err, prefix: options.prefix }, 'Failed to create Redis store, falling back to memory');
-      store = undefined;
-    }
-  }
-
-  if (!store) {
-    logger.warn(`Rate limiter "${options.prefix}" using memory store (not distributed)`);
-  }
+  logger.info(`Rate limiter "${options.prefix}" initialized (memory store)`);
 
   return rateLimit({
     windowMs: options.windowMs,
     max: options.max,
     standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
     legacyHeaders: false, // Disable `X-RateLimit-*` headers
-    store,
     message: options.message,
     handler: (req, res, _next, optionsUsed) => {
       logger.warn({
