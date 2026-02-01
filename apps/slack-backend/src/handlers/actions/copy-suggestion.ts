@@ -1,4 +1,5 @@
 import type { App } from '@slack/bolt';
+import { trackAcceptance } from '../../services/feedback-tracker.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -23,10 +24,23 @@ export function registerCopySuggestionAction(app: App): void {
     try {
       const { suggestionId, suggestion } = JSON.parse(value);
 
+      const userId = 'user' in body ? body.user.id : '';
+      const workspaceId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
+      const channelId = 'channel' in body && body.channel ? (body.channel as { id: string }).id : undefined;
+
       logger.info({
         suggestionId,
-        userId: 'user' in body ? body.user.id : 'unknown',
+        userId,
       }, 'Copy button clicked');
+
+      // Track acceptance (user copied without refinement)
+      await trackAcceptance(
+        workspaceId,
+        userId,
+        suggestionId,
+        suggestion,
+        channelId
+      );
 
       // Respond with instructions and prominent text for copying
       await respond({
