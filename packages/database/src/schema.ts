@@ -1,10 +1,32 @@
 import { pgTable, uuid, text, timestamp, index, uniqueIndex, jsonb, boolean, integer } from 'drizzle-orm/pg-core';
 
+// Organizations table for billing and workspace grouping
+export const organizations = pgTable('organizations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(), // URL-friendly identifier
+
+  // Billing fields
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
+  subscriptionStatus: text('subscription_status'), // 'active' | 'past_due' | 'canceled' | 'trialing'
+  planId: text('plan_id'), // 'free' | 'pro' | 'enterprise'
+  seatCount: integer('seat_count').default(1),
+  billingEmail: text('billing_email'),
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  slugIdx: uniqueIndex('organizations_slug_idx').on(table.slug),
+  stripeCustomerIdx: index('organizations_stripe_customer_idx').on(table.stripeCustomerId),
+}));
+
 export const workspaces = pgTable('workspaces', {
   id: uuid('id').primaryKey().defaultRandom(),
   teamId: text('team_id').notNull().unique(),
   enterpriseId: text('enterprise_id'),
   name: text('name'),
+  organizationId: uuid('organization_id').references(() => organizations.id), // Link to organization for billing
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -28,10 +50,12 @@ export const users = pgTable('users', {
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
   slackUserId: text('slack_user_id').notNull(),
   email: text('email'),
+  role: text('role').default('member'), // 'admin' | 'member' | 'viewer'
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
   workspaceIdx: index('users_workspace_id_idx').on(table.workspaceId),
   slackUserIdx: index('users_slack_user_id_idx').on(table.slackUserId),
+  roleIdx: index('users_role_idx').on(table.role),
 }));
 
 export const watchedConversations = pgTable('watched_conversations', {
