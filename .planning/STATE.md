@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 07 of 7 (Monetization & Pricing) - IN PROGRESS
-Plan: 05 of N (Seat enforcement and subscription banners)
+Plan: 07 of N (Billing notifications via email)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 7 execution in progress
-Last activity: 2026-02-01 - Completed 07-05-PLAN.md
+Last activity: 2026-02-01 - Completed 07-07-PLAN.md
 
-Progress: [████████████████░] 97% (Phase 7 in progress)
+Progress: [████████████████░] 98% (Phase 7 in progress)
 
 ## Production Deployment
 
@@ -115,6 +115,10 @@ Recent decisions affecting current work:
 - Phase 7 Plan 05: past_due status allows access while Stripe handles retries
 - Phase 7 Plan 05: Trial warning threshold at 3 days (shows warning instead of info)
 - Phase 7 Plan 05: Organization fetched via workspace for subscription status
+- Phase 7 Plan 07: Lazy Resend client initialization to support builds without API key
+- Phase 7 Plan 07: Graceful skip of email sending when RESEND_API_KEY not configured
+- Phase 7 Plan 07: Query organization for billingEmail before sending each notification
+- Phase 7 Plan 07: Calculate days remaining from subscription.trial_end for trial ending email
 
 ### Pending Todos
 
@@ -147,7 +151,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 07-05-PLAN.md
+Stopped at: Completed 07-07-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -282,6 +286,11 @@ Documentation:
 **Phase 7 Plan 05 (2026-02-01):**
 - `apps/web-portal/lib/billing/seat-enforcement.ts` - Seat limit and subscription access checking service
 - `apps/web-portal/app/dashboard/layout.tsx` - Dashboard layout with subscription status banner
+
+**Phase 7 Plan 07 (2026-02-01):**
+- `apps/web-portal/lib/email/resend.ts` - Resend email client with lazy initialization
+- `apps/web-portal/lib/email/templates.ts` - Email templates for billing events
+- `apps/web-portal/app/api/stripe/webhook/route.ts` - Webhook handlers with email sending integration
 
 ---
 *Last updated: 2026-02-01*
