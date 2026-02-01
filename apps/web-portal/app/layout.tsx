@@ -14,8 +14,60 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Slack Speak for Me",
-  description: "AI-powered Slack response assistant",
+  title: {
+    default: 'Speak for Me - AI-Powered Slack Response Assistant',
+    template: '%s | Speak for Me',
+  },
+  description:
+    'Get contextually-aware response suggestions for challenging workplace messages. Speak for Me uses Claude AI to help you communicate professionally and effectively.',
+  keywords: [
+    'Slack',
+    'AI',
+    'response assistant',
+    'workplace communication',
+    'Claude AI',
+    'message suggestions',
+  ],
+  authors: [{ name: 'Speak for Me' }],
+  creator: 'Speak for Me',
+  publisher: 'Speak for Me',
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app'
+  ),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Speak for Me',
+    title: 'Speak for Me - AI-Powered Slack Response Assistant',
+    description:
+      'Get contextually-aware response suggestions for challenging workplace messages using Claude AI.',
+    images: [
+      {
+        url: '/images/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Speak for Me - AI-Powered Slack Response Assistant',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Speak for Me - AI-Powered Slack Response Assistant',
+    description:
+      'Get contextually-aware response suggestions for challenging workplace messages using Claude AI.',
+    images: ['/images/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
