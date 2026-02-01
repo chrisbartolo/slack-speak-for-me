@@ -12,6 +12,7 @@ export const organizations = pgTable('organizations', {
   subscriptionStatus: text('subscription_status'), // 'active' | 'past_due' | 'canceled' | 'trialing'
   planId: text('plan_id'), // 'free' | 'pro' | 'enterprise'
   seatCount: integer('seat_count').default(1),
+  trialEndsAt: timestamp('trial_ends_at'), // When free trial expires
   billingEmail: text('billing_email'),
 
   createdAt: timestamp('created_at').defaultNow(),
