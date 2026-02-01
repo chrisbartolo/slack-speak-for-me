@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
-Plan: 02 of ? (DM support and own-message filtering)
+Plan: 03 of ? (Suggestion feedback tracking)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 6 execution in progress
-Last activity: 2026-02-01 - Completed 06-02-PLAN.md
+Last activity: 2026-02-01 - Completed 06-03-PLAN.md
 
-Progress: [██████████████░░░] 88% (Phase 6 in progress)
+Progress: [██████████████░░░] 89% (Phase 6 in progress)
 
 ## Production Deployment
 
@@ -85,6 +85,9 @@ Recent decisions affecting current work:
 - Phase 6 Plan 02: Channel type detection via channel_type field or channel ID prefix (D for DMs)
 - Phase 6 Plan 02: onConflictDoNothing fallback for backward compatibility when channel info unavailable
 - Phase 6 Plan 02: DM handling returns early to avoid thread processing
+- Phase 6 Plan 03: Unique index on suggestionId + action combo prevents duplicates per action type
+- Phase 6 Plan 03: Non-throwing trackFeedback function - analytics should not break user flows
+- Phase 6 Plan 03: finalText stored even for accepted suggestions for consistent data model
 
 ### Pending Todos
 
@@ -117,7 +120,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 06-02-PLAN.md
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -197,6 +200,13 @@ Documentation:
 - `apps/slack-backend/src/services/ai.ts` - Added 'dm' to SuggestionContext.triggeredBy
 - `apps/slack-backend/src/services/suggestion-delivery.ts` - Added 'dm' label for trigger context
 - `apps/slack-backend/test/helpers/db.ts` - Updated test schema with new columns and organizations table
+
+**Phase 6 Plan 03 (2026-02-01):**
+- `packages/database/src/schema.ts` - Added suggestionFeedback table
+- `apps/slack-backend/src/services/feedback-tracker.ts` - Created feedback tracking service
+- `apps/slack-backend/src/services/index.ts` - Exported feedback-tracker functions
+- `apps/web-portal/lib/db/index.ts` - Added suggestionFeedback to schema exports
+- `apps/web-portal/lib/db/queries.ts` - Added getSuggestionFeedback and getSuggestionFeedbackStats queries
 
 ---
 *Last updated: 2026-02-01*
