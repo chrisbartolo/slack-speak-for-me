@@ -9,12 +9,13 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 05 of 5 (Weekly Reports) - COMPLETE
+Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
+Plan: 01 of ? (app_mention watch filtering)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: App deployed and operational
-Last activity: 2026-01-31 - Production deployment complete
+Status: Phase 6 execution in progress
+Last activity: 2026-02-01 - Completed 06-01-PLAN.md
 
-Progress: [█████████████████] 100% (All phases complete, deployed to production)
+Progress: [██████████████░░░] 87% (Phase 6 in progress)
 
 ## Production Deployment
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - Phase 5 Plan 07: report_refine opens refinement modal with feedback input
 - Phase 5 Plan 08: Prerequisite gating - Disable workflow and report forms until spreadsheet configured
 - Phase 5 Plan 09: Scheduler sync on startup - Schedulers persist across restarts via syncAllReportSchedulers()
+- Phase 6 Plan 01: User ID check moved before isWatching call - Enables TypeScript type narrowing
+- Phase 6 Plan 01: isWatching check before context retrieval - Avoids unnecessary Slack API calls
 
 ### Pending Todos
 
@@ -87,6 +90,10 @@ Recent decisions affecting current work:
 - Update Google Cloud Console redirect URI to production URL
 - Generate logo and marketing imagery
 - Test production deployment end-to-end with actual Slack workspace
+
+### Roadmap Evolution
+
+- Phase 6 added: Production Polish & Admin - Bug fixes, UX improvements, admin management
 
 ### Blockers/Concerns
 
@@ -104,8 +111,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-01-31
-Stopped at: Production deployment complete, app live
+Last session: 2026-02-01
+Stopped at: Completed 06-01-PLAN.md
+Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
 1. TypeScript .d.ts files not generating in Docker → Added explicit `composite: false`, `declaration: true` to package tsconfigs
@@ -164,5 +172,10 @@ Documentation:
 - `.planning/PRODUCTION-READINESS.md` - Updated with security fix status
 - `.planning/STATE.md` - Updated current state
 
+**Phase 6 Plan 01 (2026-02-01):**
+- `apps/slack-backend/src/handlers/events/app-mention.ts` - Added isWatching check before AI trigger
+- `apps/slack-backend/src/handlers/events/app-mention.test.ts` - Added watch filtering tests
+- `apps/slack-backend/test/e2e/app-mention.e2e.test.ts` - Added isWatching mock for E2E compatibility
+
 ---
-*Last updated: 2026-01-31*
+*Last updated: 2026-02-01*
