@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
-Plan: 01 of ? (app_mention watch filtering)
+Plan: 07 of ? (admin foundation)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 6 execution in progress
-Last activity: 2026-02-01 - Completed 06-01-PLAN.md
+Last activity: 2026-02-01 - Completed 06-07-PLAN.md
 
-Progress: [██████████████░░░] 87% (Phase 6 in progress)
+Progress: [██████████████░░░] 88% (Phase 6 in progress)
 
 ## Production Deployment
 
@@ -80,6 +80,8 @@ Recent decisions affecting current work:
 - Phase 5 Plan 09: Scheduler sync on startup - Schedulers persist across restarts via syncAllReportSchedulers()
 - Phase 6 Plan 01: User ID check moved before isWatching call - Enables TypeScript type narrowing
 - Phase 6 Plan 01: isWatching check before context retrieval - Avoids unnecessary Slack API calls
+- Phase 6 Plan 07: Two-layer auth pattern - Middleware for session, page-level requireAdmin() for role check
+- Phase 6 Plan 07: Organization-workspace hierarchy - Organizations group workspaces for billing
 
 ### Pending Todos
 
@@ -112,7 +114,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 06-01-PLAN.md
+Stopped at: Completed 06-07-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -176,6 +178,12 @@ Documentation:
 - `apps/slack-backend/src/handlers/events/app-mention.ts` - Added isWatching check before AI trigger
 - `apps/slack-backend/src/handlers/events/app-mention.test.ts` - Added watch filtering tests
 - `apps/slack-backend/test/e2e/app-mention.e2e.test.ts` - Added isWatching mock for E2E compatibility
+
+**Phase 6 Plan 07 (2026-02-01):**
+- `packages/database/src/schema.ts` - Added organizations table and user role column
+- `apps/web-portal/lib/auth/admin.ts` - Created admin auth middleware (requireAdmin, isAdmin, getOrganization)
+- `apps/web-portal/lib/db/index.ts` - Added organizations to schema exports
+- `apps/web-portal/middleware.ts` - Added /admin to protectedRoutes
 
 ---
 *Last updated: 2026-02-01*
