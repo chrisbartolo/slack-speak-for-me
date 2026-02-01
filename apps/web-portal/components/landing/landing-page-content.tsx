@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { BrushUnderline } from '@/components/ui/brush-underline';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { faqItems } from '@/lib/seo/schemas';
 
@@ -33,17 +34,11 @@ function FAQSection() {
   return (
     <section id="faq" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 inline-block relative">
+        <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-3">
           Frequently Asked Questions
-          <Image
-            src="/images/brush-underline.png"
-            alt=""
-            width={280}
-            height={12}
-            className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-60"
-          />
+          <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64" />
         </h2>
-        <p className="mt-6 text-gray-600">Everything you need to know about Speak for Me</p>
+        <p className="mt-4 text-gray-600">Everything you need to know about Speak for Me</p>
       </div>
 
       <div className="max-w-3xl mx-auto space-y-4">
@@ -85,18 +80,6 @@ function FAQSection() {
   );
 }
 
-// Brushstroke underline component for headings
-function BrushUnderline({ width = 200 }: { width?: number }) {
-  return (
-    <Image
-      src="/images/brush-underline.png"
-      alt=""
-      width={width}
-      height={12}
-      className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-60"
-    />
-  );
-}
 
 export function LandingPageContent() {
   const slackInstallUrl = process.env.NEXT_PUBLIC_SLACK_BACKEND_URL
@@ -150,15 +133,9 @@ export function LandingPageContent() {
           <div>
             <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Craft Perfect Slack Responses with{' '}
-              <span className="relative inline-block">
+              <span className="relative inline-block pb-2">
                 <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">AI</span>
-                <Image
-                  src="/images/brush-underline.png"
-                  alt=""
-                  width={60}
-                  height={8}
-                  className="absolute -bottom-1 left-0 opacity-70"
-                />
+                <BrushUnderline className="absolute bottom-0 left-0 w-full" />
               </span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
@@ -178,11 +155,11 @@ export function LandingPageContent() {
           </div>
           <div className="relative">
             <Image
-              src="/images/hero-brush-art.png"
-              alt="AI-powered response suggestions"
+              src="/images/slack-mockup.png"
+              alt="AI-powered response suggestions in Slack"
               width={600}
               height={400}
-              className="rounded-2xl"
+              className="rounded-2xl shadow-2xl"
               priority
             />
           </div>
@@ -217,11 +194,11 @@ export function LandingPageContent() {
       {/* Features Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 inline-block relative">
+          <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-3">
             How It Works
-            <BrushUnderline width={160} />
+            <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-40" />
           </h2>
-          <p className="mt-6 text-gray-600">Three simple ways to get AI-powered response suggestions</p>
+          <p className="mt-4 text-gray-600">Three simple ways to get AI-powered response suggestions</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -267,9 +244,9 @@ export function LandingPageContent() {
       <section className="bg-white py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 inline-block relative">
+            <h2 className="text-3xl font-bold text-gray-900 inline-block relative pb-3">
               Why Speak for Me?
-              <BrushUnderline width={220} />
+              <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-52" />
             </h2>
           </div>
 
@@ -358,11 +335,11 @@ export function LandingPageContent() {
 
       {/* CTA Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 inline-block relative">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4 inline-block relative pb-3">
           Ready to communicate better?
-          <BrushUnderline width={300} />
+          <BrushUnderline className="absolute bottom-0 left-1/2 -translate-x-1/2 w-72" />
         </h2>
-        <p className="text-gray-600 mb-8 max-w-xl mx-auto mt-6">
+        <p className="text-gray-600 mb-8 max-w-xl mx-auto mt-4">
           Join teams who use Speak for Me to handle difficult workplace conversations with confidence.
         </p>
         <a href={slackInstallUrl}>
