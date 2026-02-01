@@ -20,9 +20,10 @@ import type { WebClient } from '@slack/web-api';
 let testDb: Awaited<ReturnType<typeof setupTestDb>>;
 
 // Use vi.hoisted to create mock functions that can be accessed in mock factories
-const { mockAnthropicCreate, mockGetContextForMessage } = vi.hoisted(() => ({
+const { mockAnthropicCreate, mockGetContextForMessage, mockIsWatching } = vi.hoisted(() => ({
   mockAnthropicCreate: vi.fn(),
   mockGetContextForMessage: vi.fn(),
+  mockIsWatching: vi.fn(),
 }));
 
 // Mock the database module to use PGlite-backed instance
@@ -85,6 +86,15 @@ vi.mock('../../src/jobs/queues.js', () => ({
     add: vi.fn(),
   },
 }));
+
+// Mock the watch service's isWatching function (getWorkspaceId uses test db)
+vi.mock('../../src/services/watch.js', async () => {
+  const actual = await vi.importActual<typeof import('../../src/services/watch.js')>('../../src/services/watch.js');
+  return {
+    ...actual,
+    isWatching: mockIsWatching,
+  };
+});
 
 // Mock the logger
 vi.mock('../../src/utils/logger.js', () => ({
@@ -172,6 +182,7 @@ describe('App Mention E2E', () => {
       { userId: 'U123', text: 'Context message 1', ts: '1234567890.123450' },
       { userId: 'U456', text: 'Context message 2', ts: '1234567890.123451' },
     ]);
+    mockIsWatching.mockResolvedValue(true); // Default to watching for E2E tests
 
     // Seed workspace with installation
     workspaceId = await seedWorkspace({
