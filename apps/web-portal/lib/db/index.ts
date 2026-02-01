@@ -16,6 +16,7 @@ import {
   reportSettings,
   googleIntegrations,
   workflowConfig,
+  suggestionFeedback,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -43,6 +44,7 @@ const schema = {
   reportSettings,
   googleIntegrations,
   workflowConfig,
+  suggestionFeedback,
 };
 
 export const db = drizzle(queryClient, { schema });

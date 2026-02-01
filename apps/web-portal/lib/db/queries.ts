@@ -13,6 +13,7 @@ const {
   reportSettings,
   googleIntegrations,
   workflowConfig,
+  suggestionFeedback,
 } = schema;
 
 /**
@@ -257,4 +258,54 @@ export const getWorkflowConfig = cache(async () => {
     );
 
   return configs;
+});
+
+/**
+ * Get suggestion feedback history (accepted, refined, dismissed)
+ */
+export const getSuggestionFeedback = cache(async (limit = 50) => {
+  const session = await verifySession();
+
+  return db
+    .select({
+      id: suggestionFeedback.id,
+      suggestionId: suggestionFeedback.suggestionId,
+      action: suggestionFeedback.action,
+      originalText: suggestionFeedback.originalText,
+      finalText: suggestionFeedback.finalText,
+      channelId: suggestionFeedback.channelId,
+      createdAt: suggestionFeedback.createdAt,
+    })
+    .from(suggestionFeedback)
+    .where(
+      and(
+        eq(suggestionFeedback.workspaceId, session.workspaceId),
+        eq(suggestionFeedback.userId, session.userId)
+      )
+    )
+    .orderBy(desc(suggestionFeedback.createdAt))
+    .limit(limit);
+});
+
+/**
+ * Get feedback stats by action type
+ */
+export const getSuggestionFeedbackStats = cache(async () => {
+  const session = await verifySession();
+
+  const stats = await db
+    .select({
+      action: suggestionFeedback.action,
+      count: count(),
+    })
+    .from(suggestionFeedback)
+    .where(
+      and(
+        eq(suggestionFeedback.workspaceId, session.workspaceId),
+        eq(suggestionFeedback.userId, session.userId)
+      )
+    )
+    .groupBy(suggestionFeedback.action);
+
+  return stats;
 });
