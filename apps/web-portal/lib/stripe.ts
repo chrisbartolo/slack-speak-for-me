@@ -81,3 +81,37 @@ export async function createCustomer(
     metadata,
   });
 }
+
+/**
+ * Create trial checkout session - no payment required upfront
+ * Users get a 14-day trial (configurable via TRIAL_DAYS env)
+ * If trial ends without payment, subscription pauses instead of canceling
+ */
+export async function createTrialCheckout(options: {
+  customerId: string;
+  priceId: string;
+  quantity: number;
+  organizationId: string;
+  planId: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<Stripe.Checkout.Session> {
+  const trialDays = parseInt(process.env.TRIAL_DAYS || '14');
+
+  return getStripe().checkout.sessions.create({
+    customer: options.customerId,
+    mode: 'subscription',
+    success_url: options.successUrl,
+    cancel_url: options.cancelUrl,
+    line_items: [{ price: options.priceId, quantity: options.quantity }],
+    subscription_data: {
+      trial_period_days: trialDays,
+      trial_settings: {
+        end_behavior: { missing_payment_method: 'pause' }
+      },
+      metadata: { organizationId: options.organizationId, planId: options.planId }
+    },
+    payment_method_collection: 'if_required',
+    metadata: { organizationId: options.organizationId, planId: options.planId }
+  });
+}

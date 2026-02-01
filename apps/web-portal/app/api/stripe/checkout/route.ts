@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin, getOrganization } from '@/lib/auth/admin';
-import { getStripe, createCustomer } from '@/lib/stripe';
+import { getStripe, createCustomer, createTrialCheckout } from '@/lib/stripe';
 import { db, schema } from '@/lib/db';
 import { eq } from 'drizzle-orm';
 
 const { organizations } = schema;
+
+// Map plan IDs to environment variable names for price IDs
+const PLAN_PRICE_IDS: Record<string, string | undefined> = {
+  starter: process.env.STRIPE_PRICE_ID_STARTER,
+  pro: process.env.STRIPE_PRICE_ID_PRO,
+};
 
 export async function POST(request: Request) {
   try {
@@ -38,41 +44,67 @@ export async function POST(request: Request) {
         .where(eq(organizations.id, org.id));
     }
 
-    // Get price ID from environment or request
+    // Parse request body
     const body = await request.json().catch(() => ({}));
-    const priceId = body.priceId || process.env.STRIPE_PRICE_ID;
+    const planId: string = body.planId || 'pro';
+    const startTrial: boolean = body.startTrial ?? !org.stripeSubscriptionId; // Default to trial if no existing subscription
+
+    // Get price ID based on planId
+    let priceId = PLAN_PRICE_IDS[planId];
+
+    // Fallback to legacy STRIPE_PRICE_ID for backward compatibility
+    if (!priceId) {
+      priceId = process.env.STRIPE_PRICE_ID;
+    }
 
     if (!priceId) {
       return NextResponse.json({
-        error: 'No price configured. Set STRIPE_PRICE_ID environment variable or create a price in Stripe Dashboard.'
+        error: `No price configured for plan '${planId}'. Set STRIPE_PRICE_ID_${planId.toUpperCase()} environment variable.`
       }, { status: 400 });
     }
 
     // Get base URL - fallback to production URL if env not set
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
+    const quantity = org.seatCount || 1;
 
-    // Create Checkout Session
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: 'subscription',
-      line_items: [
-        {
-          price: priceId,
-          quantity: org.seatCount || 1,
-        },
-      ],
-      success_url: `${baseUrl}/admin/billing?success=true`,
-      cancel_url: `${baseUrl}/admin/billing?canceled=true`,
-      metadata: {
+    // Determine success URL based on whether this is a trial
+    const successUrl = startTrial
+      ? `${baseUrl}/admin/billing?success=true&trial_started=true`
+      : `${baseUrl}/admin/billing?success=true`;
+
+    let checkoutSession;
+
+    if (startTrial) {
+      // Create trial checkout - no payment required upfront
+      checkoutSession = await createTrialCheckout({
+        customerId,
+        priceId,
+        quantity,
         organizationId: org.id,
-        planId: 'pro',
-      },
-      subscription_data: {
+        planId,
+        successUrl,
+        cancelUrl: `${baseUrl}/admin/billing?canceled=true`,
+      });
+    } else {
+      // Create immediate checkout for upgrades or users who want to pay now
+      checkoutSession = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'subscription',
+        line_items: [{ price: priceId, quantity }],
+        success_url: successUrl,
+        cancel_url: `${baseUrl}/admin/billing?canceled=true`,
         metadata: {
           organizationId: org.id,
+          planId,
         },
-      },
-    });
+        subscription_data: {
+          metadata: {
+            organizationId: org.id,
+            planId,
+          },
+        },
+      });
+    }
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
