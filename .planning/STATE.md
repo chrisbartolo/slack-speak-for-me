@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 06 of 6 (Production Polish & Admin) - IN PROGRESS
-Plan: 05 of ? (Feedback page enhancement)
+Plan: 06 of ? (Conversations page enhancement)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 6 execution in progress
-Last activity: 2026-02-01 - Completed 06-05-PLAN.md
+Last activity: 2026-02-01 - Completed 06-06-PLAN.md
 
-Progress: [██████████████░░░] 91% (Phase 6 in progress)
+Progress: [██████████████░░░] 92% (Phase 6 in progress)
 
 ## Production Deployment
 
@@ -93,6 +93,9 @@ Recent decisions affecting current work:
 - Phase 6 Plan 05: Backward compatible FeedbackItem interface supporting both old and new data formats
 - Phase 6 Plan 04: Track refinement at AI generation time rather than modal close
 - Phase 6 Plan 04: Original text extracted from history[0] for multi-round refinements
+- Phase 6 Plan 06: Use channelName/channelType from database props instead of API fetch
+- Phase 6 Plan 06: DMs don't have # prefix in display name
+- Phase 6 Plan 06: Refresh parameter enables one-time backfill for legacy data
 
 ### Pending Todos
 
@@ -125,7 +128,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 06-05-PLAN.md
+Stopped at: Completed 06-06-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -221,6 +224,11 @@ Documentation:
 - `apps/slack-backend/src/handlers/actions/copy-suggestion.ts` - Added trackAcceptance call before responding
 - `apps/slack-backend/src/handlers/actions/dismiss-suggestion.ts` - Added trackDismissal call before message deletion
 - `apps/slack-backend/src/handlers/views/refinement-modal.ts` - Added trackRefinement call after AI generates refined suggestion
+
+**Phase 6 Plan 06 (2026-02-01):**
+- `apps/web-portal/lib/db/queries.ts` - Explicit select for channelName, channelType fields
+- `apps/web-portal/components/dashboard/conversation-list.tsx` - Removed API fetch, added channel type icons and action buttons
+- `apps/web-portal/app/api/slack/channels/route.ts` - Added refresh parameter for legacy data backfill
 
 ---
 *Last updated: 2026-02-01*
