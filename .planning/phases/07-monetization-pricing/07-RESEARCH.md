@@ -425,7 +425,7 @@ const appSchema: WithContext<SoftwareApplication> = {
   url: 'https://speakforme.app',
   offers: {
     '@type': 'AggregateOffer',
-    lowPrice: '9',
+    lowPrice: '10',
     highPrice: '15',
     priceCurrency: 'USD',
     offerCount: '2',
@@ -433,11 +433,11 @@ const appSchema: WithContext<SoftwareApplication> = {
       {
         '@type': 'Offer',
         name: 'Starter',
-        price: '9',
+        price: '10',
         priceCurrency: 'USD',
         priceSpecification: {
           '@type': 'UnitPriceSpecification',
-          price: '9',
+          price: '10',
           priceCurrency: 'USD',
           referenceQuantity: {
             '@type': 'QuantitativeValue',

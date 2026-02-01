@@ -82,14 +82,24 @@ Requirements for initial release. Each maps to roadmap phases.
 
 Deferred to future release. Tracked but not in current roadmap.
 
-### Billing
+### Billing & Monetization
 
-- **BILL-01**: Individual user account signup and payment
-- **BILL-02**: Organization account with seat management
-- **BILL-03**: Subscription billing per seat (monthly/annual)
-- **BILL-04**: Usage-based billing for AI token consumption
-- **BILL-05**: Usage dashboard showing token consumption
-- **BILL-06**: Billing management portal (invoices, payment methods)
+- **BILLING-01**: Public pricing page with plan comparison and feature matrix
+- **BILLING-02**: Free trial without payment (14 days)
+- **BILLING-03**: Trial expiration prompts upgrade or feature lockout
+- **BILLING-04**: Stripe Checkout creates subscription on upgrade
+- **BILLING-05**: Webhooks handle subscription lifecycle (upgrade, downgrade, cancel, failed payment)
+- **BILLING-06**: Seat-based usage tracking and enforcement
+- **BILLING-07**: Email notifications for billing events
+
+### SEO & Marketing
+
+- **SEO-01**: SEO-optimized landing page with meta tags, Open Graph, and Twitter cards
+- **SEO-02**: FAQ section with structured data (FAQPage schema)
+- **SEO-03**: Speakable schema markup for voice assistant discoverability
+- **SEO-04**: JSON-LD structured data for SoftwareApplication and Organization
+- **SEO-05**: Sitemap.xml and robots.txt for search engine crawling
+- **SEO-06**: Performance optimization (Core Web Vitals) for SEO ranking
 
 ### Advanced Features
 

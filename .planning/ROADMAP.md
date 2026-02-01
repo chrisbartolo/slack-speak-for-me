@@ -210,15 +210,16 @@ Plans:
   8. Usage tracking enforces seat limits
   9. Sitemap.xml and robots.txt configured for SEO
   10. Core Web Vitals optimized for SEO ranking
-**Plans**: 6 plans in 3 waves
+**Plans**: 7 plans in 4 waves
 
 Plans:
-- [ ] 07-01-PLAN.md — Pricing page with SoftwareApplication JSON-LD schema
+- [ ] 07-01-PLAN.md — Pricing page with SoftwareApplication, Organization, Speakable JSON-LD schemas
 - [ ] 07-02-PLAN.md — Landing page FAQ and SEO files (sitemap, robots)
 - [ ] 07-03-PLAN.md — Trial checkout without payment required
 - [ ] 07-04-PLAN.md — Full webhook subscription lifecycle handling
 - [ ] 07-05-PLAN.md — Seat enforcement and trial status display
 - [ ] 07-06-PLAN.md — Final verification and Core Web Vitals check
+- [ ] 07-07-PLAN.md — Email notifications for billing events (Resend)
 
 ## Progress
 
@@ -234,7 +235,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Web Portal | 9/10 | In progress | - |
 | 5. Weekly Reports | 8/9 | Human verification | - |
 | 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
-| 7. Monetization & Pricing | 0/6 | Planned | - |
+| 7. Monetization & Pricing | 0/7 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-26*
