@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 08 of 8 (Production Security & Compliance)
-Plan: 05 of 7
+Plan: 06 of 7
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-01 - Completed 08-02-PLAN.md (Audit Logging Infrastructure)
+Last activity: 2026-02-01 - Completed 08-05-PLAN.md (GDPR Data Export)
 
-Progress: [██████████████████████░░░░░░░░░░] 92% (46/50 plans complete)
+Progress: [███████████████████████░░░░░░░░░] 94% (47/50 plans complete)
 
 ## Production Deployment
 
@@ -51,7 +51,7 @@ Progress: [██████████████████████░
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
 | 06 - Production Polish | 8 | 25 min | 3.1 min |
 | 07 - Monetization & Pricing | 7 | 25 min | 3.6 min |
-| 08 - Production Security | 5/7 | 27 min | 5.4 min |
+| 08 - Production Security | 6/7 | 30 min | 5.0 min |
 
 *Phase 8 in progress*
 
@@ -133,6 +133,9 @@ Recent decisions affecting current work:
 - Phase 8 Plan 04: Server-rendered legal pages for SEO (Privacy Policy and Terms)
 - Phase 8 Plan 02: Fire-and-forget pattern for audit logging - Async writes that never throw
 - Phase 8 Plan 02: Dual audit services - Separate implementations for slack-backend (pino) and web-portal (console)
+- Phase 8 Plan 05: Parallel Promise.all queries for data export - Efficient aggregation from 12+ tables
+- Phase 8 Plan 05: OAuth tokens redacted in export - Show connected status only, never export tokens
+- Phase 8 Plan 05: Client-side download trigger - Fetch JSON then create Blob for download
 
 ### Pending Todos
 
@@ -165,7 +168,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 08-02-PLAN.md (Audit Logging Infrastructure)
+Stopped at: Completed 08-05-PLAN.md (GDPR Data Export)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -338,6 +341,12 @@ Documentation:
 - `apps/slack-backend/src/services/index.ts` - Exported audit logging functions
 - `apps/web-portal/lib/db/index.ts` - Added auditLogs to schema exports
 - `apps/web-portal/lib/audit.ts` - Audit logging service for web-portal
+
+**Phase 8 Plan 05 (2026-02-01):**
+- `apps/web-portal/lib/gdpr/data-export.ts` - Data export service aggregating 12+ tables
+- `apps/web-portal/app/api/gdpr/export/route.ts` - GDPR export API endpoint with audit logging
+- `apps/web-portal/app/dashboard/settings/page.tsx` - Settings page with Data & Privacy section
+- `apps/web-portal/components/dashboard/sidebar.tsx` - Added Settings link to navigation
 
 ---
 *Last updated: 2026-02-01*
