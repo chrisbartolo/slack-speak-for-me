@@ -1,11 +1,13 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { faqItems, faqSchema } from '@/lib/seo/schemas';
 
 function ErrorBanner() {
   const searchParams = useSearchParams();
@@ -26,6 +28,55 @@ function ErrorBanner() {
   );
 }
 
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="text-center mb-16">
+        <h2 className="text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
+        <p className="mt-4 text-gray-600">Everything you need to know about Speak for Me</p>
+      </div>
+
+      <div className="max-w-3xl mx-auto space-y-4">
+        {faqItems.map((item, index) => (
+          <div
+            key={index}
+            className="border border-gray-200 rounded-lg overflow-hidden"
+          >
+            <button
+              onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
+            >
+              <span className="font-medium text-gray-900">{item.question}</span>
+              <svg
+                className={`w-5 h-5 text-gray-500 transition-transform ${
+                  openIndex === index ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {openIndex === index && (
+              <div className="px-6 pb-4">
+                <p className="text-gray-600">{item.answer}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
   const slackInstallUrl = process.env.NEXT_PUBLIC_SLACK_BACKEND_URL
     ? `${process.env.NEXT_PUBLIC_SLACK_BACKEND_URL}/slack/install`
@@ -33,6 +84,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white overflow-auto">
+      {/* FAQ JSON-LD Schema for rich search results */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
       {/* Navigation */}
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -236,6 +294,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* CTA Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
