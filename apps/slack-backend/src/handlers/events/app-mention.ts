@@ -1,7 +1,7 @@
 import type { App } from '@slack/bolt';
 import { getContextForMessage } from '../../services/context.js';
 import { queueAIResponse } from '../../jobs/queues.js';
-import { getWorkspaceId } from '../../services/watch.js';
+import { getWorkspaceId, isWatching } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -36,6 +36,22 @@ export function registerAppMentionHandler(app: App) {
         return;
       }
 
+      // Ensure user ID exists before proceeding
+      if (!event.user) {
+        logger.error('app_mention event missing user ID');
+        return;
+      }
+
+      // Check if user is watching this channel
+      const isWatchingChannel = await isWatching(workspaceId, event.user, event.channel);
+      if (!isWatchingChannel) {
+        logger.debug({
+          channel: event.channel,
+          user: event.user,
+        }, 'Ignoring app_mention - channel not watched');
+        return;
+      }
+
       // Fetch conversation context
       logger.debug({ channel: event.channel, ts: event.ts }, 'Fetching context for app mention');
       const contextMessages = await getContextForMessage(
@@ -49,12 +65,6 @@ export function registerAppMentionHandler(app: App) {
         channel: event.channel,
         contextMessageCount: contextMessages.length,
       }, 'Context retrieved for app mention');
-
-      // Ensure user ID exists
-      if (!event.user) {
-        logger.error('app_mention event missing user ID');
-        return;
-      }
 
       // Queue AI response job
       const job = await queueAIResponse({
