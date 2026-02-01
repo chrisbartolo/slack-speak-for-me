@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
-import { Trash2, Hash, Lock } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import Link from 'next/link';
+import { Trash2, Hash, Lock, MessageSquare, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -22,13 +23,9 @@ import { formatDistanceToNow } from 'date-fns';
 interface Conversation {
   id: string;
   channelId: string;
+  channelName?: string | null;
+  channelType?: string | null;
   watchedAt: Date | null;
-}
-
-interface ChannelInfo {
-  id: string;
-  name: string;
-  isPrivate: boolean;
 }
 
 interface ConversationListProps {
@@ -38,33 +35,6 @@ interface ConversationListProps {
 export function ConversationList({ conversations }: ConversationListProps) {
   const [isPending, startTransition] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [channelNames, setChannelNames] = useState<Record<string, ChannelInfo>>({});
-  const [loadingChannels, setLoadingChannels] = useState(true);
-
-  useEffect(() => {
-    async function fetchChannelNames() {
-      if (conversations.length === 0) {
-        setLoadingChannels(false);
-        return;
-      }
-
-      try {
-        const channelIds = conversations.map((c) => c.channelId).join(',');
-        const response = await fetch(`/api/slack/channels?ids=${channelIds}`);
-        const data = await response.json();
-
-        if (data.channels) {
-          setChannelNames(data.channels);
-        }
-      } catch (error) {
-        console.error('Failed to fetch channel names:', error);
-      } finally {
-        setLoadingChannels(false);
-      }
-    }
-
-    fetchChannelNames();
-  }, [conversations]);
 
   const handleRemove = async (id: string) => {
     setRemovingId(id);
@@ -84,6 +54,31 @@ export function ConversationList({ conversations }: ConversationListProps) {
     });
   };
 
+  // Helper to determine channel icon based on type
+  const getChannelIcon = (channelType?: string | null) => {
+    const isDM = channelType === 'im' || channelType === 'mpim';
+    const isPrivate = channelType === 'group';
+
+    if (isDM) {
+      return <MessageSquare className="h-5 w-5 text-gray-600" />;
+    } else if (isPrivate) {
+      return <Lock className="h-5 w-5 text-gray-600" />;
+    } else {
+      return <Hash className="h-5 w-5 text-gray-600" />;
+    }
+  };
+
+  // Helper to format display name
+  const getDisplayName = (conversation: Conversation) => {
+    if (conversation.channelName) {
+      const isDM = conversation.channelType === 'im' || conversation.channelType === 'mpim';
+      // DMs don't have # prefix
+      return isDM ? conversation.channelName : `#${conversation.channelName}`;
+    }
+    // Fallback to channel ID for legacy data
+    return conversation.channelId;
+  };
+
   return (
     <div className="space-y-4">
       {conversations.map((conversation) => (
@@ -91,21 +86,11 @@ export function ConversationList({ conversations }: ConversationListProps) {
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gray-100 rounded-lg">
-                {channelNames[conversation.channelId]?.isPrivate ? (
-                  <Lock className="h-5 w-5 text-gray-600" />
-                ) : (
-                  <Hash className="h-5 w-5 text-gray-600" />
-                )}
+                {getChannelIcon(conversation.channelType)}
               </div>
               <div>
                 <p className="font-medium text-gray-900">
-                  {loadingChannels ? (
-                    <span className="text-gray-400">Loading...</span>
-                  ) : channelNames[conversation.channelId]?.name ? (
-                    `#${channelNames[conversation.channelId].name}`
-                  ) : (
-                    conversation.channelId
-                  )}
+                  {getDisplayName(conversation)}
                 </p>
                 <p className="text-sm text-gray-500">
                   {conversation.watchedAt
@@ -115,35 +100,48 @@ export function ConversationList({ conversations }: ConversationListProps) {
               </div>
             </div>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={isPending && removingId === conversation.id}
-                >
-                  <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Remove channel?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    You will no longer receive AI suggestions for messages in this channel.
-                    You can add it back anytime using /watch in Slack.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => handleRemove(conversation.id)}
-                    className="bg-red-600 hover:bg-red-700"
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+              >
+                <Link href={`/dashboard/people?channel=${conversation.channelId}`}>
+                  <Users className="h-4 w-4 mr-1" />
+                  Add Context
+                </Link>
+              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={isPending && removingId === conversation.id}
                   >
-                    Remove
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                    <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove channel?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You will no longer receive AI suggestions for messages in this channel.
+                      You can add it back anytime using /watch in Slack.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleRemove(conversation.id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Remove
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </CardContent>
         </Card>
       ))}
