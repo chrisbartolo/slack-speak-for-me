@@ -3,6 +3,7 @@ import { createSession } from '@/lib/auth/session';
 import { exchangeCodeForTokens } from '@/lib/auth/slack-oauth';
 import { db, workspaces } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
+import { auditLogin } from '@/lib/audit';
 
 // Get the base URL for redirects (handles proxy/tunnel scenarios)
 function getBaseUrl(request: NextRequest): string {
@@ -77,6 +78,10 @@ export async function GET(request: NextRequest) {
       userId: tokens.authed_user.id,
       workspaceId: workspace.id,
     });
+
+    // Log successful login for audit trail
+    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined;
+    auditLogin(tokens.authed_user.id, workspace.id, ipAddress ?? undefined);
 
     // Clear OAuth cookies and redirect
     const response = NextResponse.redirect(new URL(returnUrl, baseUrl));

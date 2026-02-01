@@ -65,6 +65,19 @@ export function auditLogin(
 }
 
 /**
+ * Log a user logout event
+ */
+export function auditLogout(userId: string, workspaceId: string): void {
+  logAuditEvent({
+    action: 'logout',
+    userId,
+    workspaceId,
+    resource: 'user',
+    resourceId: userId,
+  });
+}
+
+/**
  * Log a data export request
  */
 export function auditDataExport(userId: string, workspaceId: string): void {
