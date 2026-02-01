@@ -28,7 +28,7 @@ export default function PricingPage() {
     : '/slack/install';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-[#FFFDF7]">
       {/* JSON-LD Structured Data */}
       <JsonLd data={softwareAppSchema} />
       <JsonLd data={organizationSchema} />
@@ -40,25 +40,25 @@ export default function PricingPage() {
       />
 
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b border-gray-200/50 bg-[#FFFDF7]/90 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/images/emblem.png"
+                src="/logo.png"
                 alt="Speak for Me"
-                width={32}
-                height={32}
-                className="rounded"
+                width={36}
+                height={36}
+                className="rounded-lg"
               />
-              <span className="font-bold text-xl">Speak for Me</span>
+              <span className="font-bold text-xl text-gray-900">Speak for Me</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/login">
                 <Button variant="ghost">Sign In</Button>
               </Link>
               <a href={slackInstallUrl}>
-                <Button className="bg-[#4A154B] hover:bg-[#3d1140]">
+                <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
                   <svg
                     className="w-5 h-5 mr-2"
                     viewBox="0 0 24 24"
@@ -96,7 +96,7 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ Teaser */}
-      <section className="bg-slate-50 py-16">
+      <section className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Questions? We've got answers
@@ -125,25 +125,25 @@ export default function PricingPage() {
           conversations with confidence.
         </p>
         <a href={slackInstallUrl}>
-          <Button size="lg" className="bg-[#4A154B] hover:bg-[#3d1140]">
+          <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg shadow-indigo-500/25">
             Add to Slack - Start Free Trial
           </Button>
         </a>
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-white py-12">
+      <footer className="border-t border-gray-200/50 bg-white py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/images/emblem.png"
+                src="/logo.png"
                 alt="Speak for Me"
-                width={24}
-                height={24}
-                className="rounded"
+                width={28}
+                height={28}
+                className="rounded-lg"
               />
-              <span className="font-semibold">Speak for Me</span>
+              <span className="font-semibold text-gray-900">Speak for Me</span>
             </Link>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link href="/pricing" className="hover:text-gray-900">

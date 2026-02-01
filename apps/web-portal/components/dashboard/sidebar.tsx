@@ -11,18 +11,18 @@ interface SidebarProps {
 
 export function Sidebar({ isAdmin }: SidebarProps) {
   return (
-    <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
+    <aside className="w-64 border-r border-border bg-[#FFFDF7] flex flex-col h-full">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
           <Image
             src="/logo.png"
             alt="Speak for Me"
-            width={40}
-            height={40}
+            width={36}
+            height={36}
             className="rounded-lg"
           />
-          <h1 className="text-xl font-bold">Speak For Me</h1>
+          <h1 className="text-lg font-bold text-gray-900">Speak For Me</h1>
         </div>
       </div>
 

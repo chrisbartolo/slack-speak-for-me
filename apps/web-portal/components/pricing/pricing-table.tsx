@@ -48,7 +48,7 @@ const PLANS: Plan[] = [
 function CheckIcon() {
   return (
     <svg
-      className="w-5 h-5 text-green-500 flex-shrink-0"
+      className="w-5 h-5 text-indigo-500 flex-shrink-0"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -66,15 +66,15 @@ function CheckIcon() {
 function PricingCard({ plan }: { plan: Plan }) {
   return (
     <Card
-      className={`relative flex flex-col ${
+      className={`relative flex flex-col bg-white ${
         plan.popular
-          ? 'border-[#4A154B] border-2 shadow-lg scale-105'
-          : 'border-gray-200'
+          ? 'border-indigo-500 border-2 shadow-xl shadow-indigo-500/10 scale-105'
+          : 'border-gray-200 shadow-sm'
       }`}
     >
       {plan.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="bg-[#4A154B] text-white text-xs font-semibold px-3 py-1 rounded-full">
+          <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
             Most Popular
           </span>
         </div>
@@ -106,7 +106,7 @@ function PricingCard({ plan }: { plan: Plan }) {
           <Button
             className={`w-full ${
               plan.popular
-                ? 'bg-[#4A154B] hover:bg-[#3d1140]'
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg shadow-indigo-500/25'
                 : 'bg-gray-900 hover:bg-gray-800'
             }`}
             size="lg"
