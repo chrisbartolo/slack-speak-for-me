@@ -1,9 +1,15 @@
-import { Sparkles, TrendingUp } from 'lucide-react';
+import { Sparkles, TrendingUp, Check, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FeedbackList } from '@/components/dashboard/feedback-list';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { getRefinementFeedback, getFeedbackStats, getMessageCount } from '@/lib/db/queries';
+import {
+  getRefinementFeedback,
+  getFeedbackStats,
+  getMessageCount,
+  getSuggestionFeedback,
+  getSuggestionFeedbackStats,
+} from '@/lib/db/queries';
 
 const refinementTypeLabels: Record<string, string> = {
   shortening: 'Shortened',
@@ -14,14 +20,21 @@ const refinementTypeLabels: Record<string, string> = {
 };
 
 export default async function FeedbackPage() {
-  const [feedbackItems, feedbackStats, messageCount] = await Promise.all([
+  const [feedbackItems, feedbackStats, messageCount, suggestionFeedback, suggestionStats] = await Promise.all([
     getRefinementFeedback(),
     getFeedbackStats(),
     getMessageCount(),
+    getSuggestionFeedback(),
+    getSuggestionFeedbackStats(),
   ]);
 
   // Calculate total refinements
   const totalRefinements = feedbackStats.reduce((sum, stat) => sum + (stat.count || 0), 0);
+
+  // Calculate acceptance vs refinement vs dismissal stats
+  const acceptedCount = suggestionStats.find(s => s.action === 'accepted')?.count || 0;
+  const refinedCount = suggestionStats.find(s => s.action === 'refined')?.count || 0;
+  const dismissedCount = suggestionStats.find(s => s.action === 'dismissed')?.count || 0;
 
   // Find most common refinement type
   const mostCommon = feedbackStats.reduce(
@@ -38,7 +51,7 @@ export default async function FeedbackPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           title="Messages Analyzed"
           value={messageCount}
@@ -46,16 +59,22 @@ export default async function FeedbackPage() {
           icon={Sparkles}
         />
         <StatCard
-          title="Refinements Made"
-          value={totalRefinements}
-          description="Feedback provided"
+          title="Suggestions Accepted"
+          value={acceptedCount}
+          description="Used as-is"
+          icon={Check}
+        />
+        <StatCard
+          title="Suggestions Refined"
+          value={refinedCount}
+          description="Modified before use"
           icon={TrendingUp}
         />
         <StatCard
-          title="Common Pattern"
-          value={mostCommon ? refinementTypeLabels[mostCommon.refinementType ?? ''] || 'None' : 'None'}
-          description={mostCommon ? `${mostCommon.count} occurrences` : 'Start refining suggestions'}
-          icon={Sparkles}
+          title="Suggestions Dismissed"
+          value={dismissedCount}
+          description="Not used"
+          icon={X}
         />
       </div>
 
@@ -93,22 +112,22 @@ export default async function FeedbackPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Refinements</CardTitle>
+          <CardTitle>Recent Suggestions</CardTitle>
           <CardDescription>
-            {feedbackItems.length === 0
-              ? 'No refinements yet'
-              : `${feedbackItems.length} refinements recorded`}
+            {suggestionFeedback.length === 0
+              ? 'No suggestions yet'
+              : `${suggestionFeedback.length} interactions recorded`}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {feedbackItems.length === 0 ? (
+          {suggestionFeedback.length === 0 ? (
             <EmptyState
               icon={Sparkles}
-              title="No refinements yet"
-              description="When you refine AI suggestions in Slack, they'll appear here. This helps AI learn your preferences."
+              title="No suggestions yet"
+              description="When you receive AI suggestions in Slack, they'll appear here."
             />
           ) : (
-            <FeedbackList feedbackItems={feedbackItems} />
+            <FeedbackList feedbackItems={suggestionFeedback} />
           )}
         </CardContent>
       </Card>
