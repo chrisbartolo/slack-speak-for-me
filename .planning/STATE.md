@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 07 of 7 (Monetization & Pricing) - IN PROGRESS
-Plan: 03 of N (Trial period support)
+Plan: 02 of N (Landing page SEO)
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: Phase 7 execution in progress
-Last activity: 2026-02-01 - Completed 07-03-PLAN.md
+Last activity: 2026-02-01 - Completed 07-02-PLAN.md
 
 Progress: [████████████████░] 95% (Phase 7 in progress)
 
@@ -103,6 +103,9 @@ Recent decisions affecting current work:
 - Phase 7 Plan 03: missing_payment_method: pause keeps subscription recoverable
 - Phase 7 Plan 03: Backward compatible with legacy STRIPE_PRICE_ID env var
 - Phase 7 Plan 03: startTrial defaults to true if no existing subscription
+- Phase 7 Plan 02: Interactive FAQ accordion for better UX
+- Phase 7 Plan 02: Next.js Script component for JSON-LD in client component
+- Phase 7 Plan 02: Static sitemap generation with change frequencies
 
 ### Pending Todos
 
@@ -135,7 +138,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-01
-Stopped at: Completed 07-03-PLAN.md
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -250,6 +253,12 @@ Documentation:
 - `packages/database/src/schema.ts` - Added trialEndsAt column to organizations table
 - `apps/web-portal/lib/stripe.ts` - Added createTrialCheckout function with trial settings
 - `apps/web-portal/app/api/stripe/checkout/route.ts` - Added planId/startTrial support, plan-based pricing
+
+**Phase 7 Plan 02 (2026-02-01):**
+- `apps/web-portal/app/page.tsx` - Added FAQSection component and JSON-LD script
+- `apps/web-portal/lib/seo/schemas.ts` - Added faqItems array and populated faqSchema
+- `apps/web-portal/app/sitemap.ts` - Dynamic sitemap generation
+- `apps/web-portal/app/robots.ts` - Dynamic robots.txt with allow/disallow rules
 
 ---
 *Last updated: 2026-02-01*
