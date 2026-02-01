@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, Settings } from 'lucide-react';
+import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { UserMenu } from './user-menu';
 
@@ -34,6 +34,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         <NavItem href="/dashboard/people" icon={Users} label="People" />
         <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
         <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
+        <NavItem href="/dashboard/settings" icon={Shield} label="Settings" />
 
         {/* Admin section - only visible for admins */}
         {isAdmin && (
