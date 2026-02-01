@@ -224,3 +224,47 @@ export const suggestionFeedback = pgTable('suggestion_feedback', {
   actionIdx: index('suggestion_feedback_action_idx').on(table.action),
   suggestionIdx: uniqueIndex('suggestion_feedback_suggestion_idx').on(table.suggestionId, table.action),
 }));
+
+// Audit logs for security-relevant events
+export const auditLogs = pgTable('audit_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Who
+  userId: text('user_id'), // Slack user ID (may be null for system events)
+  workspaceId: uuid('workspace_id').references(() => workspaces.id),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+
+  // What
+  action: text('action').notNull(), // 'login', 'logout', 'data_export', 'data_delete', etc.
+  resource: text('resource'), // 'user', 'workspace', 'subscription', etc.
+  resourceId: text('resource_id'), // UUID or ID of affected resource
+
+  // Details
+  details: jsonb('details').$type<Record<string, unknown>>(),
+  previousValue: jsonb('previous_value'),
+  newValue: jsonb('new_value'),
+
+  // When
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  workspaceIdx: index('audit_logs_workspace_idx').on(table.workspaceId),
+  userIdx: index('audit_logs_user_idx').on(table.userId),
+  actionIdx: index('audit_logs_action_idx').on(table.action),
+  createdAtIdx: index('audit_logs_created_at_idx').on(table.createdAt),
+}));
+
+// Type-safe audit action union
+export type AuditAction =
+  | 'login'
+  | 'logout'
+  | 'data_export_requested'
+  | 'data_export_completed'
+  | 'data_delete_requested'
+  | 'data_delete_completed'
+  | 'subscription_created'
+  | 'subscription_cancelled'
+  | 'settings_changed'
+  | 'oauth_connected'
+  | 'oauth_disconnected'
+  | 'admin_action';
