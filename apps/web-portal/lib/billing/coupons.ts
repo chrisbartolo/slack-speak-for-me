@@ -1,13 +1,9 @@
 import 'server-only';
 import { db, schema } from '@/lib/db';
 import { eq, and, gte, lte, or, sql } from 'drizzle-orm';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 
 const { coupons, couponRedemptions } = schema;
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-01-28.clover',
-});
 
 export interface CouponValidation {
   valid: boolean;
@@ -111,7 +107,7 @@ export async function applyCouponToCheckout(
   }
 
   // Create Stripe coupon
-  const stripeCoupon = await stripe.coupons.create({
+  const stripeCoupon = await getStripe().coupons.create({
     id: `coupon_${coupon.code.toLowerCase()}`,
     ...(coupon.discountType === 'percent'
       ? { percent_off: coupon.discountValue }
