@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   const hasFeedback = feedbackStats.length > 0;
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>

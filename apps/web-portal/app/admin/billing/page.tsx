@@ -16,7 +16,7 @@ export default async function BillingPage({
 
   if (!session.organizationId) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 animate-in fade-in duration-300">
         <div>
           <h1 className="text-3xl font-bold">Billing</h1>
           <p className="text-muted-foreground mt-1">
@@ -58,7 +58,7 @@ export default async function BillingPage({
   const needsUpgrade = !org?.stripeSubscriptionId || org?.subscriptionStatus === 'canceled';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h1 className="text-3xl font-bold">Billing</h1>
         <p className="text-muted-foreground mt-1">

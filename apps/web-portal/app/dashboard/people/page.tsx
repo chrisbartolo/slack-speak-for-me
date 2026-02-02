@@ -9,7 +9,7 @@ export default async function PeoplePage() {
   const contexts = await getPersonContexts();
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">People</h1>

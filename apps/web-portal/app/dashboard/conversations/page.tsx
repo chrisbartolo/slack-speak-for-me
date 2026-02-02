@@ -11,7 +11,7 @@ export default async function ConversationsPage() {
   ]);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h1 className="text-3xl font-bold">Conversations</h1>
         <p className="text-muted-foreground mt-1">
