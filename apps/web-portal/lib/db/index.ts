@@ -13,11 +13,13 @@ import {
   refinementFeedback,
   gdprConsent,
   personContext,
+  conversationContext,
   reportSettings,
   googleIntegrations,
   workflowConfig,
   suggestionFeedback,
   auditLogs,
+  autoRespondLog,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -42,11 +44,13 @@ const schema = {
   refinementFeedback,
   gdprConsent,
   personContext,
+  conversationContext,
   reportSettings,
   googleIntegrations,
   workflowConfig,
   suggestionFeedback,
   auditLogs,
+  autoRespondLog,
 };
 
 export const db = drizzle(queryClient, { schema });

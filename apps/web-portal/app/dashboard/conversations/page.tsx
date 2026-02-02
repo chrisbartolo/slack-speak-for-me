@@ -2,10 +2,13 @@ import { MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConversationList } from '@/components/dashboard/conversation-list';
 import { EmptyState } from '@/components/dashboard/empty-state';
-import { getWatchedConversations } from '@/lib/db/queries';
+import { getWatchedConversations, getConversationContexts } from '@/lib/db/queries';
 
 export default async function ConversationsPage() {
-  const conversations = await getWatchedConversations();
+  const [conversations, contexts] = await Promise.all([
+    getWatchedConversations(),
+    getConversationContexts(),
+  ]);
 
   return (
     <div className="p-8 space-y-6">
@@ -33,7 +36,7 @@ export default async function ConversationsPage() {
               description="Use /watch in any Slack channel to start receiving AI suggestions when you're mentioned or replied to."
             />
           ) : (
-            <ConversationList conversations={conversations} />
+            <ConversationList conversations={conversations} contexts={contexts} />
           )}
         </CardContent>
       </Card>
@@ -73,6 +76,14 @@ export default async function ConversationsPage() {
             </div>
             <p>
               Copy, refine, or dismiss the suggestion as needed
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-medium">
+              *
+            </div>
+            <p>
+              <strong>YOLO Mode:</strong> Enable auto-respond to let AI reply on your behalf automatically
             </p>
           </div>
         </CardContent>

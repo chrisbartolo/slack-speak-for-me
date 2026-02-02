@@ -66,10 +66,31 @@ export const watchedConversations = pgTable('watched_conversations', {
   channelId: text('channel_id').notNull(),
   channelName: text('channel_name'),  // Display name for UI (e.g., "#general")
   channelType: text('channel_type'),  // 'channel' | 'group' | 'im' | 'mpim'
+  autoRespond: boolean('auto_respond').default(false), // YOLO mode: auto-respond on behalf of user
   watchedAt: timestamp('watched_at').defaultNow(),
 }, (table) => ({
   workspaceUserIdx: index('watched_conversations_workspace_user_idx').on(table.workspaceId, table.userId),
   uniqueWatch: uniqueIndex('watched_conversations_unique_watch_idx').on(table.workspaceId, table.userId, table.channelId),
+}));
+
+// Log of auto-sent messages (YOLO mode)
+export const autoRespondLog = pgTable('auto_respond_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(),
+  channelId: text('channel_id').notNull(),
+  threadTs: text('thread_ts'), // Thread timestamp if reply
+  triggerMessageTs: text('trigger_message_ts').notNull(), // Message that triggered response
+  triggerMessageText: text('trigger_message_text'), // Text of trigger message
+  responseText: text('response_text').notNull(), // What AI sent
+  responseMessageTs: text('response_message_ts'), // TS of sent message (for undo)
+  status: text('status').default('sent'), // 'sent' | 'undone' | 'edited'
+  sentAt: timestamp('sent_at').defaultNow(),
+  undoneAt: timestamp('undone_at'),
+}, (table) => ({
+  workspaceUserIdx: index('auto_respond_log_workspace_user_idx').on(table.workspaceId, table.userId),
+  channelIdx: index('auto_respond_log_channel_idx').on(table.channelId),
+  sentAtIdx: index('auto_respond_log_sent_at_idx').on(table.sentAt),
 }));
 
 export const threadParticipants = pgTable('thread_participants', {
@@ -149,6 +170,22 @@ export const personContext = pgTable('person_context', {
 }, (table) => ({
   workspaceUserIdx: index('person_context_workspace_user_idx').on(table.workspaceId, table.userId),
   uniquePersonContext: uniqueIndex('person_context_unique_idx').on(table.workspaceId, table.userId, table.targetSlackUserId),
+}));
+
+// Context for channels, group chats, and DMs
+export const conversationContext = pgTable('conversation_context', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // The user who owns this context
+  channelId: text('channel_id').notNull(), // The channel/DM/group this context is about
+  channelName: text('channel_name'), // Display name for UI
+  channelType: text('channel_type'), // 'channel' | 'group' | 'im' | 'mpim'
+  contextText: text('context_text').notNull(), // Free-form notes about this conversation
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: index('conversation_context_workspace_user_idx').on(table.workspaceId, table.userId),
+  uniqueConversationContext: uniqueIndex('conversation_context_unique_idx').on(table.workspaceId, table.userId, table.channelId),
 }));
 
 export const reportSettings = pgTable('report_settings', {

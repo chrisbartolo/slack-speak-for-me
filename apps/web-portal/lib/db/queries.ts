@@ -10,10 +10,12 @@ const {
   watchedConversations,
   refinementFeedback,
   personContext,
+  conversationContext,
   reportSettings,
   googleIntegrations,
   workflowConfig,
   suggestionFeedback,
+  autoRespondLog,
 } = schema;
 
 /**
@@ -105,6 +107,7 @@ export const getWatchedConversations = cache(async () => {
       channelId: watchedConversations.channelId,
       channelName: watchedConversations.channelName,
       channelType: watchedConversations.channelType,
+      autoRespond: watchedConversations.autoRespond,
       watchedAt: watchedConversations.watchedAt,
     })
     .from(watchedConversations)
@@ -314,4 +317,62 @@ export const getSuggestionFeedbackStats = cache(async () => {
     .groupBy(suggestionFeedback.action);
 
   return stats;
+});
+
+/**
+ * Get all conversation contexts for user
+ */
+export const getConversationContexts = cache(async () => {
+  const session = await verifySession();
+
+  return db
+    .select()
+    .from(conversationContext)
+    .where(
+      and(
+        eq(conversationContext.workspaceId, session.workspaceId),
+        eq(conversationContext.userId, session.userId)
+      )
+    )
+    .orderBy(desc(conversationContext.updatedAt));
+});
+
+/**
+ * Get context for a specific channel
+ */
+export const getConversationContext = cache(async (channelId: string) => {
+  const session = await verifySession();
+
+  const [context] = await db
+    .select()
+    .from(conversationContext)
+    .where(
+      and(
+        eq(conversationContext.workspaceId, session.workspaceId),
+        eq(conversationContext.userId, session.userId),
+        eq(conversationContext.channelId, channelId)
+      )
+    )
+    .limit(1);
+
+  return context || null;
+});
+
+/**
+ * Get auto-respond log for user
+ */
+export const getAutoRespondLog = cache(async (limit = 50) => {
+  const session = await verifySession();
+
+  return db
+    .select()
+    .from(autoRespondLog)
+    .where(
+      and(
+        eq(autoRespondLog.workspaceId, session.workspaceId),
+        eq(autoRespondLog.userId, session.userId)
+      )
+    )
+    .orderBy(desc(autoRespondLog.sentAt))
+    .limit(limit);
 });
