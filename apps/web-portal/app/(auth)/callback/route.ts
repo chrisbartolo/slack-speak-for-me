@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth/session';
-import { exchangeCodeForTokens } from '@/lib/auth/slack-oauth';
-import { db, workspaces } from '@slack-speak/database';
-import { eq } from 'drizzle-orm';
+import { exchangeCodeForTokens, fetchUserEmail } from '@/lib/auth/slack-oauth';
+import { db, workspaces, users } from '@slack-speak/database';
+import { eq, and } from 'drizzle-orm';
 import { auditLogin } from '@/lib/audit';
 
 // Get the base URL for redirects (handles proxy/tunnel scenarios)
@@ -72,11 +72,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Create session with workspace and user info
+    // Fetch user email from Slack (requires user access token from oauth response)
+    let userEmail = '';
+    if (tokens.authed_user.access_token) {
+      const email = await fetchUserEmail(tokens.authed_user.access_token);
+      userEmail = email || '';
+
+      // Also update user record with email if we got it
+      if (email) {
+        await db
+          .update(users)
+          .set({ email: email })
+          .where(
+            and(
+              eq(users.workspaceId, workspace.id),
+              eq(users.slackUserId, tokens.authed_user.id)
+            )
+          );
+      }
+    }
+
+    // Create session with workspace, user info, and email
     await createSession({
       teamId: tokens.team.id,
       userId: tokens.authed_user.id,
       workspaceId: workspace.id,
+      email: userEmail,
     });
 
     // Log successful login for audit trail

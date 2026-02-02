@@ -16,6 +16,7 @@ export const verifySession = cache(async () => {
   return {
     isAuth: true,
     userId: session.userId,
+    email: session.email,
     workspaceId: session.workspaceId,
     teamId: session.teamId,
   };
@@ -34,6 +35,7 @@ export const getOptionalSession = cache(async () => {
   return {
     isAuth: true,
     userId: session.userId,
+    email: session.email,
     workspaceId: session.workspaceId,
     teamId: session.teamId,
   };

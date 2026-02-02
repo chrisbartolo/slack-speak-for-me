@@ -9,6 +9,7 @@ export type SessionPayload = {
   userId: string; // Slack user ID
   workspaceId: string; // Internal workspace UUID
   teamId: string; // Slack team ID
+  email: string; // User email for individual billing lookup
   expiresAt: Date;
 };
 
@@ -36,6 +37,7 @@ export async function decrypt(
       userId: payload.userId as string,
       workspaceId: payload.workspaceId as string,
       teamId: payload.teamId as string,
+      email: payload.email as string,
       expiresAt: new Date(payload.expiresAt as string),
     };
   } catch (error) {
