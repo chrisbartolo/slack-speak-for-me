@@ -12,8 +12,8 @@ export default async function PeoplePage() {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">People</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold">People</h1>
+          <p className="text-muted-foreground mt-1">
             Add context about people to help AI generate better suggestions
           </p>
         </div>
@@ -47,21 +47,21 @@ export default async function PeoplePage() {
         <CardHeader>
           <CardTitle>Tips for good context</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-gray-600">
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            <strong className="text-gray-900">Include relationship context:</strong>{' '}
+            <strong className="text-foreground">Include relationship context:</strong>{' '}
             &quot;My direct manager&quot;, &quot;Senior VP I report to quarterly&quot;, &quot;Cross-functional partner&quot;
           </p>
           <p>
-            <strong className="text-gray-900">Note communication preferences:</strong>{' '}
+            <strong className="text-foreground">Note communication preferences:</strong>{' '}
             &quot;Prefers bullet points&quot;, &quot;Appreciates detailed explanations&quot;, &quot;Values brevity&quot;
           </p>
           <p>
-            <strong className="text-gray-900">Add relevant background:</strong>{' '}
+            <strong className="text-foreground">Add relevant background:</strong>{' '}
             &quot;Often pushes back on timelines&quot;, &quot;Champion of our project&quot;, &quot;New to the team&quot;
           </p>
           <p>
-            <strong className="text-gray-900">Share guidance you&apos;ve received:</strong>{' '}
+            <strong className="text-foreground">Share guidance you&apos;ve received:</strong>{' '}
             &quot;CEO asked me to push back diplomatically on scope creep requests&quot;
           </p>
         </CardContent>

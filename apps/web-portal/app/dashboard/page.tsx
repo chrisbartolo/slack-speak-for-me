@@ -3,19 +3,30 @@ import {
   getMessageCount,
   getWatchedConversationCount,
   getRefinementCount,
+  getPersonContextCount,
+  getSuggestionFeedbackStats,
 } from '@/lib/db/queries';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { LearningSummary } from '@/components/dashboard/learning-summary';
+import { GettingStarted } from '@/components/dashboard/getting-started';
 import { MessageSquare, Eye, Edit3, Sliders } from 'lucide-react';
 
 export default async function DashboardPage() {
   // Fetch data in parallel
-  const [stylePrefs, messageCount, conversationCount, refinementCount] = await Promise.all([
+  const [stylePrefs, messageCount, conversationCount, refinementCount, personContextCount, feedbackStats] = await Promise.all([
     getStylePreferences(),
     getMessageCount(),
     getWatchedConversationCount(),
     getRefinementCount(),
+    getPersonContextCount(),
+    getSuggestionFeedbackStats(),
   ]);
+
+  // Calculate onboarding progress
+  const hasWatchedConversations = conversationCount > 0;
+  const hasStylePreferences = !!(stylePrefs?.tone || stylePrefs?.formality);
+  const hasPersonContext = personContextCount > 0;
+  const hasFeedback = feedbackStats.length > 0;
 
   return (
     <div className="p-8 space-y-8">
@@ -26,6 +37,14 @@ export default async function DashboardPage() {
           Your AI learning progress and activity overview
         </p>
       </div>
+
+      {/* Getting Started Guide */}
+      <GettingStarted
+        hasWatchedConversations={hasWatchedConversations}
+        hasStylePreferences={hasStylePreferences}
+        hasPersonContext={hasPersonContext}
+        hasFeedback={hasFeedback}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

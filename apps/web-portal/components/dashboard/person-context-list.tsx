@@ -61,24 +61,24 @@ export function PersonContextList({ contexts }: PersonContextListProps) {
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <div className="p-2 bg-gray-100 rounded-lg flex-shrink-0">
-                  <User className="h-5 w-5 text-gray-600" />
+                <div className="p-2 bg-muted rounded-lg flex-shrink-0">
+                  <User className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-foreground">
                       {context.targetUserName || context.targetSlackUserId}
                     </p>
                     {context.updatedAt && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-muted-foreground">
                         Updated {formatDistanceToNow(context.updatedAt, { addSuffix: true })}
                       </span>
                     )}
                   </div>
                   {context.targetUserName && (
-                    <p className="text-xs text-gray-400">{context.targetSlackUserId}</p>
+                    <p className="text-xs text-muted-foreground">{context.targetSlackUserId}</p>
                   )}
-                  <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">
+                  <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
                     {context.contextText}
                   </p>
                 </div>
@@ -92,7 +92,7 @@ export function PersonContextList({ contexts }: PersonContextListProps) {
                   }}
                   trigger={
                     <Button variant="ghost" size="sm">
-                      <Edit2 className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      <Edit2 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                     </Button>
                   }
                 />
@@ -104,7 +104,7 @@ export function PersonContextList({ contexts }: PersonContextListProps) {
                       size="sm"
                       disabled={isPending && deletingId === context.id}
                     >
-                      <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
