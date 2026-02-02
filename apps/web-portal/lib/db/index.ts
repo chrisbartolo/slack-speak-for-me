@@ -27,6 +27,7 @@ import {
   couponRedemptions,
   referrals,
   referralEvents,
+  actionableItems,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -65,6 +66,7 @@ const schema = {
   couponRedemptions,
   referrals,
   referralEvents,
+  actionableItems,
 };
 
 export const db = drizzle(queryClient, { schema });
