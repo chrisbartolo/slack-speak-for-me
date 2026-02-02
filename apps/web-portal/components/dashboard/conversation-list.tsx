@@ -217,13 +217,18 @@ export function ConversationList({ conversations: initialConversations, contexts
   const getDisplayName = (conversation: Conversation) => {
     if (conversation.channelName &&
         conversation.channelName !== 'Direct Message' &&
+        conversation.channelName !== 'DM' &&
         !conversation.channelName.startsWith('mpdm-')) {
       const isDM = conversation.channelType === 'im' || conversation.channelType === 'mpim';
       return isDM ? conversation.channelName : `#${conversation.channelName}`;
     }
-    // Fallback for DMs without proper names
+    // Fallback for DMs without proper names - show as "Direct Message" with truncated ID
     if (conversation.channelType === 'im' || conversation.channelId.startsWith('D')) {
-      return 'Loading...';
+      // If still refreshing, show loading; otherwise show DM with partial ID
+      if (refreshingNames) {
+        return 'Loading...';
+      }
+      return `DM (${conversation.channelId.slice(-6)})`;
     }
     return conversation.channelId;
   };

@@ -62,6 +62,19 @@ export async function GET(request: NextRequest) {
 
             const data = await response.json();
 
+            // Log errors for debugging (e.g., missing scopes)
+            if (!data.ok) {
+              console.error(`Slack API error for channel ${channelId}:`, data.error);
+              // Still add entry with channel ID as fallback name
+              channels[channelId] = {
+                id: channelId,
+                name: channelId.startsWith('D') ? 'DM' : channelId,
+                type: channelId.startsWith('D') ? 'im' : 'channel',
+                isPrivate: channelId.startsWith('D') || channelId.startsWith('G'),
+              };
+              return;
+            }
+
             if (data.ok && data.channel) {
               const channel = data.channel;
               let name = channel.name;
