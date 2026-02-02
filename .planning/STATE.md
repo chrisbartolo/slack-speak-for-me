@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: Feature Complete (Phase 10 deferred)
-Plan: All planned phases complete
+Phase: 11 of 11 (Individual Billing)
+Plan: 1 of 8 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Ready for go-to-market
-Last activity: 2026-02-02 - Phase 9 complete, Phase 10 deferred pending customer demand
+Status: In progress
+Last activity: 2026-02-02 - Completed 11-01-PLAN.md (User Subscriptions Schema)
 
-Progress: [██████████████████████████████░░] 95% (58/61 plans complete)
+Progress: [██████████████████████████████░░] 96% (59/62 plans complete)
 
 ## Production Deployment
 
@@ -148,6 +148,10 @@ Recent decisions affecting current work:
 - Phase 9 Plan 03: Mobile header with hamburger menu icon (fixed, z-40)
 - Phase 9 Plan 03: pt-16 md:pt-0 offset for fixed mobile header
 - Phase 9 Plan 03: bg-background CSS variable instead of hardcoded bg-gray-50
+- Phase 11 Plan 01: Email unique index (not primary key) for flexibility in user_subscriptions
+- Phase 11 Plan 01: Email normalized to lowercase at fetch time in fetchUserEmail
+- Phase 11 Plan 01: OpenID Connect userinfo endpoint for Slack email retrieval
+- Phase 11 Plan 01: User email persisted to users table on login for reference
 
 ### Pending Todos
 
@@ -180,7 +184,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 09-03-PLAN.md (Responsive Mobile Drawer)
+Stopped at: Completed 11-01-PLAN.md (User Subscriptions Schema and Session Email)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -387,6 +391,14 @@ Documentation:
 - `apps/web-portal/hooks/use-media-query.ts` - useMediaQuery hook for responsive breakpoints
 - `apps/web-portal/components/dashboard/responsive-sidebar.tsx` - Mobile drawer wrapper for sidebar
 - `apps/web-portal/app/dashboard/layout.tsx` - Responsive layout with conditional sidebar/drawer
+
+**Phase 11 Plan 01 (2026-02-02):**
+- `packages/database/src/schema.ts` - Added userSubscriptions table with email unique index
+- `apps/web-portal/lib/db/index.ts` - Exported userSubscriptions to schema object
+- `apps/web-portal/lib/auth/session.ts` - Added email field to SessionPayload type
+- `apps/web-portal/lib/auth/dal.ts` - Updated verifySession and getOptionalSession to return email
+- `apps/web-portal/lib/auth/slack-oauth.ts` - Added email scope, created fetchUserEmail function
+- `apps/web-portal/app/(auth)/callback/route.ts` - Fetch and pass email to createSession
 
 ---
 *Last updated: 2026-02-02*
