@@ -1,5 +1,12 @@
 // AI service - response suggestion generation and refinement
-export { generateSuggestion, refineSuggestion } from './ai.js';
+export { generateSuggestion, refineSuggestion, UsageLimitExceededError } from './ai.js';
+
+// Usage enforcement - billing limits and tracking
+export {
+  checkUsageAllowed,
+  recordUsageEvent,
+  getUsageStatus,
+} from './usage-enforcement.js';
 
 // Context service - conversation and thread history retrieval
 export {

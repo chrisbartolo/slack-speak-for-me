@@ -5,6 +5,7 @@ import { logger } from '../utils/logger.js';
 import { buildStyleContext, trackRefinement } from './personalization/index.js';
 import { db, personContext, conversationContext } from '@slack-speak/database';
 import { eq, and, inArray } from 'drizzle-orm';
+import { checkUsageAllowed, recordUsageEvent } from './usage-enforcement.js';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -98,6 +99,21 @@ interface SuggestionResult {
     learningPhase: string;
     usedHistory: boolean;
   };
+  usage?: {
+    used: number;
+    limit: number;
+    isOverage: boolean;
+  };
+}
+
+export class UsageLimitExceededError extends Error {
+  constructor(
+    public currentUsage: number,
+    public limit: number
+  ) {
+    super(`Usage limit exceeded: ${currentUsage}/${limit} suggestions used this month`);
+    this.name = 'UsageLimitExceededError';
+  }
 }
 
 interface RefinementHistoryEntry {
@@ -129,6 +145,24 @@ export async function generateSuggestion(
   context: SuggestionContext
 ): Promise<SuggestionResult> {
   const startTime = Date.now();
+
+  // Check usage limits before generating
+  const usageCheck = await checkUsageAllowed({
+    workspaceId: context.workspaceId,
+    userId: context.userId,
+  });
+
+  if (!usageCheck.allowed) {
+    logger.warn({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      currentUsage: usageCheck.currentUsage,
+      limit: usageCheck.limit,
+      reason: usageCheck.reason,
+    }, 'Usage limit exceeded - blocking AI generation');
+
+    throw new UsageLimitExceededError(usageCheck.currentUsage, usageCheck.limit);
+  }
 
   // Build personalized style context
   const formattedContext = context.contextMessages
@@ -229,6 +263,23 @@ Please suggest a professional response the user could send. Use the provided con
 
     const processingTimeMs = Date.now() - startTime;
 
+    // Record usage event (non-blocking)
+    const totalTokens = response.usage.input_tokens + response.usage.output_tokens;
+    // Estimate cost: ~$3/M input + $15/M output for Sonnet
+    const costEstimate = Math.round(
+      (response.usage.input_tokens * 0.003 + response.usage.output_tokens * 0.015) * 100
+    ); // in cents
+
+    recordUsageEvent({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      eventType: 'suggestion',
+      tokensUsed: totalTokens,
+      costEstimate,
+    }).catch(err => {
+      logger.warn({ error: err }, 'Failed to record usage event');
+    });
+
     logger.info({
       processingTimeMs,
       inputTokens: response.usage.input_tokens,
@@ -237,6 +288,7 @@ Please suggest a professional response the user could send. Use the provided con
       cacheCreationTokens: (response.usage as any).cache_creation_input_tokens || 0,
       learningPhase: styleContext.learningPhase,
       usedHistory: styleContext.usedHistory,
+      usageCheck: { used: usageCheck.currentUsage, limit: usageCheck.limit, isOverage: usageCheck.isOverage },
     }, 'AI suggestion generated with personalization');
 
     return {
@@ -245,6 +297,11 @@ Please suggest a professional response the user could send. Use the provided con
       personalization: {
         learningPhase: styleContext.learningPhase,
         usedHistory: styleContext.usedHistory,
+      },
+      usage: {
+        used: usageCheck.currentUsage + 1, // +1 for this generation
+        limit: usageCheck.limit,
+        isOverage: usageCheck.isOverage || (usageCheck.currentUsage + 1 > usageCheck.limit),
       },
     };
   } catch (error) {
@@ -262,6 +319,24 @@ export async function refineSuggestion(
   context: RefinementContext
 ): Promise<SuggestionResult> {
   const startTime = Date.now();
+
+  // Check usage limits before refining (refinements count toward usage)
+  const usageCheck = await checkUsageAllowed({
+    workspaceId: context.workspaceId,
+    userId: context.userId,
+  });
+
+  if (!usageCheck.allowed) {
+    logger.warn({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      currentUsage: usageCheck.currentUsage,
+      limit: usageCheck.limit,
+      reason: usageCheck.reason,
+    }, 'Usage limit exceeded - blocking AI refinement');
+
+    throw new UsageLimitExceededError(usageCheck.currentUsage, usageCheck.limit);
+  }
 
   // Build style context for consistency
   const styleContext = await buildStyleContext({
@@ -353,6 +428,22 @@ Please provide the refined response text. Provide only the suggested response te
       logger.warn({ error: trackError }, 'Failed to track refinement event');
     }
 
+    // Record usage event (non-blocking)
+    const totalTokens = response.usage.input_tokens + response.usage.output_tokens;
+    const costEstimate = Math.round(
+      (response.usage.input_tokens * 0.003 + response.usage.output_tokens * 0.015) * 100
+    );
+
+    recordUsageEvent({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      eventType: 'refinement',
+      tokensUsed: totalTokens,
+      costEstimate,
+    }).catch(err => {
+      logger.warn({ error: err }, 'Failed to record refinement usage event');
+    });
+
     logger.info({
       processingTimeMs,
       inputTokens: response.usage.input_tokens,
@@ -360,6 +451,7 @@ Please provide the refined response text. Provide only the suggested response te
       cacheReadTokens: (response.usage as any).cache_read_input_tokens || 0,
       roundNumber,
       learningPhase: styleContext.learningPhase,
+      usageCheck: { used: usageCheck.currentUsage, limit: usageCheck.limit, isOverage: usageCheck.isOverage },
     }, 'AI refinement generated');
 
     return {
@@ -368,6 +460,11 @@ Please provide the refined response text. Provide only the suggested response te
       personalization: {
         learningPhase: styleContext.learningPhase,
         usedHistory: styleContext.usedHistory,
+      },
+      usage: {
+        used: usageCheck.currentUsage + 1,
+        limit: usageCheck.limit,
+        isOverage: usageCheck.isOverage || (usageCheck.currentUsage + 1 > usageCheck.limit),
       },
     };
   } catch (error) {
