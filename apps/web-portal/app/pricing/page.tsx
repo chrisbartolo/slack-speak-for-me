@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { PricingTable } from '@/components/pricing/pricing-table';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -92,7 +93,14 @@ export default function PricingPage() {
 
       {/* Pricing Table */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <PricingTable />
+        <Suspense fallback={
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto animate-pulse">
+            <div className="h-96 bg-gray-100 rounded-xl" />
+            <div className="h-96 bg-gray-100 rounded-xl" />
+          </div>
+        }>
+          <PricingTable />
+        </Suspense>
       </section>
 
       {/* FAQ Teaser */}
