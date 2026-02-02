@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11 of 11 (Individual Billing)
-Plan: 4 of 6 in phase
+Plan: 5 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-02 - Completed 11-04-PLAN.md (Pricing Page Update)
+Last activity: 2026-02-02 - Completed 11-05-PLAN.md (Individual Billing Settings Page)
 
-Progress: [██████████████████████████████░░] 99% (62/63 plans complete)
+Progress: [██████████████████████████████░░] 99% (63/64 plans complete)
 
 ## Production Deployment
 
@@ -164,6 +164,10 @@ Recent decisions affecting current work:
 - Phase 11 Plan 04: Individual mode shows /month, Team mode shows /seat/month
 - Phase 11 Plan 04: Plan IDs: starter, pro, team-starter, team-pro
 - Phase 11 Plan 04: Mode passed to login via query parameter (?plan=X&mode=Y)
+- Phase 11 Plan 05: Billing link shown to all users in sidebar (not admin-only)
+- Phase 11 Plan 05: Overlap warning when user has both individual and org subscription
+- Phase 11 Plan 05: Access source banner indicates individual vs organization
+- Phase 11 Plan 05: Upgrade link routes to individual billing for non-admins
 
 ### Pending Todos
 
@@ -196,7 +200,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 11-03-PLAN.md (Access Check and User Portal)
+Stopped at: Completed 11-05-PLAN.md (Individual Billing Settings Page)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -424,6 +428,11 @@ Documentation:
 **Phase 11 Plan 04 (2026-02-02):**
 - `apps/web-portal/components/pricing/pricing-table.tsx` - BillingModeToggle, INDIVIDUAL_PLANS, TEAM_PLANS arrays, mode-aware pricing
 - `apps/web-portal/app/pricing/page.tsx` - Updated metadata for dual billing modes
+
+**Phase 11 Plan 05 (2026-02-02):**
+- `apps/web-portal/app/settings/billing/page.tsx` - Individual billing settings page with subscription management
+- `apps/web-portal/components/dashboard/sidebar.tsx` - Added Billing nav item visible to all users
+- `apps/web-portal/app/dashboard/layout.tsx` - Integrated checkUserAccess for unified subscription status
 
 ---
 *Last updated: 2026-02-02*
