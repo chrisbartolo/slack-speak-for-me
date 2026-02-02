@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield } from 'lucide-react';
 import { NavItem } from './nav-item';
+import { NavGroup } from './nav-group';
 import { UserMenu } from './user-menu';
 
 interface SidebarProps {
@@ -11,7 +12,7 @@ interface SidebarProps {
 
 export function Sidebar({ isAdmin }: SidebarProps) {
   return (
-    <aside className="w-64 border-r border-border bg-[#FFFDF7] flex flex-col h-full">
+    <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
@@ -39,7 +40,16 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         {/* Admin section - only visible for admins */}
         {isAdmin && (
           <div className="border-t border-border pt-4 mt-4">
-            <NavItem href="/admin" icon={Settings} label="Admin" />
+            <NavGroup
+              label="Admin"
+              icon={Settings}
+              defaultOpen={false}
+              items={[
+                { href: '/admin/organizations', label: 'Organizations' },
+                { href: '/admin/users', label: 'Users' },
+                { href: '/admin/billing', label: 'Billing' },
+              ]}
+            />
           </div>
         )}
       </nav>
