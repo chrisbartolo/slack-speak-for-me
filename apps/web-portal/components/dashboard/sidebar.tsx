@@ -50,6 +50,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
                 { href: '/admin/organizations', label: 'Organizations' },
                 { href: '/admin/users', label: 'Users' },
                 { href: '/admin/billing', label: 'Billing' },
+                { href: '/admin/coupons', label: 'Coupons' },
               ]}
             />
           </div>
