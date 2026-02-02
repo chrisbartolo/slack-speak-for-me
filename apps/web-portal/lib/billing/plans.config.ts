@@ -41,7 +41,7 @@ export const INDIVIDUAL_PLANS: PlanConfig[] = [
   {
     id: 'starter',
     name: 'Starter',
-    description: 'For occasional use',
+    description: 'Perfect for occasional difficult conversations',
     type: 'individual',
     basePrice: 900, // $9/mo
     includedSuggestions: 25,
@@ -49,18 +49,18 @@ export const INDIVIDUAL_PLANS: PlanConfig[] = [
     stripePriceId: process.env.STRIPE_PRICE_STARTER || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_STARTER || '',
     features: [
-      '25 AI suggestions/month',
-      'Style learning',
-      'Conversation context',
-      'Refinement modal',
-      'Email support',
+      'Handle ~1 difficult message per day',
+      'AI learns YOUR writing style',
+      'Understands conversation context',
+      'Refine suggestions until perfect',
+      'Save hours on crafting responses',
     ],
-    cta: 'Start Free Trial',
+    cta: 'Start 14-Day Free Trial',
   },
   {
     id: 'pro',
     name: 'Pro',
-    description: 'For daily communicators',
+    description: 'For professionals who communicate daily',
     type: 'individual',
     basePrice: 1500, // $15/mo
     includedSuggestions: 75,
@@ -68,15 +68,15 @@ export const INDIVIDUAL_PLANS: PlanConfig[] = [
     stripePriceId: process.env.STRIPE_PRICE_PRO || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_PRO || '',
     features: [
-      '75 AI suggestions/month',
-      'Style learning',
-      'Conversation context',
-      'Person context notes',
-      'Refinement modal',
+      'Handle 3+ messages per day',
+      'AI learns YOUR writing style',
+      'Notes about people you message',
+      'Never miss important context',
+      'Unlimited refinements',
       'Priority support',
     ],
     popular: true,
-    cta: 'Start Free Trial',
+    cta: 'Start 14-Day Free Trial',
   },
 ];
 
@@ -85,7 +85,7 @@ export const TEAM_PLANS: PlanConfig[] = [
   {
     id: 'team',
     name: 'Team',
-    description: 'For small teams',
+    description: 'Empower your whole team',
     type: 'team',
     basePrice: 0, // No base fee
     pricePerSeat: 1200, // $12/seat/mo
@@ -94,18 +94,18 @@ export const TEAM_PLANS: PlanConfig[] = [
     stripePriceId: process.env.STRIPE_PRICE_TEAM || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_TEAM || '',
     features: [
-      '50 AI suggestions/seat/month',
-      'Everything in Pro',
-      'Team admin dashboard',
-      'Usage analytics',
-      'Shared style guides',
+      '~2 messages/day per person',
+      'All Pro features for everyone',
+      'See team usage & engagement',
+      'Consistent team voice',
+      'Reduce communication friction',
     ],
-    cta: 'Start Free Trial',
+    cta: 'Start 14-Day Free Trial',
   },
   {
     id: 'business',
     name: 'Business',
-    description: 'For growing organizations',
+    description: 'For high-volume communication teams',
     type: 'team',
     basePrice: 0,
     pricePerSeat: 1800, // $18/seat/mo
@@ -114,15 +114,15 @@ export const TEAM_PLANS: PlanConfig[] = [
     stripePriceId: process.env.STRIPE_PRICE_BUSINESS || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_BUSINESS || '',
     features: [
-      '100 AI suggestions/seat/month',
-      'Everything in Team',
-      'SSO/SAML',
-      'Custom integrations',
-      'Dedicated support',
-      'SLA guarantee',
+      '~4+ messages/day per person',
+      'Enterprise SSO/SAML',
+      'Custom API integrations',
+      'Dedicated account manager',
+      '99.9% uptime SLA',
+      'Onboarding & training',
     ],
     popular: true,
-    cta: 'Start Free Trial',
+    cta: 'Start 14-Day Free Trial',
   },
 ];
 
