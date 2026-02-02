@@ -2,7 +2,12 @@
 
 ## Overview
 
-This roadmap delivers an AI-powered Slack integration that helps professionals craft contextually-aware responses to challenging workplace messages. The journey starts with secure infrastructure and OAuth foundation, builds core Slack response suggestion features, adds AI personalization through style learning, provides a web portal for configuration and management, and completes with team report automation. Each phase delivers independently verifiable user value while avoiding critical security and compliance pitfalls identified during research.
+This roadmap delivers an AI-powered Slack integration that helps professionals craft contextually-aware responses to challenging workplace messages. The product serves two primary audiences:
+
+1. **Individuals** - Professionals wanting to improve their communication with AI-powered suggestions
+2. **Organizations** - Teams providing client support via Slack who need brand consistency and dispute avoidance
+
+The journey starts with secure infrastructure and OAuth foundation, builds core Slack response suggestion features, adds AI personalization through style learning, provides a web portal for configuration and management, and expands with individual billing, client support features, and team management capabilities. Each phase delivers independently verifiable user value while avoiding critical security and compliance pitfalls identified during research.
 
 ## Phases
 
@@ -23,6 +28,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8: Production Security & Compliance** - GDPR, security hardening, audit logging
 - [x] **Phase 9: Portal/Admin UX Polish** - Brand styling, expandable nav, mobile responsive
 - [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions (DEFERRED - add when customers request)
+- [ ] **Phase 11: Individual Billing** - Personal subscriptions independent of org, individual payment option
+- [ ] **Phase 12: Client Support Features** - De-escalation mode, brand voice templates, sentiment tracking
+- [ ] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
 
 ## Phase Details
 
@@ -284,6 +292,57 @@ Plans:
 Plans:
 - [ ] TBD
 
+### Phase 11: Individual Billing
+**Goal**: Users can pay for personal subscriptions independent of organization billing
+**Depends on**: Phase 9
+**Requirements**: IND-01, IND-02, IND-03, IND-04, IND-05
+**Success Criteria** (what must be TRUE):
+  1. User can subscribe personally without requiring org admin approval
+  2. Individual subscription works across any Slack workspace user is part of
+  3. Stripe checkout flow supports individual vs org billing modes
+  4. User can manage their personal subscription (upgrade, cancel) from portal
+  5. System correctly identifies if user has individual sub OR org-provided access
+  6. Pricing page clearly shows individual vs team/org pricing options
+  7. Individual users see simplified dashboard (no admin features)
+**Plans**: TBD (run /gsd:plan-phase 11 to break down)
+
+Plans:
+- [ ] TBD
+
+### Phase 12: Client Support Features
+**Goal**: Features specifically for teams providing client support via Slack
+**Depends on**: Phase 11
+**Requirements**: SUPPORT-01, SUPPORT-02, SUPPORT-03, SUPPORT-04, SUPPORT-05, SUPPORT-06
+**Success Criteria** (what must be TRUE):
+  1. AI detects tension/frustration in client messages and suggests de-escalation responses
+  2. Org admin can create brand voice templates with approved response patterns
+  3. AI applies org brand voice guidelines when generating suggestions
+  4. System tracks sentiment trends in client conversations over time
+  5. Escalation alerts flag messages that may lead to disputes
+  6. Audit log tracks AI-assisted responses for compliance review
+  7. Knowledge base integration allows AI to reference product/service info
+**Plans**: TBD (run /gsd:plan-phase 12 to break down)
+
+Plans:
+- [ ] TBD
+
+### Phase 13: Team/Org Dashboard
+**Goal**: Admin dashboard with team analytics, controls, and compliance features
+**Depends on**: Phase 12
+**Requirements**: TEAM-01, TEAM-02, TEAM-03, TEAM-04, TEAM-05, TEAM-06
+**Success Criteria** (what must be TRUE):
+  1. Org admin can view communication analytics across team members
+  2. Admin can set org-wide style guidelines that apply to all users
+  3. Admin can manage YOLO mode permissions (enable/disable per user or globally)
+  4. Admin can view compliance audit trail of AI-assisted responses
+  5. Admin can create and manage shared response templates
+  6. Dashboard shows team adoption metrics and usage statistics
+  7. Admin can configure content guardrails and prohibited topics
+**Plans**: TBD (run /gsd:plan-phase 13 to break down)
+
+Plans:
+- [ ] TBD
+
 ## Progress
 
 **Execution Order:**
@@ -302,7 +361,10 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 8. Production Security & Compliance | 7/7 | Complete | 2026-02-01 |
 | 9. Portal/Admin UX Polish | 5/5 | Complete | 2026-02-02 |
 | 10. Calendar Integration | 0/? | Deferred | - |
+| 11. Individual Billing | 0/? | Not started | - |
+| 12. Client Support Features | 0/? | Not started | - |
+| 13. Team/Org Dashboard | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-02*
