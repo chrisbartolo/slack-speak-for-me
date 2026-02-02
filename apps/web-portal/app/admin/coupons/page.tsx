@@ -1,8 +1,12 @@
 import { getAllCoupons, getCouponStats } from '@/lib/billing/coupons';
+import { requireSuperAdmin } from '@/lib/auth/super-admin';
 import { CouponList } from './coupon-list';
 import { CreateCouponForm } from './create-coupon-form';
 
 export default async function AdminCouponsPage() {
+  // Only platform super admins can manage coupons
+  await requireSuperAdmin();
+
   const coupons = await getAllCoupons();
 
   // Fetch stats for each coupon

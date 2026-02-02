@@ -111,7 +111,7 @@ export async function applyCouponToCheckout(
     id: `coupon_${coupon.code.toLowerCase()}`,
     ...(coupon.discountType === 'percent'
       ? { percent_off: coupon.discountValue }
-      : { amount_off: coupon.discountValue, currency: 'usd' }),
+      : { amount_off: coupon.discountValue, currency: 'eur' }),
     duration: 'once', // Apply once for first payment
     name: coupon.description || coupon.code,
     max_redemptions: coupon.maxRedemptions || undefined,

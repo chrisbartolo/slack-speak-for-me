@@ -159,12 +159,19 @@ export const USAGE_THRESHOLDS = {
   HARD_CAP: 1.0, // 100% - block new suggestions
 };
 
+// Currency configuration
+export const CURRENCY = {
+  code: 'EUR',
+  symbol: '€',
+  locale: 'en-EU',
+};
+
 // Format price for display
 export function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+  return `${CURRENCY.symbol}${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 }
 
 // Format overage rate for display
 export function formatOverageRate(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
+  return `${CURRENCY.symbol}${(cents / 100).toFixed(2)}`;
 }

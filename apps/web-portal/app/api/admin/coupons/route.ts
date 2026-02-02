@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/auth/admin';
+import { requireSuperAdmin } from '@/lib/auth/super-admin';
 import { createCoupon } from '@/lib/billing/coupons';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin access
-    await requireAdmin();
+    // Verify super admin access (platform-wide, not org admin)
+    await requireSuperAdmin();
 
     const body = await request.json();
     const {

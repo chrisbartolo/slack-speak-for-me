@@ -96,7 +96,7 @@ export default function PricingPage() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="grid sm:grid-cols-3 gap-6 text-center">
           <div className="p-4">
-            <div className="text-3xl font-bold text-indigo-600 mb-1">~$0.35</div>
+            <div className="text-3xl font-bold text-indigo-600 mb-1">~€0.35</div>
             <p className="text-sm text-gray-600">per difficult message handled</p>
           </div>
           <div className="p-4">

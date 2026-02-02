@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/auth/admin';
+import { requireSuperAdmin } from '@/lib/auth/super-admin';
 import { deactivateCoupon } from '@/lib/billing/coupons';
 
 export async function DELETE(
@@ -7,8 +7,8 @@ export async function DELETE(
   { params }: { params: Promise<{ couponId: string }> }
 ) {
   try {
-    // Verify admin access
-    await requireAdmin();
+    // Verify super admin access
+    await requireSuperAdmin();
 
     const { couponId } = await params;
 
