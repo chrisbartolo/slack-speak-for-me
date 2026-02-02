@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11 of 11 (Individual Billing)
-Plan: 2 of 6 in phase
+Plan: 3 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-02 - Completed 11-02-PLAN.md (Checkout and Webhook Extension)
+Last activity: 2026-02-02 - Completed 11-03-PLAN.md (Access Check and User Portal)
 
-Progress: [██████████████████████████████░░] 97% (60/62 plans complete)
+Progress: [██████████████████████████████░░] 98% (61/62 plans complete)
 
 ## Production Deployment
 
@@ -156,6 +156,10 @@ Recent decisions affecting current work:
 - Phase 11 Plan 02: metadata.type='individual' distinguishes individual from org subscriptions
 - Phase 11 Plan 02: Webhook uses upsert (onConflictDoUpdate) for individual subscription records
 - Phase 11 Plan 02: Invoice events fall back to customer lookup since invoices lack subscription metadata
+- Phase 11 Plan 03: Individual subscription checked before organization fallback
+- Phase 11 Plan 03: past_due status grants access (Stripe is actively retrying)
+- Phase 11 Plan 03: AccessResult type distinguishes source (individual vs organization)
+- Phase 11 Plan 03: User portal endpoint uses verifySession (any user, not admin-only)
 
 ### Pending Todos
 
@@ -188,7 +192,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 11-02-PLAN.md (Checkout and Webhook Extension)
+Stopped at: Completed 11-03-PLAN.md (Access Check and User Portal)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -408,6 +412,10 @@ Documentation:
 - `apps/web-portal/lib/stripe.ts` - Added createIndividualCheckout function with email and trial support
 - `apps/web-portal/app/api/stripe/checkout/route.ts` - Dual-mode checkout with handleIndividualCheckout and handleOrganizationCheckout
 - `apps/web-portal/app/api/stripe/webhook/route.ts` - Extended with individual subscription handlers and type-based routing
+
+**Phase 11 Plan 03 (2026-02-02):**
+- `apps/web-portal/lib/billing/access-check.ts` - Dual-path access checking with individual-first priority
+- `apps/web-portal/app/api/stripe/user-portal/route.ts` - Individual user portal endpoint
 
 ---
 *Last updated: 2026-02-02*
