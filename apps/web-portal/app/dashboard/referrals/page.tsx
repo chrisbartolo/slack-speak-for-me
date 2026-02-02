@@ -82,9 +82,11 @@ export default async function ReferralsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-3xl font-bold">Referrals</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+          Refer & Earn
+        </h1>
         <p className="text-muted-foreground mt-1">
-          Invite friends and earn rewards
+          Get paid for spreading the word. No cap.
         </p>
       </div>
 

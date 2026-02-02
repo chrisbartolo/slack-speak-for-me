@@ -8,13 +8,24 @@ const { referrals, referralEvents, userSubscriptions } = schema;
 // Referral program configuration
 export const REFERRAL_CONFIG = {
   // What the referrer gets (credit in cents, applied to next invoice)
-  referrerReward: 1500, // $15 credit per successful referral
+  referrerReward: 1500, // €15 credit per successful referral
 
   // What the referee gets (% off first month)
   refereeDiscount: 20, // 20% off first month
 
   // Minimum days before referral reward is paid (to prevent churn gaming)
   minDaysBeforeReward: 14,
+
+  // Gamification milestones
+  milestones: [
+    { count: 1, name: 'First Blood', reward: 1500, emoji: '🩸' },
+    { count: 3, name: 'Hat Trick', reward: 4500, emoji: '🎩' },
+    { count: 5, name: 'High Five', reward: 7500, emoji: '🖐️' },
+    { count: 10, name: 'Double Digits', reward: 15000, emoji: '🔥' },
+    { count: 25, name: 'Quarter Century', reward: 37500, emoji: '💎' },
+    { count: 50, name: 'Legend', reward: 75000, emoji: '👑' },
+    { count: 100, name: 'Centurion', reward: 150000, emoji: '🏆' },
+  ],
 };
 
 /**
