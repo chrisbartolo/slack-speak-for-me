@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { ChevronDown, LucideIcon } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { NavItem } from './nav-item';
@@ -19,15 +20,30 @@ interface NavGroupProps {
 }
 
 export function NavGroup({ label, icon: Icon, items, defaultOpen = false }: NavGroupProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const pathname = usePathname();
+
+  // Check if any item in the group is currently active
+  const hasActiveChild = items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
+
+  // Initialize to open if has active child, otherwise use defaultOpen
+  const [isOpen, setIsOpen] = useState(defaultOpen || hasActiveChild);
+
+  // Keep open when navigating to a child route
+  useEffect(() => {
+    if (hasActiveChild && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [hasActiveChild, isOpen]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className={cn(
         'flex w-full items-center justify-between gap-3 px-4 py-2.5',
         'text-sm font-medium rounded-lg transition-colors',
-        'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-        'outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        'outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        hasActiveChild
+          ? 'bg-accent text-accent-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       )}>
         <div className="flex items-center gap-3">
           <Icon className="w-5 h-5" />
