@@ -479,3 +479,66 @@ export const referralEvents = pgTable('referral_events', {
   refereeIdx: uniqueIndex('referral_events_referee_idx').on(table.refereeEmail),
   statusIdx: index('referral_events_status_idx').on(table.status),
 }));
+
+// Actionable items detected from messages
+export const actionableItems = pgTable('actionable_items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // Slack user ID (owner of the task)
+
+  // Task content
+  title: text('title').notNull(),
+  description: text('description'),
+
+  // Status tracking: 'pending' | 'completed' | 'dismissed' | 'snoozed'
+  status: text('status').default('pending'),
+
+  // Source message reference
+  channelId: text('channel_id').notNull(),
+  messageTs: text('message_ts').notNull(),
+  threadTs: text('thread_ts'),
+  messageText: text('message_text'),
+
+  // Actionable classification: 'action_request' | 'commitment' | 'deadline'
+  actionableType: text('actionable_type').notNull(),
+
+  // Due date handling
+  dueDate: timestamp('due_date'),
+  dueDateConfidence: text('due_date_confidence'), // 'explicit' | 'implicit' | 'inferred'
+  originalDueDateText: text('original_due_date_text'), // e.g., "by Friday", "tomorrow"
+
+  // AI confidence and metadata
+  confidenceScore: integer('confidence_score'), // 0-100
+  aiMetadata: jsonb('ai_metadata').$type<{
+    model: string;
+    processingTimeMs: number;
+    reasoning?: string;
+  }>(),
+
+  // Snooze handling
+  snoozedUntil: timestamp('snoozed_until'),
+
+  // Timestamps
+  detectedAt: timestamp('detected_at').defaultNow(),
+  completedAt: timestamp('completed_at'),
+  dismissedAt: timestamp('dismissed_at'),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  workspaceUserIdx: index('actionable_items_workspace_user_idx').on(table.workspaceId, table.userId),
+  statusIdx: index('actionable_items_status_idx').on(table.status),
+  dueDateIdx: index('actionable_items_due_date_idx').on(table.dueDate),
+  detectedAtIdx: index('actionable_items_detected_at_idx').on(table.detectedAt),
+  // Prevent duplicate detection for same message
+  channelMessageIdx: uniqueIndex('actionable_items_channel_message_idx').on(
+    table.workspaceId,
+    table.userId,
+    table.channelId,
+    table.messageTs
+  ),
+}));
+
+// Type exports for actionable items
+export type ActionableItem = typeof actionableItems.$inferSelect;
+export type NewActionableItem = typeof actionableItems.$inferInsert;
+export type ActionableStatus = 'pending' | 'completed' | 'dismissed' | 'snoozed';
+export type ActionableType = 'action_request' | 'commitment' | 'deadline';

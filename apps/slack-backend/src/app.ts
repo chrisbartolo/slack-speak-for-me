@@ -8,6 +8,7 @@ import {
   logHealthEndpointsRegistered,
   registerWatchCommands,
   registerGenerateReportCommand,
+  registerTasksCommand,
   registerAppMentionHandler,
   registerMessageReplyHandler,
   registerWorkflowSubmissionHandler,
@@ -19,6 +20,7 @@ import {
   registerSendSuggestionAction,
   registerReportActionHandlers,
   registerUndoAutoResponseAction,
+  registerTaskActionHandlers,
   registerRefinementModalHandler,
   registerReportRefinementViewHandler,
 } from './handlers/index.js';
@@ -83,6 +85,7 @@ registerWorkflowSubmissionHandler(app);
 // Register slash commands
 registerWatchCommands(app);
 registerGenerateReportCommand(app);
+registerTasksCommand(app);
 
 // Register message shortcuts
 registerHelpMeRespondShortcut(app);
@@ -95,6 +98,7 @@ registerCopyFinalSuggestionAction(app);
 registerSendSuggestionAction(app);
 registerReportActionHandlers(app);
 registerUndoAutoResponseAction(app);
+registerTaskActionHandlers(app);
 
 // Register view handlers
 registerRefinementModalHandler(app);

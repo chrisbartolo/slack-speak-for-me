@@ -5,3 +5,4 @@ export { registerCopyFinalSuggestionAction } from './copy-final-suggestion.js';
 export { registerSendSuggestionAction } from './send-suggestion.js';
 export { registerReportActionHandlers } from './report-actions.js';
 export { registerUndoAutoResponseAction } from './undo-auto-response.js';
+export { registerTaskActionHandlers } from './task-actions.js';

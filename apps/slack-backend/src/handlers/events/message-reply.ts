@@ -3,6 +3,7 @@ import { isWatching, recordThreadParticipation, isParticipatingInThread, getWork
 import { getContextForMessage, getThreadContext } from '../../services/context.js';
 import { queueAIResponse } from '../../jobs/queues.js';
 import { logger } from '../../utils/logger.js';
+import { processMessageForActionables } from '../../services/actionables.js';
 
 /**
  * Register message event handler for reply detection
@@ -120,6 +121,19 @@ export function registerMessageReplyHandler(app: App) {
             watchingUser: watcherUserId,
             channelId,
           }, 'AI response job queued for DM message');
+
+          // Detect actionable items for the watcher (async, non-blocking)
+          processMessageForActionables({
+            workspaceId,
+            userId: watcherUserId,
+            channelId,
+            messageTs,
+            messageText: typedMessage.text,
+            messageAuthorId: userId,
+            threadContext: contextMessages.map(m => `${m.userId}: ${m.text}`).join('\n'),
+          }).catch(error => {
+            logger.error({ error }, 'Failed to process message for actionables');
+          });
         }
         return;
       }
@@ -184,6 +198,20 @@ export function registerMessageReplyHandler(app: App) {
               channelId,
               threadTs,
             }, 'AI response job queued for thread reply');
+
+            // Detect actionable items for the watching user (async, non-blocking)
+            processMessageForActionables({
+              workspaceId,
+              userId: participantUserId,
+              channelId,
+              messageTs,
+              threadTs,
+              messageText: typedMessage.text,
+              messageAuthorId: userId,
+              threadContext: threadMessages.map(m => `${m.userId}: ${m.text}`).join('\n'),
+            }).catch(error => {
+              logger.error({ error }, 'Failed to process message for actionables');
+            });
           }
         }
       } else {

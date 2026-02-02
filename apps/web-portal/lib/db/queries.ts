@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, or, lt, sql } from 'drizzle-orm';
 import { db, schema } from './index';
 import { verifySession } from '../auth/dal';
 
@@ -16,6 +16,7 @@ const {
   workflowConfig,
   suggestionFeedback,
   autoRespondLog,
+  actionableItems,
 } = schema;
 
 /**
@@ -375,4 +376,98 @@ export const getAutoRespondLog = cache(async (limit = 50) => {
     )
     .orderBy(desc(autoRespondLog.sentAt))
     .limit(limit);
+});
+
+/**
+ * Get actionable items for user with optional filters
+ */
+export const getActionableItems = cache(async (
+  status?: string,
+  type?: string
+) => {
+  const session = await verifySession();
+
+  const items = await db
+    .select()
+    .from(actionableItems)
+    .where(
+      and(
+        eq(actionableItems.workspaceId, session.workspaceId),
+        eq(actionableItems.userId, session.userId),
+        status && status !== 'all' ? eq(actionableItems.status, status) : undefined,
+        type && type !== 'all' ? eq(actionableItems.actionableType, type) : undefined
+      )
+    )
+    .orderBy(
+      sql`${actionableItems.dueDate} NULLS LAST`,
+      desc(actionableItems.detectedAt)
+    );
+
+  return items;
+});
+
+/**
+ * Get pending actionable items (including expired snoozed)
+ */
+export const getPendingActionableItems = cache(async () => {
+  const session = await verifySession();
+  const now = new Date();
+
+  return db
+    .select()
+    .from(actionableItems)
+    .where(
+      and(
+        eq(actionableItems.workspaceId, session.workspaceId),
+        eq(actionableItems.userId, session.userId),
+        or(
+          eq(actionableItems.status, 'pending'),
+          and(
+            eq(actionableItems.status, 'snoozed'),
+            lt(actionableItems.snoozedUntil, now)
+          )
+        )
+      )
+    )
+    .orderBy(
+      sql`${actionableItems.dueDate} NULLS LAST`,
+      desc(actionableItems.detectedAt)
+    );
+});
+
+/**
+ * Get actionable stats for dashboard
+ */
+export const getActionableStats = cache(async () => {
+  const session = await verifySession();
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+  const all = await db
+    .select()
+    .from(actionableItems)
+    .where(
+      and(
+        eq(actionableItems.workspaceId, session.workspaceId),
+        eq(actionableItems.userId, session.userId)
+      )
+    );
+
+  const pending = all.filter(
+    (a) => a.status === 'pending' || (a.status === 'snoozed' && a.snoozedUntil && a.snoozedUntil < now)
+  );
+  const completed = all.filter((a) => a.status === 'completed');
+  const overdue = pending.filter((a) => a.dueDate && a.dueDate < now);
+  const dueToday = pending.filter((a) => {
+    if (!a.dueDate) return false;
+    return a.dueDate >= today && a.dueDate < tomorrow;
+  });
+
+  return {
+    pending: pending.length,
+    completed: completed.length,
+    overdue: overdue.length,
+    dueToday: dueToday.length,
+  };
 });
