@@ -1,112 +1,187 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin, getOrganization } from '@/lib/auth/admin';
-import { getStripe, createCustomer, createTrialCheckout } from '@/lib/stripe';
+import { verifySession } from '@/lib/auth/dal';
+import { getStripe, createCustomer, createTrialCheckout, createIndividualCheckout } from '@/lib/stripe';
 import { db, schema } from '@/lib/db';
 import { eq } from 'drizzle-orm';
 
-const { organizations } = schema;
+const { organizations, userSubscriptions } = schema;
 
 // Map plan IDs to environment variable names for price IDs
 const PLAN_PRICE_IDS: Record<string, string | undefined> = {
   starter: process.env.STRIPE_PRICE_ID_STARTER,
   pro: process.env.STRIPE_PRICE_ID_PRO,
+  individual_starter: process.env.STRIPE_PRICE_ID_INDIVIDUAL_STARTER,
+  individual_pro: process.env.STRIPE_PRICE_ID_INDIVIDUAL_PRO,
 };
 
-export async function POST(request: Request) {
-  try {
-    const session = await requireAdmin();
-    const stripe = getStripe();
+/**
+ * Handle individual user checkout
+ * Any authenticated user can start an individual subscription
+ */
+async function handleIndividualCheckout(body: { planId?: string }): Promise<Response> {
+  const session = await verifySession();
 
-    if (!session.organizationId) {
-      return NextResponse.json({ error: 'No organization' }, { status: 400 });
-    }
+  if (!session.email) {
+    return NextResponse.json(
+      { error: 'Email not found in session. Please re-login with email scope.' },
+      { status: 400 }
+    );
+  }
 
-    const org = await getOrganization(session.organizationId);
-    if (!org) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
-    }
+  const planId = body.planId || 'individual_pro';
 
-    // Get or create Stripe customer
-    let customerId = org.stripeCustomerId;
+  // Get price ID for individual plan
+  let priceId = PLAN_PRICE_IDS[planId];
 
-    if (!customerId) {
-      const customer = await createCustomer(
-        org.billingEmail || `billing@${org.slug}.example.com`,
-        org.name,
-        { organizationId: org.id }
-      );
-      customerId = customer.id;
+  // Fallback for individual plans without specific price IDs
+  if (!priceId && planId.startsWith('individual_')) {
+    const basePlan = planId.replace('individual_', '');
+    priceId = PLAN_PRICE_IDS[basePlan];
+  }
 
-      // Save customer ID
-      await db
-        .update(organizations)
-        .set({ stripeCustomerId: customerId, updatedAt: new Date() })
-        .where(eq(organizations.id, org.id));
-    }
+  if (!priceId) {
+    return NextResponse.json({
+      error: `No price configured for plan '${planId}'. Set STRIPE_PRICE_ID_${planId.toUpperCase()} environment variable.`
+    }, { status: 400 });
+  }
 
-    // Parse request body
-    const body = await request.json().catch(() => ({}));
-    const planId: string = body.planId || 'pro';
-    const startTrial: boolean = body.startTrial ?? !org.stripeSubscriptionId; // Default to trial if no existing subscription
+  // Check for existing individual subscription
+  const existingSubscription = await db.query.userSubscriptions.findFirst({
+    where: eq(userSubscriptions.email, session.email.toLowerCase()),
+  });
 
-    // Get price ID based on planId
-    let priceId = PLAN_PRICE_IDS[planId];
+  if (existingSubscription?.stripeSubscriptionId &&
+      existingSubscription.subscriptionStatus === 'active') {
+    return NextResponse.json({
+      error: 'You already have an active individual subscription.'
+    }, { status: 400 });
+  }
 
-    // Fallback to legacy STRIPE_PRICE_ID for backward compatibility
-    if (!priceId) {
-      priceId = process.env.STRIPE_PRICE_ID;
-    }
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
 
-    if (!priceId) {
-      return NextResponse.json({
-        error: `No price configured for plan '${planId}'. Set STRIPE_PRICE_ID_${planId.toUpperCase()} environment variable.`
-      }, { status: 400 });
-    }
+  const checkoutSession = await createIndividualCheckout({
+    email: session.email.toLowerCase(),
+    priceId,
+    planId,
+    successUrl: `${baseUrl}/dashboard?success=true&subscription=individual`,
+    cancelUrl: `${baseUrl}/dashboard?canceled=true`,
+  });
 
-    // Get base URL - fallback to production URL if env not set
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
-    const quantity = org.seatCount || 1;
+  return NextResponse.json({ url: checkoutSession.url });
+}
 
-    // Determine success URL based on whether this is a trial
-    const successUrl = startTrial
-      ? `${baseUrl}/admin/billing?success=true&trial_started=true`
-      : `${baseUrl}/admin/billing?success=true`;
+/**
+ * Handle organization checkout
+ * Requires admin role in the organization
+ */
+async function handleOrganizationCheckout(body: { planId?: string; startTrial?: boolean }): Promise<Response> {
+  const stripe = getStripe();
+  const session = await requireAdmin();
 
-    let checkoutSession;
+  if (!session.organizationId) {
+    return NextResponse.json({ error: 'No organization' }, { status: 400 });
+  }
 
-    if (startTrial) {
-      // Create trial checkout - no payment required upfront
-      checkoutSession = await createTrialCheckout({
-        customerId,
-        priceId,
-        quantity,
+  const org = await getOrganization(session.organizationId);
+  if (!org) {
+    return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+  }
+
+  // Get or create Stripe customer
+  let customerId = org.stripeCustomerId;
+
+  if (!customerId) {
+    const customer = await createCustomer(
+      org.billingEmail || `billing@${org.slug}.example.com`,
+      org.name,
+      { organizationId: org.id }
+    );
+    customerId = customer.id;
+
+    // Save customer ID
+    await db
+      .update(organizations)
+      .set({ stripeCustomerId: customerId, updatedAt: new Date() })
+      .where(eq(organizations.id, org.id));
+  }
+
+  const planId: string = body.planId || 'pro';
+  const startTrial: boolean = body.startTrial ?? !org.stripeSubscriptionId;
+
+  // Get price ID based on planId
+  let priceId = PLAN_PRICE_IDS[planId];
+
+  // Fallback to legacy STRIPE_PRICE_ID for backward compatibility
+  if (!priceId) {
+    priceId = process.env.STRIPE_PRICE_ID;
+  }
+
+  if (!priceId) {
+    return NextResponse.json({
+      error: `No price configured for plan '${planId}'. Set STRIPE_PRICE_ID_${planId.toUpperCase()} environment variable.`
+    }, { status: 400 });
+  }
+
+  // Get base URL - fallback to production URL if env not set
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
+  const quantity = org.seatCount || 1;
+
+  // Determine success URL based on whether this is a trial
+  const successUrl = startTrial
+    ? `${baseUrl}/admin/billing?success=true&trial_started=true`
+    : `${baseUrl}/admin/billing?success=true`;
+
+  let checkoutSession;
+
+  if (startTrial) {
+    // Create trial checkout - no payment required upfront
+    checkoutSession = await createTrialCheckout({
+      customerId,
+      priceId,
+      quantity,
+      organizationId: org.id,
+      planId,
+      successUrl,
+      cancelUrl: `${baseUrl}/admin/billing?canceled=true`,
+    });
+  } else {
+    // Create immediate checkout for upgrades or users who want to pay now
+    checkoutSession = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      line_items: [{ price: priceId, quantity }],
+      success_url: successUrl,
+      cancel_url: `${baseUrl}/admin/billing?canceled=true`,
+      metadata: {
         organizationId: org.id,
         planId,
-        successUrl,
-        cancelUrl: `${baseUrl}/admin/billing?canceled=true`,
-      });
-    } else {
-      // Create immediate checkout for upgrades or users who want to pay now
-      checkoutSession = await stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: 'subscription',
-        line_items: [{ price: priceId, quantity }],
-        success_url: successUrl,
-        cancel_url: `${baseUrl}/admin/billing?canceled=true`,
+        type: 'organization',
+      },
+      subscription_data: {
         metadata: {
           organizationId: org.id,
           planId,
+          type: 'organization',
         },
-        subscription_data: {
-          metadata: {
-            organizationId: org.id,
-            planId,
-          },
-        },
-      });
-    }
+      },
+    });
+  }
 
-    return NextResponse.json({ url: checkoutSession.url });
+  return NextResponse.json({ url: checkoutSession.url });
+}
+
+export async function POST(request: Request) {
+  try {
+    // Parse request body
+    const body = await request.json().catch(() => ({}));
+    const mode: 'individual' | 'organization' = body.mode || 'organization';
+
+    if (mode === 'individual') {
+      return handleIndividualCheckout(body);
+    } else {
+      return handleOrganizationCheckout(body);
+    }
   } catch (error) {
     console.error('Checkout session error:', error);
     return NextResponse.json(

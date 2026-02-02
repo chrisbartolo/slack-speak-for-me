@@ -109,9 +109,41 @@ export async function createTrialCheckout(options: {
       trial_settings: {
         end_behavior: { missing_payment_method: 'pause' }
       },
-      metadata: { organizationId: options.organizationId, planId: options.planId }
+      metadata: { organizationId: options.organizationId, planId: options.planId, type: 'organization' }
     },
     payment_method_collection: 'if_required',
-    metadata: { organizationId: options.organizationId, planId: options.planId }
+    metadata: { organizationId: options.organizationId, planId: options.planId, type: 'organization' }
+  });
+}
+
+/**
+ * Create individual user checkout session
+ * Email-based subscription that works across any workspace
+ * Includes trial period, no payment required upfront
+ */
+export async function createIndividualCheckout(options: {
+  email: string;
+  priceId: string;
+  planId: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<Stripe.Checkout.Session> {
+  const trialDays = parseInt(process.env.TRIAL_DAYS || '14');
+
+  return getStripe().checkout.sessions.create({
+    customer_email: options.email,
+    mode: 'subscription',
+    success_url: options.successUrl,
+    cancel_url: options.cancelUrl,
+    line_items: [{ price: options.priceId, quantity: 1 }],
+    subscription_data: {
+      trial_period_days: trialDays,
+      trial_settings: {
+        end_behavior: { missing_payment_method: 'pause' }
+      },
+      metadata: { email: options.email, planId: options.planId, type: 'individual' }
+    },
+    payment_method_collection: 'if_required',
+    metadata: { email: options.email, planId: options.planId, type: 'individual' }
   });
 }
