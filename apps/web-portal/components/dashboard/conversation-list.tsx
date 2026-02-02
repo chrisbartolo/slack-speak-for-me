@@ -101,16 +101,19 @@ export function ConversationList({ conversations }: ConversationListProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-              >
-                <Link href={`/dashboard/people?channel=${conversation.channelId}`}>
-                  <Users className="h-4 w-4 mr-1" />
-                  Add Context
-                </Link>
-              </Button>
+              {/* For DMs, allow adding context about that person */}
+              {(conversation.channelType === 'im' || conversation.channelType === 'mpim') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                >
+                  <Link href={`/dashboard/people?name=${encodeURIComponent(conversation.channelName || '')}`}>
+                    <Users className="h-4 w-4 mr-1" />
+                    Add Person Context
+                  </Link>
+                </Button>
+              )}
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
