@@ -7,11 +7,12 @@ import { cn } from '@/lib/utils';
 
 interface NavItemProps {
   href: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   label: string;
+  compact?: boolean;
 }
 
-export function NavItem({ href, icon: Icon, label }: NavItemProps) {
+export function NavItem({ href, icon: Icon, label, compact }: NavItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
@@ -19,13 +20,14 @@ export function NavItem({ href, icon: Icon, label }: NavItemProps) {
     <Link
       href={href}
       className={cn(
-        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors',
+        'flex items-center gap-3 text-sm font-medium rounded-lg transition-colors',
+        compact ? 'px-3 py-2' : 'px-4 py-2.5',
         isActive
           ? 'bg-primary text-primary-foreground'
           : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       )}
     >
-      <Icon className="w-5 h-5" />
+      {Icon && <Icon className="w-5 h-5" />}
       <span>{label}</span>
     </Link>
   );
