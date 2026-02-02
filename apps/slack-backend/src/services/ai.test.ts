@@ -45,6 +45,17 @@ vi.mock('./personalization/index.js', () => ({
   trackRefinement: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock usage enforcement - always allow in tests
+vi.mock('./usage-enforcement.js', () => ({
+  checkUsageAllowed: vi.fn().mockResolvedValue({
+    allowed: true,
+    currentUsage: 0,
+    limit: 100,
+    planId: 'test',
+  }),
+  recordUsageEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Import after mocks are set up
 import { generateSuggestion, refineSuggestion } from './ai.js';
 

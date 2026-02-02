@@ -44,11 +44,27 @@ vi.mock('@slack-speak/database', async () => {
 
 // SQL schema for test database (using gen_random_uuid() which is built-in to PGlite/PG13+)
 const createTablesSQL = `
+  CREATE TABLE organizations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    subscription_status TEXT,
+    plan_id TEXT,
+    seat_count INTEGER DEFAULT 1,
+    trial_ends_at TIMESTAMP,
+    billing_email TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+  );
+
   CREATE TABLE workspaces (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id TEXT NOT NULL UNIQUE,
     enterprise_id TEXT,
     name TEXT,
+    organization_id UUID REFERENCES organizations(id),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -65,6 +81,17 @@ const createTablesSQL = `
     installed_at TIMESTAMP DEFAULT NOW()
   );
   CREATE INDEX installations_workspace_id_idx ON installations(workspace_id);
+
+  CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
+    slack_user_id TEXT NOT NULL,
+    email TEXT,
+    role TEXT DEFAULT 'member',
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+  CREATE INDEX users_workspace_id_idx ON users(workspace_id);
+  CREATE INDEX users_slack_user_id_idx ON users(slack_user_id);
 `;
 
 // Import after mocks are set up

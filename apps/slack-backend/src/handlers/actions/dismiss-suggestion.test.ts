@@ -98,10 +98,10 @@ describe('Dismiss Suggestion Action', () => {
 
     await actionHandler({ ack, body, respond });
 
-    // Should still log (with undefined suggestionId) and respond
+    // Should still log (with empty suggestionId) and respond
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
-        suggestionId: undefined,
+        suggestionId: '',
         userId: 'U123',
       }),
       'Suggestion dismissed'
@@ -109,7 +109,7 @@ describe('Dismiss Suggestion Action', () => {
     expect(respond).toHaveBeenCalled();
   });
 
-  it('should use "unknown" for user ID when user not in body', async () => {
+  it('should use empty string for user ID when user not in body', async () => {
     const { logger } = await import('../../utils/logger.js');
     const ack = vi.fn().mockResolvedValue(undefined);
     const respond = vi.fn().mockResolvedValue(undefined);
@@ -122,7 +122,7 @@ describe('Dismiss Suggestion Action', () => {
 
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
-        userId: 'unknown',
+        userId: '',
       }),
       'Suggestion dismissed'
     );
