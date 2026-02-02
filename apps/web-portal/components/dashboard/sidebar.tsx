@@ -8,9 +8,10 @@ import { UserMenu } from './user-menu';
 
 interface SidebarProps {
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
 }
 
-export function Sidebar({ isAdmin }: SidebarProps) {
+export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
   return (
     <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
       {/* Header */}
@@ -50,7 +51,8 @@ export function Sidebar({ isAdmin }: SidebarProps) {
                 { href: '/admin/organizations', label: 'Organizations' },
                 { href: '/admin/users', label: 'Users' },
                 { href: '/admin/billing', label: 'Billing' },
-                { href: '/admin/coupons', label: 'Coupons' },
+                // Coupons only visible to super admins
+                ...(isSuperAdmin ? [{ href: '/admin/coupons', label: 'Coupons' }] : []),
               ]}
             />
           </div>

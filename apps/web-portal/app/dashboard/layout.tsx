@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { verifySession } from '@/lib/auth/dal';
 import { isAdmin } from '@/lib/auth/admin';
+import { isSuperAdmin } from '@/lib/auth/super-admin';
 import { Sidebar } from '@/components/dashboard/sidebar';
 import { ResponsiveSidebar } from '@/components/dashboard/responsive-sidebar';
 import { db, schema } from '@/lib/db';
@@ -45,6 +46,7 @@ export default async function DashboardLayout({
 
   // Check if user is admin for sidebar display
   const adminStatus = await isAdmin();
+  const superAdminStatus = await isSuperAdmin();
 
   // Check user access using the unified access check
   const access = await checkUserAccess(session.email, session.workspaceId);
@@ -108,12 +110,12 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar - hidden on mobile */}
       <div className="hidden md:block">
-        <Sidebar isAdmin={adminStatus} />
+        <Sidebar isAdmin={adminStatus} isSuperAdmin={superAdminStatus} />
       </div>
 
       {/* Mobile Header with Drawer Trigger */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b bg-background px-4 py-3 flex items-center gap-3">
-        <ResponsiveSidebar isAdmin={adminStatus} />
+        <ResponsiveSidebar isAdmin={adminStatus} isSuperAdmin={superAdminStatus} />
         <span className="font-semibold">Speak For Me</span>
       </div>
 

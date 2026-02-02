@@ -7,9 +7,10 @@ import { Sidebar } from './sidebar';
 
 interface ResponsiveSidebarProps {
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
 }
 
-export function ResponsiveSidebar({ isAdmin }: ResponsiveSidebarProps) {
+export function ResponsiveSidebar({ isAdmin, isSuperAdmin }: ResponsiveSidebarProps) {
   return (
     <Drawer direction="left">
       <DrawerTrigger asChild>
@@ -19,7 +20,7 @@ export function ResponsiveSidebar({ isAdmin }: ResponsiveSidebarProps) {
         </Button>
       </DrawerTrigger>
       <DrawerContent className="h-full w-64 p-0 rounded-none">
-        <Sidebar isAdmin={isAdmin} />
+        <Sidebar isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
       </DrawerContent>
     </Drawer>
   );
