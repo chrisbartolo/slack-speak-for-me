@@ -34,7 +34,7 @@ export async function POST() {
 
     const portalSession = await createPortalSession(
       userSub.stripeCustomerId,
-      `${baseUrl}/settings/billing`
+      `${baseUrl}/dashboard/billing`
     );
 
     return NextResponse.redirect(portalSession.url);

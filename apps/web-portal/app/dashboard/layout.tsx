@@ -70,7 +70,7 @@ export default async function DashboardLayout({
         individualSub?.trialEndsAt ?? null
       );
       if (subscriptionBanner?.type === 'error') {
-        subscriptionBanner.upgradeLink = '/settings/billing';
+        subscriptionBanner.upgradeLink = '/dashboard/billing';
       }
     } else {
       // Organization subscription - use org trial end
@@ -92,7 +92,7 @@ export default async function DashboardLayout({
     }
   } else {
     // User doesn't have access - show appropriate error
-    const upgradeLink = adminStatus ? '/admin/billing' : '/settings/billing';
+    const upgradeLink = adminStatus ? '/admin/billing' : '/dashboard/billing';
     subscriptionBanner = {
       type: 'error',
       message: access.reason === 'no_subscription'

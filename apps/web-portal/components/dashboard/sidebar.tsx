@@ -36,7 +36,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
         <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
         <NavItem href="/dashboard/settings" icon={Shield} label="Settings" />
-        <NavItem href="/settings/billing" icon={CreditCard} label="Billing" />
+        <NavItem href="/dashboard/billing" icon={CreditCard} label="Billing" />
 
         {/* Admin section - only visible for admins */}
         {isAdmin && (
