@@ -13,11 +13,11 @@ import {
 export const metadata: Metadata = {
   title: 'Pricing - Speak for Me',
   description:
-    'Simple, transparent pricing for AI-powered Slack response suggestions. Start with a 14-day free trial. Plans from $10/seat/month.',
+    'Simple, transparent pricing for AI-powered Slack response suggestions. Individual plans from $10/month or team plans from $10/seat/month. Start with a 14-day free trial.',
   openGraph: {
     title: 'Pricing - Speak for Me',
     description:
-      'Simple, transparent pricing for AI-powered Slack response suggestions. Start with a 14-day free trial.',
+      'Simple, transparent pricing for individuals and teams. AI-powered Slack response suggestions. Start with a 14-day free trial.',
     type: 'website',
   },
 };
@@ -86,7 +86,7 @@ export default function PricingPage() {
           id="pricing-subheadline"
           className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto"
         >
-          Start with a 14-day free trial. No credit card required.
+          Choose individual or team billing. Start with a 14-day free trial. No credit card required.
         </p>
       </section>
 
