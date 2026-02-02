@@ -12,7 +12,196 @@ import {
   subscriptionResumedEmail,
 } from '@/lib/email/templates';
 
-const { organizations } = schema;
+const { organizations, userSubscriptions } = schema;
+
+/**
+ * Determine if subscription is individual or organization based on metadata
+ */
+function getSubscriptionType(metadata: Stripe.Metadata | null | undefined): 'individual' | 'organization' {
+  return metadata?.type === 'individual' ? 'individual' : 'organization';
+}
+
+/**
+ * Handle subscription created/updated for individual users
+ */
+async function handleIndividualSubscriptionUpdate(subscription: Stripe.Subscription) {
+  const email = subscription.metadata?.email?.toLowerCase();
+  if (!email) {
+    console.error('Individual subscription missing email in metadata');
+    return;
+  }
+
+  const customerId = subscription.customer as string;
+
+  // Upsert user subscription
+  await db
+    .insert(userSubscriptions)
+    .values({
+      email,
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      planId: subscription.metadata?.planId || 'individual_pro',
+      trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: userSubscriptions.email,
+      set: {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        planId: subscription.metadata?.planId || 'individual_pro',
+        trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        updatedAt: new Date(),
+      },
+    });
+
+  console.log(`Individual subscription updated for ${email}, status: ${subscription.status}`);
+}
+
+/**
+ * Handle subscription created/updated for organizations
+ */
+async function handleOrganizationSubscriptionUpdate(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+
+  await db
+    .update(organizations)
+    .set({
+      stripeSubscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      seatCount: subscription.items.data[0]?.quantity || 1,
+      trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+      updatedAt: new Date(),
+    })
+    .where(eq(organizations.stripeCustomerId, customerId));
+
+  console.log(`Organization subscription updated for customer ${customerId}, status: ${subscription.status}`);
+}
+
+/**
+ * Handle subscription pause for individual users
+ */
+async function handleIndividualSubscriptionPaused(subscription: Stripe.Subscription) {
+  const email = subscription.metadata?.email?.toLowerCase();
+  if (!email) return;
+
+  await db
+    .update(userSubscriptions)
+    .set({ subscriptionStatus: 'paused', updatedAt: new Date() })
+    .where(eq(userSubscriptions.email, email));
+
+  // Send email notification
+  const template = subscriptionPausedEmail();
+  await sendEmail({
+    to: email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+
+  console.log(`Individual subscription paused for ${email}`);
+}
+
+/**
+ * Handle subscription resume for individual users
+ */
+async function handleIndividualSubscriptionResumed(subscription: Stripe.Subscription) {
+  const email = subscription.metadata?.email?.toLowerCase();
+  if (!email) return;
+
+  await db
+    .update(userSubscriptions)
+    .set({ subscriptionStatus: 'active', updatedAt: new Date() })
+    .where(eq(userSubscriptions.email, email));
+
+  // Send email notification
+  const template = subscriptionResumedEmail();
+  await sendEmail({
+    to: email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+
+  console.log(`Individual subscription resumed for ${email}`);
+}
+
+/**
+ * Handle subscription deleted for individual users
+ */
+async function handleIndividualSubscriptionDeleted(subscription: Stripe.Subscription) {
+  const email = subscription.metadata?.email?.toLowerCase();
+  if (!email) return;
+
+  await db
+    .update(userSubscriptions)
+    .set({ subscriptionStatus: 'canceled', updatedAt: new Date() })
+    .where(eq(userSubscriptions.email, email));
+
+  console.log(`Individual subscription canceled for ${email}`);
+}
+
+/**
+ * Handle checkout completed for individual users
+ */
+async function handleIndividualCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const email = session.metadata?.email?.toLowerCase() || session.customer_email?.toLowerCase();
+  if (!email) {
+    console.error('Individual checkout completed without email');
+    return;
+  }
+
+  const customerId = session.customer as string;
+  const subscriptionId = session.subscription as string;
+
+  // Create or update user subscription
+  await db
+    .insert(userSubscriptions)
+    .values({
+      email,
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscriptionId,
+      subscriptionStatus: 'active',
+      planId: session.metadata?.planId || 'individual_pro',
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: userSubscriptions.email,
+      set: {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        subscriptionStatus: 'active',
+        planId: session.metadata?.planId || 'individual_pro',
+        updatedAt: new Date(),
+      },
+    });
+
+  console.log(`Individual checkout completed for ${email}`);
+}
+
+/**
+ * Handle trial ending notification for individual users
+ */
+async function handleIndividualTrialWillEnd(subscription: Stripe.Subscription) {
+  const email = subscription.metadata?.email?.toLowerCase();
+  if (!email) return;
+
+  const daysRemaining = subscription.trial_end
+    ? Math.ceil((subscription.trial_end * 1000 - Date.now()) / (1000 * 60 * 60 * 24))
+    : 3;
+
+  const template = trialEndingEmail(daysRemaining);
+  await sendEmail({
+    to: email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+
+  console.log(`Individual trial ending email sent to ${email}`);
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -41,131 +230,145 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
+        const type = getSubscriptionType(subscription.metadata);
 
-        await db
-          .update(organizations)
-          .set({
-            stripeSubscriptionId: subscription.id,
-            subscriptionStatus: subscription.status,
-            seatCount: subscription.items.data[0]?.quantity || 1,
-            trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-            updatedAt: new Date(),
-          })
-          .where(eq(organizations.stripeCustomerId, customerId));
-
-        console.log(`Subscription ${event.type === 'customer.subscription.created' ? 'created' : 'updated'} for customer ${customerId}, status: ${subscription.status}`);
+        if (type === 'individual') {
+          await handleIndividualSubscriptionUpdate(subscription);
+        } else {
+          await handleOrganizationSubscriptionUpdate(subscription);
+        }
         break;
       }
 
       case 'customer.subscription.trial_will_end': {
-        // Sent 3 days before trial ends
         const subscription = event.data.object as Stripe.Subscription;
+        const type = getSubscriptionType(subscription.metadata);
         const customerId = subscription.customer as string;
 
-        // Get organization to find billing email
-        const trialOrg = await db.query.organizations.findFirst({
-          where: eq(organizations.stripeCustomerId, customerId),
-        });
-
-        if (trialOrg?.billingEmail) {
-          const daysRemaining = subscription.trial_end
-            ? Math.ceil((subscription.trial_end * 1000 - Date.now()) / (1000 * 60 * 60 * 24))
-            : 3;
-          const template = trialEndingEmail(daysRemaining);
-          await sendEmail({
-            to: trialOrg.billingEmail,
-            subject: template.subject,
-            html: template.html,
-            text: template.text,
+        if (type === 'individual') {
+          await handleIndividualTrialWillEnd(subscription);
+        } else {
+          // Organization trial ending
+          const trialOrg = await db.query.organizations.findFirst({
+            where: eq(organizations.stripeCustomerId, customerId),
           });
-          console.log(`Trial ending email sent to ${trialOrg.billingEmail}`);
+
+          if (trialOrg?.billingEmail) {
+            const daysRemaining = subscription.trial_end
+              ? Math.ceil((subscription.trial_end * 1000 - Date.now()) / (1000 * 60 * 60 * 24))
+              : 3;
+            const template = trialEndingEmail(daysRemaining);
+            await sendEmail({
+              to: trialOrg.billingEmail,
+              subject: template.subject,
+              html: template.html,
+              text: template.text,
+            });
+            console.log(`Trial ending email sent to ${trialOrg.billingEmail}`);
+          }
         }
         break;
       }
 
       case 'customer.subscription.paused': {
         const subscription = event.data.object as Stripe.Subscription;
+        const type = getSubscriptionType(subscription.metadata);
         const customerId = subscription.customer as string;
 
-        // Get organization before update to find billing email
-        const pausedOrg = await db.query.organizations.findFirst({
-          where: eq(organizations.stripeCustomerId, customerId),
-        });
-
-        await db
-          .update(organizations)
-          .set({
-            subscriptionStatus: 'paused',
-            updatedAt: new Date(),
-          })
-          .where(eq(organizations.stripeCustomerId, customerId));
-
-        if (pausedOrg?.billingEmail) {
-          const template = subscriptionPausedEmail();
-          await sendEmail({
-            to: pausedOrg.billingEmail,
-            subject: template.subject,
-            html: template.html,
-            text: template.text,
+        if (type === 'individual') {
+          await handleIndividualSubscriptionPaused(subscription);
+        } else {
+          // Get organization before update to find billing email
+          const pausedOrg = await db.query.organizations.findFirst({
+            where: eq(organizations.stripeCustomerId, customerId),
           });
-          console.log(`Subscription paused email sent to ${pausedOrg.billingEmail}`);
+
+          await db
+            .update(organizations)
+            .set({
+              subscriptionStatus: 'paused',
+              updatedAt: new Date(),
+            })
+            .where(eq(organizations.stripeCustomerId, customerId));
+
+          if (pausedOrg?.billingEmail) {
+            const template = subscriptionPausedEmail();
+            await sendEmail({
+              to: pausedOrg.billingEmail,
+              subject: template.subject,
+              html: template.html,
+              text: template.text,
+            });
+            console.log(`Subscription paused email sent to ${pausedOrg.billingEmail}`);
+          }
         }
         break;
       }
 
       case 'customer.subscription.resumed': {
         const subscription = event.data.object as Stripe.Subscription;
+        const type = getSubscriptionType(subscription.metadata);
         const customerId = subscription.customer as string;
 
-        // Get organization before update to find billing email
-        const resumedOrg = await db.query.organizations.findFirst({
-          where: eq(organizations.stripeCustomerId, customerId),
-        });
-
-        await db
-          .update(organizations)
-          .set({
-            subscriptionStatus: 'active',
-            updatedAt: new Date(),
-          })
-          .where(eq(organizations.stripeCustomerId, customerId));
-
-        if (resumedOrg?.billingEmail) {
-          const template = subscriptionResumedEmail();
-          await sendEmail({
-            to: resumedOrg.billingEmail,
-            subject: template.subject,
-            html: template.html,
-            text: template.text,
+        if (type === 'individual') {
+          await handleIndividualSubscriptionResumed(subscription);
+        } else {
+          // Get organization before update to find billing email
+          const resumedOrg = await db.query.organizations.findFirst({
+            where: eq(organizations.stripeCustomerId, customerId),
           });
-          console.log(`Subscription resumed email sent to ${resumedOrg.billingEmail}`);
+
+          await db
+            .update(organizations)
+            .set({
+              subscriptionStatus: 'active',
+              updatedAt: new Date(),
+            })
+            .where(eq(organizations.stripeCustomerId, customerId));
+
+          if (resumedOrg?.billingEmail) {
+            const template = subscriptionResumedEmail();
+            await sendEmail({
+              to: resumedOrg.billingEmail,
+              subject: template.subject,
+              html: template.html,
+              text: template.text,
+            });
+            console.log(`Subscription resumed email sent to ${resumedOrg.billingEmail}`);
+          }
         }
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
+        const type = getSubscriptionType(subscription.metadata);
         const customerId = subscription.customer as string;
 
-        await db
-          .update(organizations)
-          .set({
-            subscriptionStatus: 'canceled',
-            updatedAt: new Date(),
-          })
-          .where(eq(organizations.stripeCustomerId, customerId));
-
+        if (type === 'individual') {
+          await handleIndividualSubscriptionDeleted(subscription);
+        } else {
+          await db
+            .update(organizations)
+            .set({
+              subscriptionStatus: 'canceled',
+              updatedAt: new Date(),
+            })
+            .where(eq(organizations.stripeCustomerId, customerId));
+        }
         break;
       }
 
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        const type = getSubscriptionType(session.metadata);
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string;
 
-        // Link subscription to organization
-        if (session.metadata?.organizationId) {
+        if (type === 'individual') {
+          await handleIndividualCheckoutCompleted(session);
+        } else if (session.metadata?.organizationId) {
+          // Link subscription to organization
           await db
             .update(organizations)
             .set({
@@ -176,23 +379,25 @@ export async function POST(request: NextRequest) {
               updatedAt: new Date(),
             })
             .where(eq(organizations.id, session.metadata.organizationId));
-        }
 
-        console.log(`Checkout completed for customer ${customerId}`);
+          console.log(`Organization checkout completed for customer ${customerId}`);
+        }
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
+        // Invoice doesn't have subscription metadata directly, check both tables
+        const invoiceUrl = invoice.hosted_invoice_url || undefined;
 
-        // Get organization to find billing email
+        // Check organization first
         const failedOrg = await db.query.organizations.findFirst({
           where: eq(organizations.stripeCustomerId, customerId),
         });
 
         if (failedOrg?.billingEmail) {
-          const template = paymentFailedEmail(invoice.hosted_invoice_url || undefined);
+          const template = paymentFailedEmail(invoiceUrl);
           await sendEmail({
             to: failedOrg.billingEmail,
             subject: template.subject,
@@ -200,9 +405,24 @@ export async function POST(request: NextRequest) {
             text: template.text,
           });
           console.log(`Payment failed email sent to ${failedOrg.billingEmail}`);
+        } else {
+          // Check individual user
+          const failedUser = await db.query.userSubscriptions.findFirst({
+            where: eq(userSubscriptions.stripeCustomerId, customerId),
+          });
+
+          if (failedUser?.email) {
+            const template = paymentFailedEmail(invoiceUrl);
+            await sendEmail({
+              to: failedUser.email,
+              subject: template.subject,
+              html: template.html,
+              text: template.text,
+            });
+            console.log(`Payment failed email sent to ${failedUser.email}`);
+          }
         }
 
-        // Log failure - Stripe handles retry automatically
         console.log(`Payment failed for customer ${customerId}, invoice ${invoice.id}`);
         break;
       }
@@ -211,14 +431,25 @@ export async function POST(request: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
 
-        // Ensure status is active after successful payment
-        await db
+        // Update organization if exists
+        const orgUpdateResult = await db
           .update(organizations)
           .set({
             subscriptionStatus: 'active',
             updatedAt: new Date(),
           })
           .where(eq(organizations.stripeCustomerId, customerId));
+
+        // If no organization updated, try individual
+        if (!orgUpdateResult) {
+          await db
+            .update(userSubscriptions)
+            .set({
+              subscriptionStatus: 'active',
+              updatedAt: new Date(),
+            })
+            .where(eq(userSubscriptions.stripeCustomerId, customerId));
+        }
 
         console.log(`Invoice paid for customer ${customerId}, invoice ${invoice.id}`);
         break;
