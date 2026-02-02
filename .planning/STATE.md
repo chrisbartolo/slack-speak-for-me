@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 09 of 10 (Portal/Admin UX Polish)
-Plan: 04 of 4 complete
+Plan: 02 of 4 complete
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-02 - Completed 09-04-PLAN.md (Loading and Error States)
+Last activity: 2026-02-02 - Completed 09-02-PLAN.md (Expandable Admin Navigation)
 
-Progress: [████████████████████████████░░░░] 98% (51/52 plans complete)
+Progress: [████████████████████████████░░░░] 98% (52/53 plans complete)
 
 ## Production Deployment
 
@@ -140,6 +140,10 @@ Recent decisions affecting current work:
 - Phase 8 Plan 06: FK-safe deletion order - Leaf tables (embeddings, participants) before parent tables (users)
 - Phase 8 Plan 06: Confirmation text 'DELETE MY ACCOUNT' required for API and UI
 - Phase 8 Plan 06: Session destroyed after deletion to force logout
+- Phase 9 Plan 02: NavGroup uses Radix Collapsible primitives for accessible expand/collapse
+- Phase 9 Plan 02: NavItem compact prop reduces padding for nested submenu items
+- Phase 9 Plan 02: ChevronDown icon rotates 180 degrees when admin section expanded
+- Phase 9 Plan 02: Sidebar bg changed from hardcoded #FFFDF7 to bg-background CSS variable
 
 ### Pending Todos
 
@@ -172,7 +176,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 09-04-PLAN.md (Loading and Error States)
+Stopped at: Completed 09-02-PLAN.md (Expandable Admin Navigation)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -363,6 +367,11 @@ Documentation:
 - `apps/web-portal/app/dashboard/error.tsx` - Dashboard error boundary with retry button
 - `apps/web-portal/app/admin/loading.tsx` - Admin loading skeleton matching nav cards and table
 - `apps/web-portal/app/admin/error.tsx` - Admin error boundary with retry and dashboard fallback
+
+**Phase 9 Plan 02 (2026-02-02):**
+- `apps/web-portal/components/dashboard/nav-group.tsx` - Collapsible navigation group with Radix UI
+- `apps/web-portal/components/dashboard/nav-item.tsx` - Added compact and optional icon props
+- `apps/web-portal/components/dashboard/sidebar.tsx` - Uses NavGroup for expandable admin section
 
 ---
 *Last updated: 2026-02-02*
