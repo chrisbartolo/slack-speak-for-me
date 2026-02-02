@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Monetization & Pricing** - Pricing page, trials, subscription lifecycle
 - [x] **Phase 8: Production Security & Compliance** - GDPR, security hardening, audit logging
 - [x] **Phase 9: Portal/Admin UX Polish** - Brand styling, expandable nav, mobile responsive
-- [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions
+- [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions (DEFERRED - add when customers request)
 
 ## Phase Details
 
@@ -301,7 +301,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 7. Monetization & Pricing | 7/7 | Complete | 2026-02-01 |
 | 8. Production Security & Compliance | 7/7 | Complete | 2026-02-01 |
 | 9. Portal/Admin UX Polish | 5/5 | Complete | 2026-02-02 |
-| 10. Calendar Integration | 0/? | Not started | - |
+| 10. Calendar Integration | 0/? | Deferred | - |
 
 ---
 *Roadmap created: 2026-01-26*
