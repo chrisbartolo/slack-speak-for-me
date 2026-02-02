@@ -6,10 +6,19 @@ import { ResponsiveSidebar } from '@/components/dashboard/responsive-sidebar';
 import { db, schema } from '@/lib/db';
 import { eq } from 'drizzle-orm';
 import { getSubscriptionMessage } from '@/lib/billing/seat-enforcement';
+import { checkUserAccess, getIndividualSubscription } from '@/lib/billing/access-check';
 
 const { workspaces, organizations } = schema;
 
-function SubscriptionBanner({ type, message }: { type: 'info' | 'warning' | 'error'; message: string }) {
+function SubscriptionBanner({
+  type,
+  message,
+  upgradeLink,
+}: {
+  type: 'info' | 'warning' | 'error';
+  message: string;
+  upgradeLink?: string;
+}) {
   const styles = {
     info: 'bg-blue-50 border-blue-200 text-blue-700',
     warning: 'bg-yellow-50 border-yellow-200 text-yellow-700',
@@ -19,8 +28,8 @@ function SubscriptionBanner({ type, message }: { type: 'info' | 'warning' | 'err
   return (
     <div className={`border rounded-lg px-4 py-2 text-sm ${styles[type]} mb-4`}>
       {message}
-      {type === 'error' && (
-        <Link href="/admin/billing" className="ml-2 underline">Upgrade now</Link>
+      {type === 'error' && upgradeLink && (
+        <Link href={upgradeLink} className="ml-2 underline">Upgrade now</Link>
       )}
     </div>
   );
@@ -37,24 +46,62 @@ export default async function DashboardLayout({
   // Check if user is admin for sidebar display
   const adminStatus = await isAdmin();
 
-  // Get workspace with organization for subscription status
+  // Check user access using the unified access check
+  const access = await checkUserAccess(session.email, session.workspaceId);
+
+  // Get workspace with organization for subscription status (for org-based trial info)
   const workspace = await db.query.workspaces.findFirst({
     where: eq(workspaces.id, session.workspaceId),
   });
 
-  let subscriptionBanner: { type: 'info' | 'warning' | 'error'; message: string } | null = null;
+  // Get individual subscription for trial info if access is individual
+  const individualSub = session.email
+    ? await getIndividualSubscription(session.email)
+    : null;
 
-  if (workspace?.organizationId) {
-    const org = await db.query.organizations.findFirst({
-      where: eq(organizations.id, workspace.organizationId),
-    });
+  let subscriptionBanner: { type: 'info' | 'warning' | 'error'; message: string; upgradeLink?: string } | null = null;
 
-    if (org) {
+  if (access.hasAccess) {
+    // User has access - check if we need to show trial/status messages
+    if (access.source === 'individual') {
+      // Individual subscription - use trial end from userSubscriptions
       subscriptionBanner = getSubscriptionMessage(
-        org.subscriptionStatus,
-        org.trialEndsAt
+        access.status,
+        individualSub?.trialEndsAt ?? null
       );
+      if (subscriptionBanner?.type === 'error') {
+        subscriptionBanner.upgradeLink = '/settings/billing';
+      }
+    } else {
+      // Organization subscription - use org trial end
+      if (workspace?.organizationId) {
+        const org = await db.query.organizations.findFirst({
+          where: eq(organizations.id, workspace.organizationId),
+        });
+
+        if (org) {
+          subscriptionBanner = getSubscriptionMessage(
+            org.subscriptionStatus,
+            org.trialEndsAt ?? null
+          );
+          if (subscriptionBanner?.type === 'error') {
+            subscriptionBanner.upgradeLink = '/admin/billing';
+          }
+        }
+      }
     }
+  } else {
+    // User doesn't have access - show appropriate error
+    const upgradeLink = adminStatus ? '/admin/billing' : '/settings/billing';
+    subscriptionBanner = {
+      type: 'error',
+      message: access.reason === 'no_subscription'
+        ? 'No active subscription. Subscribe to access all features.'
+        : access.reason === 'paused'
+        ? 'Your subscription is paused. Update payment to resume.'
+        : 'Your subscription has been canceled.',
+      upgradeLink,
+    };
   }
 
   return (
@@ -77,6 +124,7 @@ export default async function DashboardLayout({
             <SubscriptionBanner
               type={subscriptionBanner.type}
               message={subscriptionBanner.message}
+              upgradeLink={subscriptionBanner.upgradeLink}
             />
           )}
           {children}
