@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11 of 11 (Individual Billing)
-Plan: 3 of 6 in phase
+Plan: 4 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-02 - Completed 11-03-PLAN.md (Access Check and User Portal)
+Last activity: 2026-02-02 - Completed 11-04-PLAN.md (Pricing Page Update)
 
-Progress: [██████████████████████████████░░] 98% (61/62 plans complete)
+Progress: [██████████████████████████████░░] 99% (62/63 plans complete)
 
 ## Production Deployment
 
@@ -160,6 +160,10 @@ Recent decisions affecting current work:
 - Phase 11 Plan 03: past_due status grants access (Stripe is actively retrying)
 - Phase 11 Plan 03: AccessResult type distinguishes source (individual vs organization)
 - Phase 11 Plan 03: User portal endpoint uses verifySession (any user, not admin-only)
+- Phase 11 Plan 04: BillingModeToggle uses "For Myself" / "For My Team" labels
+- Phase 11 Plan 04: Individual mode shows /month, Team mode shows /seat/month
+- Phase 11 Plan 04: Plan IDs: starter, pro, team-starter, team-pro
+- Phase 11 Plan 04: Mode passed to login via query parameter (?plan=X&mode=Y)
 
 ### Pending Todos
 
@@ -416,6 +420,10 @@ Documentation:
 **Phase 11 Plan 03 (2026-02-02):**
 - `apps/web-portal/lib/billing/access-check.ts` - Dual-path access checking with individual-first priority
 - `apps/web-portal/app/api/stripe/user-portal/route.ts` - Individual user portal endpoint
+
+**Phase 11 Plan 04 (2026-02-02):**
+- `apps/web-portal/components/pricing/pricing-table.tsx` - BillingModeToggle, INDIVIDUAL_PLANS, TEAM_PLANS arrays, mode-aware pricing
+- `apps/web-portal/app/pricing/page.tsx` - Updated metadata for dual billing modes
 
 ---
 *Last updated: 2026-02-02*
