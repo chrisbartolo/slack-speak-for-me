@@ -6,22 +6,13 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  MoreHorizontal,
   Pin,
   Handshake,
   Calendar,
-  ExternalLink,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,6 +83,7 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
   const [tasks, setTasks] = useState(initialTasks);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
+  const [snoozeDialogOpen, setSnoozeDialogOpen] = useState(false);
   const [taskToAction, setTaskToAction] = useState<string | null>(null);
 
   const handleComplete = async (id: string) => {
@@ -151,12 +143,19 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
         toast.error('Failed to snooze task', { description: result.error });
       }
       setSelectedId(null);
+      setSnoozeDialogOpen(false);
+      setTaskToAction(null);
     });
   };
 
   const openDismissDialog = (id: string) => {
     setTaskToAction(id);
     setDismissDialogOpen(true);
+  };
+
+  const openSnoozeDialog = (id: string) => {
+    setTaskToAction(id);
+    setSnoozeDialogOpen(true);
   };
 
   return (
@@ -242,7 +241,7 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
                   </div>
 
                   {/* Right side: action buttons */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     {task.status === 'pending' && (
                       <>
                         <Tooltip>
@@ -259,31 +258,33 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
                           <TooltipContent>Mark complete</TooltipContent>
                         </Tooltip>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={isLoading}>
-                              <MoreHorizontal className="h-5 w-5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleSnooze(task.id, 24)}>
-                              <Clock className="h-4 w-4 mr-2" />
-                              Snooze 1 day
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleSnooze(task.id, 168)}>
-                              <Clock className="h-4 w-4 mr-2" />
-                              Snooze 1 week
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => openDismissDialog(task.id)}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openSnoozeDialog(task.id)}
+                              disabled={isLoading}
                             >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              Dismiss
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <Clock className="h-5 w-5 text-blue-600" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Snooze</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDismissDialog(task.id)}
+                              disabled={isLoading}
+                            >
+                              <XCircle className="h-5 w-5 text-gray-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Dismiss</TooltipContent>
+                        </Tooltip>
                       </>
                     )}
                   </div>
@@ -310,6 +311,30 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
               className="bg-destructive hover:bg-destructive/90"
             >
               Dismiss
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={snoozeDialogOpen} onOpenChange={setSnoozeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Snooze task</AlertDialogTitle>
+            <AlertDialogDescription>
+              How long would you like to snooze this task?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => taskToAction && handleSnooze(taskToAction, 24)}
+            >
+              1 Day
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => taskToAction && handleSnooze(taskToAction, 168)}
+            >
+              1 Week
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
