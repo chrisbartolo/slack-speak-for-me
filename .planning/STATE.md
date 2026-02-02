@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11 of 11 (Individual Billing)
-Plan: 1 of 8 in phase
+Plan: 2 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-02 - Completed 11-01-PLAN.md (User Subscriptions Schema)
+Last activity: 2026-02-02 - Completed 11-02-PLAN.md (Checkout and Webhook Extension)
 
-Progress: [██████████████████████████████░░] 96% (59/62 plans complete)
+Progress: [██████████████████████████████░░] 97% (60/62 plans complete)
 
 ## Production Deployment
 
@@ -152,6 +152,10 @@ Recent decisions affecting current work:
 - Phase 11 Plan 01: Email normalized to lowercase at fetch time in fetchUserEmail
 - Phase 11 Plan 01: OpenID Connect userinfo endpoint for Slack email retrieval
 - Phase 11 Plan 01: User email persisted to users table on login for reference
+- Phase 11 Plan 02: Individual checkout uses customer_email instead of pre-created customer
+- Phase 11 Plan 02: metadata.type='individual' distinguishes individual from org subscriptions
+- Phase 11 Plan 02: Webhook uses upsert (onConflictDoUpdate) for individual subscription records
+- Phase 11 Plan 02: Invoice events fall back to customer lookup since invoices lack subscription metadata
 
 ### Pending Todos
 
@@ -184,7 +188,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 11-01-PLAN.md (User Subscriptions Schema and Session Email)
+Stopped at: Completed 11-02-PLAN.md (Checkout and Webhook Extension)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
@@ -399,6 +403,11 @@ Documentation:
 - `apps/web-portal/lib/auth/dal.ts` - Updated verifySession and getOptionalSession to return email
 - `apps/web-portal/lib/auth/slack-oauth.ts` - Added email scope, created fetchUserEmail function
 - `apps/web-portal/app/(auth)/callback/route.ts` - Fetch and pass email to createSession
+
+**Phase 11 Plan 02 (2026-02-02):**
+- `apps/web-portal/lib/stripe.ts` - Added createIndividualCheckout function with email and trial support
+- `apps/web-portal/app/api/stripe/checkout/route.ts` - Dual-mode checkout with handleIndividualCheckout and handleOrganizationCheckout
+- `apps/web-portal/app/api/stripe/webhook/route.ts` - Extended with individual subscription handlers and type-based routing
 
 ---
 *Last updated: 2026-02-02*
