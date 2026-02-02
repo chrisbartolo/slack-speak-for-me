@@ -69,6 +69,7 @@ export function registerHelpMeRespondShortcut(app: App): void {
         userId,
         channelId,
         messageTs,
+        threadTs, // Pass thread timestamp for YOLO mode
         triggerMessageText: messageText,
         contextMessages,
         triggeredBy: 'message_action',

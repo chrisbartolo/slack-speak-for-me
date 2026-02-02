@@ -1,4 +1,4 @@
-import { db, watchedConversations, threadParticipants, workspaces } from '@slack-speak/database';
+import { db, watchedConversations, threadParticipants, workspaces, autoRespondLog } from '@slack-speak/database';
 import { eq, and, sql } from 'drizzle-orm';
 
 /**
@@ -177,4 +177,84 @@ export async function getWatchersForChannel(
     )
   );
   return results.map(r => r.userId);
+}
+
+/**
+ * Check if auto-respond (YOLO mode) is enabled for a conversation
+ */
+export async function isAutoRespondEnabled(
+  workspaceId: string,
+  userId: string,
+  channelId: string
+): Promise<boolean> {
+  const result = await db
+    .select({ autoRespond: watchedConversations.autoRespond })
+    .from(watchedConversations)
+    .where(
+      and(
+        eq(watchedConversations.workspaceId, workspaceId),
+        eq(watchedConversations.userId, userId),
+        eq(watchedConversations.channelId, channelId)
+      )
+    )
+    .limit(1);
+
+  return result.length > 0 && result[0].autoRespond === true;
+}
+
+/**
+ * Log an auto-sent message for YOLO mode
+ */
+export async function logAutoResponse(params: {
+  workspaceId: string;
+  userId: string;
+  channelId: string;
+  threadTs?: string;
+  triggerMessageTs: string;
+  triggerMessageText?: string;
+  responseText: string;
+  responseMessageTs?: string;
+}): Promise<string> {
+  const [result] = await db
+    .insert(autoRespondLog)
+    .values({
+      workspaceId: params.workspaceId,
+      userId: params.userId,
+      channelId: params.channelId,
+      threadTs: params.threadTs,
+      triggerMessageTs: params.triggerMessageTs,
+      triggerMessageText: params.triggerMessageText,
+      responseText: params.responseText,
+      responseMessageTs: params.responseMessageTs,
+      status: 'sent',
+    })
+    .returning({ id: autoRespondLog.id });
+
+  return result.id;
+}
+
+/**
+ * Mark an auto-response as undone
+ */
+export async function undoAutoResponse(
+  logId: string,
+  workspaceId: string,
+  userId: string
+): Promise<boolean> {
+  const result = await db
+    .update(autoRespondLog)
+    .set({
+      status: 'undone',
+      undoneAt: new Date(),
+    })
+    .where(
+      and(
+        eq(autoRespondLog.id, logId),
+        eq(autoRespondLog.workspaceId, workspaceId),
+        eq(autoRespondLog.userId, userId)
+      )
+    )
+    .returning();
+
+  return result.length > 0;
 }

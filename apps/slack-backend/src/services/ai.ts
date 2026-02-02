@@ -3,6 +3,8 @@ import { env } from '../env.js';
 import { prepareForAI, sanitizeAIOutput } from '@slack-speak/validation';
 import { logger } from '../utils/logger.js';
 import { buildStyleContext, trackRefinement } from './personalization/index.js';
+import { db, personContext, conversationContext } from '@slack-speak/database';
+import { eq, and, inArray } from 'drizzle-orm';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -11,6 +13,7 @@ const anthropic = new Anthropic({
 interface SuggestionContext {
   workspaceId: string;
   userId: string;
+  channelId?: string;
   triggerMessage: string;
   contextMessages: Array<{
     userId: string;
@@ -18,6 +21,74 @@ interface SuggestionContext {
     ts: string;
   }>;
   triggeredBy: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm';
+}
+
+/**
+ * Fetch saved context for a conversation
+ */
+async function getConversationContextText(
+  workspaceId: string,
+  userId: string,
+  channelId: string
+): Promise<string | null> {
+  try {
+    const [context] = await db
+      .select({ contextText: conversationContext.contextText })
+      .from(conversationContext)
+      .where(
+        and(
+          eq(conversationContext.workspaceId, workspaceId),
+          eq(conversationContext.userId, userId),
+          eq(conversationContext.channelId, channelId)
+        )
+      )
+      .limit(1);
+
+    return context?.contextText || null;
+  } catch (error) {
+    logger.warn({ error, channelId }, 'Failed to fetch conversation context');
+    return null;
+  }
+}
+
+/**
+ * Fetch saved context about specific people
+ */
+async function getPersonContexts(
+  workspaceId: string,
+  userId: string,
+  targetUserIds: string[]
+): Promise<Map<string, string>> {
+  if (targetUserIds.length === 0) {
+    return new Map();
+  }
+
+  try {
+    const contexts = await db
+      .select({
+        targetSlackUserId: personContext.targetSlackUserId,
+        targetUserName: personContext.targetUserName,
+        contextText: personContext.contextText,
+      })
+      .from(personContext)
+      .where(
+        and(
+          eq(personContext.workspaceId, workspaceId),
+          eq(personContext.userId, userId),
+          inArray(personContext.targetSlackUserId, targetUserIds)
+        )
+      );
+
+    const contextMap = new Map<string, string>();
+    for (const ctx of contexts) {
+      const label = ctx.targetUserName || ctx.targetSlackUserId;
+      contextMap.set(ctx.targetSlackUserId, `${label}: ${ctx.contextText}`);
+    }
+    return contextMap;
+  } catch (error) {
+    logger.warn({ error, targetUserIds }, 'Failed to fetch person contexts');
+    return new Map();
+  }
 }
 
 interface SuggestionResult {
@@ -70,19 +141,58 @@ export async function generateSuggestion(
     conversationContext: formattedContext,
   });
 
+  // Fetch saved conversation context (if channelId provided)
+  let savedConversationContext: string | null = null;
+  if (context.channelId) {
+    savedConversationContext = await getConversationContextText(
+      context.workspaceId,
+      context.userId,
+      context.channelId
+    );
+  }
+
+  // Fetch person contexts for participants
+  const participantIds = [...new Set(context.contextMessages.map(m => m.userId))];
+  const personContextMap = await getPersonContexts(
+    context.workspaceId,
+    context.userId,
+    participantIds
+  );
+
   // Prepare user content with sanitization and spotlighting
   const sanitizedTrigger = prepareForAI(context.triggerMessage).sanitized;
   const sanitizedContext = prepareForAI(formattedContext).sanitized;
 
+  // Build additional context section
+  let additionalContextSection = '';
+
+  if (savedConversationContext) {
+    const sanitizedConvContext = prepareForAI(savedConversationContext).sanitized;
+    additionalContextSection += `\n<conversation_context>
+The user has provided the following context about this channel/conversation:
+${sanitizedConvContext}
+</conversation_context>\n`;
+  }
+
+  if (personContextMap.size > 0) {
+    const personContextEntries = Array.from(personContextMap.values())
+      .map(ctx => prepareForAI(ctx).sanitized)
+      .join('\n');
+    additionalContextSection += `\n<people_context>
+The user has provided the following context about people in this conversation:
+${personContextEntries}
+</people_context>\n`;
+  }
+
   const userPrompt = `Here is the recent conversation context:
 ${sanitizedContext}
-
+${additionalContextSection}
 The user needs help responding to this message:
 ${sanitizedTrigger}
 
 Trigger type: ${context.triggeredBy}
 
-Please suggest a professional response the user could send. Provide only the suggested response text, no additional commentary.`;
+Please suggest a professional response the user could send. Use the provided context about this conversation and the people involved to make your suggestion more appropriate. Provide only the suggested response text, no additional commentary.`;
 
   try {
     const response = await anthropic.messages.create({

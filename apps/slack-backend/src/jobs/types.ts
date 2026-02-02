@@ -3,6 +3,7 @@ export interface AIResponseJobData {
   userId: string;
   channelId: string;
   messageTs: string;
+  threadTs?: string; // Thread timestamp for replies (used in YOLO mode)
   triggerMessageText: string;
   contextMessages: Array<{
     userId: string;

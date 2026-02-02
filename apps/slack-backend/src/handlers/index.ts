@@ -9,5 +9,6 @@ export {
   registerCopyFinalSuggestionAction,
   registerSendSuggestionAction,
   registerReportActionHandlers,
+  registerUndoAutoResponseAction,
 } from './actions/index.js';
 export { registerRefinementModalHandler, registerReportRefinementViewHandler } from './views/index.js';

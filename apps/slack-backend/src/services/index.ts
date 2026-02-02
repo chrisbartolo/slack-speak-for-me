@@ -17,6 +17,10 @@ export {
   getWatchedConversations,
   recordThreadParticipation,
   isParticipatingInThread,
+  getWatchersForChannel,
+  isAutoRespondEnabled,
+  logAutoResponse,
+  undoAutoResponse,
 } from './watch.js';
 
 // Suggestion delivery - ephemeral message with Block Kit

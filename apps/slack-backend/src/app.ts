@@ -18,6 +18,7 @@ import {
   registerCopyFinalSuggestionAction,
   registerSendSuggestionAction,
   registerReportActionHandlers,
+  registerUndoAutoResponseAction,
   registerRefinementModalHandler,
   registerReportRefinementViewHandler,
 } from './handlers/index.js';
@@ -90,6 +91,7 @@ registerRefineSuggestionAction(app);
 registerCopyFinalSuggestionAction(app);
 registerSendSuggestionAction(app);
 registerReportActionHandlers(app);
+registerUndoAutoResponseAction(app);
 
 // Register view handlers
 registerRefinementModalHandler(app);

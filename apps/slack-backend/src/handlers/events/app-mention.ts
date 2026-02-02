@@ -72,6 +72,7 @@ export function registerAppMentionHandler(app: App) {
         userId: event.user as string,
         channelId: event.channel,
         messageTs: event.ts,
+        threadTs: event.thread_ts, // Pass thread timestamp for YOLO mode
         triggerMessageText: event.text,
         contextMessages,
         triggeredBy: 'mention',

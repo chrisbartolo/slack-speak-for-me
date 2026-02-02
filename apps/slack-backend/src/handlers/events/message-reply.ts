@@ -109,6 +109,7 @@ export function registerMessageReplyHandler(app: App) {
             userId: watcherUserId,
             channelId,
             messageTs,
+            threadTs: undefined, // DMs without threads
             triggerMessageText: typedMessage.text,
             contextMessages,
             triggeredBy: 'dm',
@@ -171,6 +172,7 @@ export function registerMessageReplyHandler(app: App) {
               userId: participantUserId,
               channelId,
               messageTs: threadTs, // Use thread root as message context
+              threadTs, // Pass thread timestamp for YOLO mode
               triggerMessageText: typedMessage.text,
               contextMessages: threadMessages,
               triggeredBy: 'thread',

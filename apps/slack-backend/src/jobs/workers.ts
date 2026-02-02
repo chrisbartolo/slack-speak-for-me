@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport } from '../services/index.js';
+import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -28,6 +28,7 @@ export async function startWorkers() {
       const result = await generateSuggestion({
         workspaceId,
         userId,
+        channelId,
         triggerMessage: triggerMessageText,
         contextMessages,
         triggeredBy,
@@ -68,25 +69,108 @@ export async function startWorkers() {
         const encryptionKey = getEncryptionKey();
         const botToken = decrypt(installation.installation.botToken, encryptionKey);
 
-        // Create WebClient for ephemeral message delivery
+        // Create WebClient for message delivery
         const client = new WebClient(botToken);
 
-        // Send ephemeral message with suggestion
-        await sendSuggestionEphemeral({
-          client,
-          channelId,
-          userId,
-          suggestionId,
-          suggestion: result.suggestion,
-          triggerContext: triggeredBy,
-        });
+        // Check if YOLO mode (auto-respond) is enabled for this conversation
+        const autoRespond = await isAutoRespondEnabled(workspaceId, userId, channelId);
 
-        logger.info({
-          jobId: job.id,
-          suggestionId,
-          channelId,
-          userId,
-        }, 'Suggestion delivered successfully');
+        if (autoRespond) {
+          // YOLO MODE: Post actual message on user's behalf
+          const threadTs = job.data.threadTs;
+
+          const postResult = await client.chat.postMessage({
+            channel: channelId,
+            text: result.suggestion,
+            ...(threadTs && { thread_ts: threadTs }),
+          });
+
+          const responseMessageTs = postResult.ts;
+
+          // Log the auto-response for undo capability
+          const logId = await logAutoResponse({
+            workspaceId,
+            userId,
+            channelId,
+            threadTs,
+            triggerMessageTs: messageTs,
+            triggerMessageText: triggerMessageText,
+            responseText: result.suggestion,
+            responseMessageTs,
+          });
+
+          // Send ephemeral undo notification to the user
+          await client.chat.postEphemeral({
+            channel: channelId,
+            user: userId,
+            text: `I auto-responded on your behalf. You can undo this if needed.`,
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: `*Auto-responded on your behalf:*\n>${result.suggestion.replace(/\n/g, '\n>')}`,
+                },
+              },
+              {
+                type: 'actions',
+                elements: [
+                  {
+                    type: 'button',
+                    text: {
+                      type: 'plain_text',
+                      text: 'Undo',
+                      emoji: true,
+                    },
+                    style: 'danger',
+                    action_id: 'undo_auto_response',
+                    value: JSON.stringify({
+                      logId,
+                      channelId,
+                      messageTs: responseMessageTs,
+                    }),
+                  },
+                ],
+              },
+              {
+                type: 'context',
+                elements: [
+                  {
+                    type: 'mrkdwn',
+                    text: `YOLO mode is enabled for this conversation. <${process.env.APP_URL || 'https://speakforme.ai'}/dashboard/conversations|Manage settings>`,
+                  },
+                ],
+              },
+            ],
+          });
+
+          logger.info({
+            jobId: job.id,
+            suggestionId,
+            logId,
+            channelId,
+            userId,
+            mode: 'auto_respond',
+          }, 'Auto-response sent (YOLO mode)');
+        } else {
+          // Normal mode: Send ephemeral suggestion
+          await sendSuggestionEphemeral({
+            client,
+            channelId,
+            userId,
+            suggestionId,
+            suggestion: result.suggestion,
+            triggerContext: triggeredBy,
+          });
+
+          logger.info({
+            jobId: job.id,
+            suggestionId,
+            channelId,
+            userId,
+            mode: 'suggestion',
+          }, 'Suggestion delivered successfully');
+        }
       } catch (deliveryError) {
         // Log delivery failure but don't throw - suggestion was still generated
         logger.error({
