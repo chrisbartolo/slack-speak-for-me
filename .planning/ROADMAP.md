@@ -28,8 +28,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8: Production Security & Compliance** - GDPR, security hardening, audit logging
 - [x] **Phase 9: Portal/Admin UX Polish** - Brand styling, expandable nav, mobile responsive
 - [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions (DEFERRED - add when customers request)
-- [ ] **Phase 11: Individual Billing** - Personal subscriptions independent of org, individual payment option
-- [ ] **Phase 12: Client Support Features** - De-escalation mode, brand voice templates, sentiment tracking
+- [x] **Phase 11: Individual Billing** - Personal subscriptions independent of org, individual payment option
+- [ ] **Phase 11.1: Usage Tracking & Enforcement** - Configurable pricing, usage limits, metered billing (INSERTED)
+- [ ] **Phase 11.2: Growth & Referrals** - Coupon system, refer-a-friend, affiliate program (INSERTED)
+- [ ] **Phase 12: Client Context & Support** - Client profiles, service context, de-escalation mode
 - [ ] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
 
 ## Phase Details
@@ -307,24 +309,70 @@ Plans:
 **Plans**: 6 plans in 4 waves
 
 Plans:
-- [ ] 11-01-PLAN.md — User subscriptions schema and session email extension
-- [ ] 11-02-PLAN.md — Individual checkout and webhook handling
-- [ ] 11-03-PLAN.md — Dual-path access checking and user portal
-- [ ] 11-04-PLAN.md — Pricing page billing mode toggle
-- [ ] 11-05-PLAN.md — Individual billing settings page
+- [x] 11-01-PLAN.md — User subscriptions schema and session email extension
+- [x] 11-02-PLAN.md — Individual checkout and webhook handling
+- [x] 11-03-PLAN.md — Dual-path access checking and user portal
+- [x] 11-04-PLAN.md — Pricing page billing mode toggle
+- [x] 11-05-PLAN.md — Individual billing settings page
 - [ ] 11-06-PLAN.md — Human verification checkpoint
 
-### Phase 12: Client Support Features
-**Goal**: Features specifically for teams providing client support via Slack
+### Phase 11.1: Usage Tracking & Enforcement (INSERTED)
+**Goal**: Configurable pricing model with usage tracking, limits, and metered overage billing
 **Depends on**: Phase 11
-**Requirements**: SUPPORT-01, SUPPORT-02, SUPPORT-03, SUPPORT-04, SUPPORT-05, SUPPORT-06
+**Requirements**: USAGE-01, USAGE-02, USAGE-03, USAGE-04, USAGE-05
 **Success Criteria** (what must be TRUE):
-  1. AI detects tension/frustration in client messages and suggests de-escalation responses
-  2. Org admin can create brand voice templates with approved response patterns
-  3. AI applies org brand voice guidelines when generating suggestions
-  4. System tracks sentiment trends in client conversations over time
-  5. Escalation alerts flag messages that may lead to disputes
-  6. Audit log tracks AI-assisted responses for compliance review
+  1. Pricing plans defined in config file (not hardcoded) with included suggestions and overage rates
+  2. Usage tracking records every AI suggestion generated per user per billing period
+  3. System enforces usage limits with soft warnings at 80% and hard cap at 100%
+  4. Users see usage dashboard with current consumption and alerts
+  5. Stripe metered billing charges overage automatically
+  6. Pricing page reflects configurable plans and included usage
+  7. Admin can view usage analytics across organization
+**Plans**: 6 plans in 3 waves
+
+Plans:
+- [ ] 11.1-01-PLAN.md — Pricing config and usage tracking schema
+- [ ] 11.1-02-PLAN.md — Usage recording service and limit enforcement
+- [ ] 11.1-03-PLAN.md — Usage dashboard component and alerts
+- [ ] 11.1-04-PLAN.md — Stripe metered billing integration
+- [ ] 11.1-05-PLAN.md — Pricing page update with usage info
+- [ ] 11.1-06-PLAN.md — Human verification checkpoint
+
+### Phase 11.2: Growth & Referrals (INSERTED)
+**Goal**: Coupon system, refer-a-friend program, and affiliate tracking to drive 1000+ paying users
+**Depends on**: Phase 11.1
+**Requirements**: GROWTH-01, GROWTH-02, GROWTH-03, GROWTH-04, GROWTH-05, GROWTH-06
+**Success Criteria** (what must be TRUE):
+  1. Admin can create coupon codes with % or fixed discount, expiry, and usage limits
+  2. Users can apply coupon codes at checkout for discounted subscriptions
+  3. Users get unique referral link/code to share
+  4. Referrer gets credit (free month or account credit) when referee subscribes
+  5. Referee gets discount on first subscription via referral link
+  6. Referral dashboard shows invites sent, conversions, and rewards earned
+  7. Affiliate tracking with UTM parameters for marketing campaigns
+  8. Analytics dashboard shows acquisition channels and conversion rates
+**Plans**: 7 plans in 3 waves
+
+Plans:
+- [ ] 11.2-01-PLAN.md — Coupon schema and admin management
+- [ ] 11.2-02-PLAN.md — Coupon application at checkout
+- [ ] 11.2-03-PLAN.md — Referral schema and unique link generation
+- [ ] 11.2-04-PLAN.md — Referral reward processing
+- [ ] 11.2-05-PLAN.md — Referral dashboard UI
+- [ ] 11.2-06-PLAN.md — Affiliate UTM tracking and analytics
+- [ ] 11.2-07-PLAN.md — Human verification checkpoint
+
+### Phase 12: Client Context & Support
+**Goal**: Client profiles with service context, and AI features for client support teams
+**Depends on**: Phase 11.2
+**Requirements**: CLIENT-01, CLIENT-02, CLIENT-03, CLIENT-04, CLIENT-05, CLIENT-06
+**Success Criteria** (what must be TRUE):
+  1. Users can create client profiles with company name, services, contract details
+  2. AI uses client context when generating suggestions for people from that client
+  3. AI detects tension/frustration in client messages and suggests de-escalation responses
+  4. Org admin can create brand voice templates with approved response patterns
+  5. AI applies org brand voice guidelines when generating suggestions
+  6. Escalation alerts flag messages that may lead to disputes
   7. Knowledge base integration allows AI to reference product/service info
 **Plans**: TBD (run /gsd:plan-phase 12 to break down)
 
@@ -366,8 +414,10 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 8. Production Security & Compliance | 7/7 | Complete | 2026-02-01 |
 | 9. Portal/Admin UX Polish | 5/5 | Complete | 2026-02-02 |
 | 10. Calendar Integration | 0/? | Deferred | - |
-| 11. Individual Billing | 0/6 | Planned | - |
-| 12. Client Support Features | 0/? | Not started | - |
+| 11. Individual Billing | 5/6 | Human verification | - |
+| 11.1. Usage Tracking & Enforcement | 0/6 | In progress | - |
+| 11.2. Growth & Referrals | 0/7 | Planned | - |
+| 12. Client Context & Support | 0/? | Not started | - |
 | 13. Team/Org Dashboard | 0/? | Not started | - |
 
 ---

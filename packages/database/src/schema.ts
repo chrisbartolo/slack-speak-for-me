@@ -326,3 +326,156 @@ export const userSubscriptions = pgTable('user_subscriptions', {
   emailIdx: uniqueIndex('user_subscriptions_email_idx').on(table.email),
   stripeCustomerIdx: index('user_subscriptions_stripe_customer_idx').on(table.stripeCustomerId),
 }));
+
+// Usage tracking for billing and limit enforcement
+export const usageRecords = pgTable('usage_records', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Who used it (email for individual, orgId for team)
+  email: text('email'), // Individual user email
+  organizationId: uuid('organization_id').references(() => organizations.id), // Team/org
+
+  // What billing period
+  billingPeriodStart: timestamp('billing_period_start').notNull(),
+  billingPeriodEnd: timestamp('billing_period_end').notNull(),
+
+  // Counts
+  suggestionsUsed: integer('suggestions_used').default(0).notNull(),
+  suggestionsIncluded: integer('suggestions_included').notNull(), // Snapshot of plan limit
+  overageReported: boolean('overage_reported').default(false), // Has overage been sent to Stripe
+
+  // Stripe metered billing
+  stripeSubscriptionItemId: text('stripe_subscription_item_id'), // For reporting overage
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  emailPeriodIdx: uniqueIndex('usage_records_email_period_idx').on(table.email, table.billingPeriodStart),
+  orgPeriodIdx: uniqueIndex('usage_records_org_period_idx').on(table.organizationId, table.billingPeriodStart),
+  periodEndIdx: index('usage_records_period_end_idx').on(table.billingPeriodEnd),
+}));
+
+// Individual usage events (for detailed tracking)
+export const usageEvents = pgTable('usage_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Who
+  email: text('email'),
+  organizationId: uuid('organization_id').references(() => organizations.id),
+  slackUserId: text('slack_user_id').notNull(),
+  workspaceId: uuid('workspace_id').references(() => workspaces.id),
+
+  // What
+  eventType: text('event_type').notNull(), // 'suggestion' | 'refinement'
+  channelId: text('channel_id'),
+
+  // Cost tracking
+  inputTokens: integer('input_tokens'),
+  outputTokens: integer('output_tokens'),
+  estimatedCost: integer('estimated_cost'), // In cents (for internal tracking)
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  emailIdx: index('usage_events_email_idx').on(table.email),
+  orgIdx: index('usage_events_org_idx').on(table.organizationId),
+  createdAtIdx: index('usage_events_created_at_idx').on(table.createdAt),
+  eventTypeIdx: index('usage_events_type_idx').on(table.eventType),
+}));
+
+// Coupons for discounts
+export const coupons = pgTable('coupons', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  code: text('code').notNull(),
+  description: text('description'),
+
+  // Discount type
+  discountType: text('discount_type').notNull(), // 'percent' | 'fixed'
+  discountValue: integer('discount_value').notNull(), // Percent (0-100) or cents
+
+  // Validity
+  validFrom: timestamp('valid_from').defaultNow(),
+  validUntil: timestamp('valid_until'),
+  maxRedemptions: integer('max_redemptions'), // null = unlimited
+  currentRedemptions: integer('current_redemptions').default(0),
+
+  // Restrictions
+  applicablePlans: jsonb('applicable_plans').$type<string[]>(), // null = all plans
+  firstTimeOnly: boolean('first_time_only').default(true),
+  minSeats: integer('min_seats'), // Minimum seats for team plans
+
+  // Stripe
+  stripeCouponId: text('stripe_coupon_id'),
+
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  codeIdx: uniqueIndex('coupons_code_idx').on(table.code),
+  activeIdx: index('coupons_active_idx').on(table.isActive),
+}));
+
+// Coupon redemptions
+export const couponRedemptions = pgTable('coupon_redemptions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  couponId: uuid('coupon_id').notNull().references(() => coupons.id),
+  email: text('email').notNull(), // Who redeemed
+  organizationId: uuid('organization_id').references(() => organizations.id),
+
+  // What they got
+  discountApplied: integer('discount_applied').notNull(), // Cents saved
+
+  redeemedAt: timestamp('redeemed_at').defaultNow(),
+}, (table) => ({
+  couponIdx: index('coupon_redemptions_coupon_idx').on(table.couponId),
+  emailIdx: index('coupon_redemptions_email_idx').on(table.email),
+}));
+
+// Referral program
+export const referrals = pgTable('referrals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Referrer (existing user)
+  referrerEmail: text('referrer_email').notNull(),
+  referralCode: text('referral_code').notNull(),
+
+  // Stats
+  totalReferrals: integer('total_referrals').default(0),
+  successfulReferrals: integer('successful_referrals').default(0), // Converted to paid
+  totalRewardsEarned: integer('total_rewards_earned').default(0), // Cents
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  referrerIdx: uniqueIndex('referrals_referrer_idx').on(table.referrerEmail),
+  codeIdx: uniqueIndex('referrals_code_idx').on(table.referralCode),
+}));
+
+// Individual referral events
+export const referralEvents = pgTable('referral_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  referralId: uuid('referral_id').notNull().references(() => referrals.id),
+
+  // Referee (new user)
+  refereeEmail: text('referee_email').notNull(),
+
+  // Status
+  status: text('status').notNull(), // 'invited' | 'signed_up' | 'subscribed' | 'rewarded'
+
+  // Rewards
+  referrerReward: integer('referrer_reward'), // Cents or days credited
+  refereeDiscount: integer('referee_discount'), // Percent off first month
+
+  // Tracking
+  signedUpAt: timestamp('signed_up_at'),
+  subscribedAt: timestamp('subscribed_at'),
+  rewardedAt: timestamp('rewarded_at'),
+
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  referralIdx: index('referral_events_referral_idx').on(table.referralId),
+  refereeIdx: uniqueIndex('referral_events_referee_idx').on(table.refereeEmail),
+  statusIdx: index('referral_events_status_idx').on(table.status),
+}));

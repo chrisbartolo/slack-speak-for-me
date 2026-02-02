@@ -21,6 +21,12 @@ import {
   auditLogs,
   autoRespondLog,
   userSubscriptions,
+  usageRecords,
+  usageEvents,
+  coupons,
+  couponRedemptions,
+  referrals,
+  referralEvents,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -53,6 +59,12 @@ const schema = {
   auditLogs,
   autoRespondLog,
   userSubscriptions,
+  usageRecords,
+  usageEvents,
+  coupons,
+  couponRedemptions,
+  referrals,
+  referralEvents,
 };
 
 export const db = drizzle(queryClient, { schema });

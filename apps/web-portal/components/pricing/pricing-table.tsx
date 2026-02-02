@@ -1,105 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Check, Gift, Zap, Tag } from 'lucide-react';
+import {
+  INDIVIDUAL_PLANS as CONFIG_INDIVIDUAL_PLANS,
+  TEAM_PLANS as CONFIG_TEAM_PLANS,
+  formatPrice,
+  formatOverageRate,
+  type PlanConfig,
+} from '@/lib/billing/plans.config';
 
 type BillingMode = 'individual' | 'team';
 
-interface Plan {
-  name: string;
-  price: number;
-  description: string;
-  features: string[];
-  popular?: boolean;
-  cta: string;
-  planId: string;
-}
-
-const INDIVIDUAL_PLANS: Plan[] = [
-  {
-    name: 'Starter',
-    price: 10,
-    description: 'Perfect for individual professionals',
-    features: [
-      'AI response suggestions',
-      'Watch up to 5 channels',
-      'Copy to clipboard',
-      'Basic refinement',
-      'Email support',
-    ],
-    cta: 'Start Free Trial',
-    planId: 'starter',
-  },
-  {
-    name: 'Pro',
-    price: 15,
-    description: 'For power users who need the full suite',
-    features: [
-      'Everything in Starter',
-      'Unlimited channels',
-      'Style learning',
-      'Weekly reports',
-      'Google Sheets integration',
-      'Priority support',
-    ],
-    popular: true,
-    cta: 'Start Free Trial',
-    planId: 'pro',
-  },
-];
-
-const TEAM_PLANS: Plan[] = [
-  {
-    name: 'Team Starter',
-    price: 10,
-    description: 'Perfect for small teams getting started',
-    features: [
-      'AI response suggestions',
-      'Watch up to 5 channels per user',
-      'Copy to clipboard',
-      'Basic refinement',
-      'Email support',
-      'Centralized billing',
-    ],
-    cta: 'Start Free Trial',
-    planId: 'team-starter',
-  },
-  {
-    name: 'Team Pro',
-    price: 15,
-    description: 'For teams who need the full power',
-    features: [
-      'Everything in Team Starter',
-      'Unlimited channels per user',
-      'Style learning',
-      'Weekly reports',
-      'Google Sheets integration',
-      'Priority support',
-      'Admin dashboard',
-    ],
-    popular: true,
-    cta: 'Start Free Trial',
-    planId: 'team-pro',
-  },
-];
-
 function CheckIcon() {
   return (
-    <svg
-      className="w-5 h-5 text-indigo-500 flex-shrink-0"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 13l4 4L19 7"
-      />
-    </svg>
+    <Check className="w-5 h-5 text-indigo-500 flex-shrink-0" />
   );
 }
 
@@ -138,9 +59,31 @@ function BillingModeToggle({
   );
 }
 
-function PricingCard({ plan, mode }: { plan: Plan; mode: BillingMode }) {
+function PricingCard({
+  plan,
+  mode,
+  referralCode,
+  couponCode,
+  referralDiscount,
+}: {
+  plan: PlanConfig;
+  mode: BillingMode;
+  referralCode: string | null;
+  couponCode: string | null;
+  referralDiscount: number;
+}) {
+  const price = plan.type === 'team' ? (plan.pricePerSeat || 0) : plan.basePrice;
   const priceLabel = mode === 'individual' ? '/month' : '/seat/month';
-  const ctaHref = `/login?plan=${plan.planId}&mode=${mode}`;
+
+  // Build CTA URL with any referral/coupon codes
+  let ctaHref = `/login?plan=${plan.id}&mode=${mode}`;
+  if (referralCode) ctaHref += `&ref=${referralCode}`;
+  if (couponCode) ctaHref += `&coupon=${couponCode}`;
+
+  // Calculate discounted price for display
+  const displayPrice = referralDiscount > 0
+    ? Math.round(price * (1 - referralDiscount / 100))
+    : price;
 
   return (
     <Card
@@ -166,9 +109,33 @@ function PricingCard({ plan, mode }: { plan: Plan; mode: BillingMode }) {
       <CardContent className="flex flex-col flex-grow">
         <div className="text-center mb-6">
           <div className="flex items-baseline justify-center">
-            <span className="text-4xl font-bold">${plan.price}</span>
+            {referralDiscount > 0 && (
+              <span className="text-xl text-gray-400 line-through mr-2">
+                {formatPrice(price)}
+              </span>
+            )}
+            <span className="text-4xl font-bold">{formatPrice(displayPrice)}</span>
             <span className="text-gray-500 ml-1">{priceLabel}</span>
           </div>
+          {referralDiscount > 0 && (
+            <Badge className="mt-2 bg-green-100 text-green-700">
+              <Gift className="w-3 h-3 mr-1" />
+              {referralDiscount}% off first month
+            </Badge>
+          )}
+        </div>
+
+        {/* Usage info */}
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <Zap className="w-4 h-4 text-indigo-500" />
+            <span className="font-medium">
+              {plan.includedSuggestions} AI suggestions{plan.type === 'team' ? '/seat' : ''}/month
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Then {formatOverageRate(plan.overageRate)} per additional suggestion
+          </p>
         </div>
 
         <ul className="space-y-3 mb-8 flex-grow">
@@ -197,17 +164,115 @@ function PricingCard({ plan, mode }: { plan: Plan; mode: BillingMode }) {
   );
 }
 
+function CouponInput({
+  value,
+  onChange,
+  applied,
+  discount,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  applied: boolean;
+  discount: string | null;
+}) {
+  return (
+    <div className="max-w-md mx-auto mb-8">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            placeholder="Have a coupon code?"
+            className="pl-10"
+            disabled={applied}
+          />
+        </div>
+        {!applied && (
+          <Button variant="outline" onClick={() => onChange(value)}>
+            Apply
+          </Button>
+        )}
+      </div>
+      {applied && discount && (
+        <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+          <Check className="w-4 h-4" />
+          Coupon applied: {discount}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function PricingTable() {
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<BillingMode>('individual');
-  const plans = mode === 'individual' ? INDIVIDUAL_PLANS : TEAM_PLANS;
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponDiscount, setCouponDiscount] = useState<string | null>(null);
+
+  // Get referral code from URL
+  const referralCode = searchParams.get('ref');
+  const referralDiscount = referralCode ? 20 : 0; // 20% off for referrals
+
+  // Check for coupon in URL
+  useEffect(() => {
+    const urlCoupon = searchParams.get('coupon');
+    if (urlCoupon) {
+      setCouponCode(urlCoupon);
+      // In a real app, validate the coupon via API
+      setCouponApplied(true);
+      setCouponDiscount('10% off');
+    }
+  }, [searchParams]);
+
+  const plans = mode === 'individual' ? CONFIG_INDIVIDUAL_PLANS : CONFIG_TEAM_PLANS;
 
   return (
     <div>
+      {/* Referral banner */}
+      {referralCode && (
+        <div className="max-w-2xl mx-auto mb-8 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+          <div className="flex items-center justify-center gap-2 text-green-700">
+            <Gift className="w-5 h-5" />
+            <span className="font-medium">You&apos;ve been referred! Get 20% off your first month.</span>
+          </div>
+        </div>
+      )}
+
       <BillingModeToggle mode={mode} onChange={setMode} />
+
+      {/* Coupon input */}
+      <CouponInput
+        value={couponCode}
+        onChange={setCouponCode}
+        applied={couponApplied}
+        discount={couponDiscount}
+      />
+
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {plans.map((plan) => (
-          <PricingCard key={plan.name} plan={plan} mode={mode} />
+          <PricingCard
+            key={plan.id}
+            plan={plan}
+            mode={mode}
+            referralCode={referralCode}
+            couponCode={couponApplied ? couponCode : null}
+            referralDiscount={referralDiscount}
+          />
         ))}
+      </div>
+
+      {/* Enterprise CTA */}
+      <div className="text-center mt-12">
+        <p className="text-gray-600 mb-4">
+          Need more than 50 seats or custom features?
+        </p>
+        <Link href="mailto:enterprise@speakforme.app">
+          <Button variant="outline" size="lg">
+            Contact Sales
+          </Button>
+        </Link>
       </div>
     </div>
   );
