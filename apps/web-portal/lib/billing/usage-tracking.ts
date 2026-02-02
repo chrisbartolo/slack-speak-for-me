@@ -89,33 +89,40 @@ export async function getUsageStatus(
   email: string | null,
   organizationId: string | null
 ): Promise<UsageStatus | null> {
-  // Get access to determine plan
-  const access = await checkUserAccess(email || '', organizationId || undefined);
+  // Get plan details directly
+  let planId: string = 'free';
+  let seatCount = 1;
+  let source: 'individual' | 'organization' = 'individual';
 
-  if (!access.hasAccess) {
+  if (email) {
+    const userSub = await db.query.userSubscriptions.findFirst({
+      where: eq(userSubscriptions.email, email.toLowerCase()),
+    });
+    if (userSub?.subscriptionStatus === 'active' || userSub?.subscriptionStatus === 'trialing') {
+      planId = userSub.planId || 'starter';
+      source = 'individual';
+    }
+  }
+
+  if (organizationId && planId === 'free') {
+    const org = await db.query.organizations.findFirst({
+      where: eq(organizations.id, organizationId),
+    });
+    if (org?.subscriptionStatus === 'active' || org?.subscriptionStatus === 'trialing') {
+      planId = org.planId || 'team_starter';
+      seatCount = org.seatCount || 1;
+      source = 'organization';
+    }
+  }
+
+  // If still free and no valid subscription found, return null
+  if (planId === 'free' && !email && !organizationId) {
     return null;
   }
 
-  // Get plan details
-  let planId: string;
-  let seatCount = 1;
-
-  if (access.source === 'individual') {
-    const userSub = await db.query.userSubscriptions.findFirst({
-      where: eq(userSubscriptions.email, email!.toLowerCase()),
-    });
-    planId = userSub?.planId || 'starter';
-  } else {
-    const org = await db.query.organizations.findFirst({
-      where: eq(organizations.id, organizationId!),
-    });
-    planId = org?.planId || 'team';
-    seatCount = org?.seatCount || 1;
-  }
-
   const record = await getOrCreateUsageRecord(
-    access.source === 'individual' ? email : null,
-    access.source === 'organization' ? organizationId : null,
+    source === 'individual' ? email : null,
+    source === 'organization' ? organizationId : null,
     planId,
     seatCount
   );
@@ -151,7 +158,7 @@ export async function checkUsageAllowed(
   if (!access.hasAccess) {
     return {
       allowed: false,
-      reason: access.reason === 'trial_expired' ? 'trial_expired' : 'no_subscription',
+      reason: access.reason === 'expired' ? 'trial_expired' : 'no_subscription',
     };
   }
 
@@ -211,10 +218,12 @@ export async function recordUsageEvent(params: {
     estimatedCost: calculateEstimatedCost(params.inputTokens, params.outputTokens),
   });
 
-  // Increment usage count
-  const access = await checkUserAccess(params.email, params.workspaceId);
+  // Increment usage count - determine source based on email/org
+  const periodStart = getbillingPeriodStart(new Date());
+  const periodEnd = getbillingPeriodEnd(new Date());
 
-  if (access.source === 'individual') {
+  // Try to update individual usage record first, then org
+  if (params.email) {
     await db
       .update(usageRecords)
       .set({
@@ -224,11 +233,12 @@ export async function recordUsageEvent(params: {
       .where(
         and(
           eq(usageRecords.email, params.email),
-          gte(usageRecords.billingPeriodStart, getbillingPeriodStart(new Date())),
-          lte(usageRecords.billingPeriodEnd, getbillingPeriodEnd(new Date()))
+          gte(usageRecords.billingPeriodStart, periodStart),
+          lte(usageRecords.billingPeriodEnd, periodEnd)
         )
       );
   } else if (params.organizationId) {
+    // Fall back to organization usage record
     await db
       .update(usageRecords)
       .set({
@@ -238,8 +248,8 @@ export async function recordUsageEvent(params: {
       .where(
         and(
           eq(usageRecords.organizationId, params.organizationId),
-          gte(usageRecords.billingPeriodStart, getbillingPeriodStart(new Date())),
-          lte(usageRecords.billingPeriodEnd, getbillingPeriodEnd(new Date()))
+          gte(usageRecords.billingPeriodStart, periodStart),
+          lte(usageRecords.billingPeriodEnd, periodEnd)
         )
       );
   }

@@ -275,9 +275,9 @@ export async function getReferralDashboard(email: string) {
   return {
     referralCode: referral.referralCode,
     referralLink: `${process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app'}/pricing?ref=${referral.referralCode}`,
-    totalReferrals: referral.totalReferrals,
-    successfulReferrals: referral.successfulReferrals,
-    totalRewardsEarned: referral.totalRewardsEarned,
+    totalReferrals: referral.totalReferrals ?? 0,
+    successfulReferrals: referral.successfulReferrals ?? 0,
+    totalRewardsEarned: referral.totalRewardsEarned ?? 0,
     pendingRewards,
     recentReferrals: events.map(e => ({
       email: maskEmail(e.refereeEmail),

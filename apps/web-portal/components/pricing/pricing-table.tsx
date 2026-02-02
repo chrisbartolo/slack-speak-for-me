@@ -167,13 +167,19 @@ function PricingCard({
 function CouponInput({
   value,
   onChange,
+  onApply,
   applied,
   discount,
+  error,
+  loading,
 }: {
   value: string;
   onChange: (value: string) => void;
+  onApply: () => void;
   applied: boolean;
   discount: string | null;
+  error: string | null;
+  loading: boolean;
 }) {
   return (
     <div className="max-w-md mx-auto mb-8">
@@ -185,12 +191,16 @@ function CouponInput({
             onChange={(e) => onChange(e.target.value.toUpperCase())}
             placeholder="Have a coupon code?"
             className="pl-10"
-            disabled={applied}
+            disabled={applied || loading}
           />
         </div>
         {!applied && (
-          <Button variant="outline" onClick={() => onChange(value)}>
-            Apply
+          <Button
+            variant="outline"
+            onClick={onApply}
+            disabled={!value || loading}
+          >
+            {loading ? 'Checking...' : 'Apply'}
           </Button>
         )}
       </div>
@@ -199,6 +209,9 @@ function CouponInput({
           <Check className="w-4 h-4" />
           Coupon applied: {discount}
         </p>
+      )}
+      {error && (
+        <p className="text-sm text-red-600 mt-2">{error}</p>
       )}
     </div>
   );
@@ -210,19 +223,48 @@ export function PricingTable() {
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
 
   // Get referral code from URL
   const referralCode = searchParams.get('ref');
   const referralDiscount = referralCode ? 20 : 0; // 20% off for referrals
 
-  // Check for coupon in URL
+  // Validate coupon via API
+  const validateCoupon = async (code: string) => {
+    if (!code) return;
+
+    setCouponError(null);
+    setCouponLoading(true);
+
+    try {
+      const response = await fetch('/api/billing/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+
+      const result = await response.json();
+
+      if (result.valid) {
+        setCouponApplied(true);
+        setCouponDiscount(result.discount?.displayValue || 'Discount applied');
+      } else {
+        setCouponError(result.error || 'Invalid coupon code');
+      }
+    } catch {
+      setCouponError('Failed to validate coupon. Please try again.');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  // Check for coupon in URL on load
   useEffect(() => {
     const urlCoupon = searchParams.get('coupon');
     if (urlCoupon) {
-      setCouponCode(urlCoupon);
-      // In a real app, validate the coupon via API
-      setCouponApplied(true);
-      setCouponDiscount('10% off');
+      setCouponCode(urlCoupon.toUpperCase());
+      validateCoupon(urlCoupon);
     }
   }, [searchParams]);
 
@@ -245,9 +287,15 @@ export function PricingTable() {
       {/* Coupon input */}
       <CouponInput
         value={couponCode}
-        onChange={setCouponCode}
+        onChange={(v) => {
+          setCouponCode(v);
+          setCouponError(null);
+        }}
+        onApply={() => validateCoupon(couponCode)}
         applied={couponApplied}
         discount={couponDiscount}
+        error={couponError}
+        loading={couponLoading}
       />
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">

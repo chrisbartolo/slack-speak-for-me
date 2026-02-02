@@ -6,7 +6,7 @@ import Stripe from 'stripe';
 const { coupons, couponRedemptions } = schema;
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27.acacia',
+  apiVersion: '2026-01-28.clover',
 });
 
 export interface CouponValidation {
@@ -54,7 +54,7 @@ export async function validateCoupon(
   }
 
   // Check redemption limit
-  if (coupon.maxRedemptions && coupon.currentRedemptions >= coupon.maxRedemptions) {
+  if (coupon.maxRedemptions && (coupon.currentRedemptions ?? 0) >= coupon.maxRedemptions) {
     return { valid: false, error: 'This coupon has reached its redemption limit' };
   }
 
