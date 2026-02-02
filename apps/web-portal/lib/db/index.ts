@@ -20,6 +20,7 @@ import {
   suggestionFeedback,
   auditLogs,
   autoRespondLog,
+  userSubscriptions,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -51,6 +52,7 @@ const schema = {
   suggestionFeedback,
   auditLogs,
   autoRespondLog,
+  userSubscriptions,
 };
 
 export const db = drizzle(queryClient, { schema });

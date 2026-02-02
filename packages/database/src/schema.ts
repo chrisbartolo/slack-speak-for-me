@@ -305,3 +305,24 @@ export type AuditAction =
   | 'oauth_connected'
   | 'oauth_disconnected'
   | 'admin_action';
+
+// Individual user subscriptions (email-based for cross-workspace identity)
+export const userSubscriptions = pgTable('user_subscriptions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Identity - email is the stable identifier across workspaces
+  email: text('email').notNull(),
+
+  // Stripe billing
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
+  subscriptionStatus: text('subscription_status'), // 'active' | 'trialing' | 'paused' | 'canceled'
+  planId: text('plan_id'), // 'individual_starter' | 'individual_pro'
+  trialEndsAt: timestamp('trial_ends_at'),
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  emailIdx: uniqueIndex('user_subscriptions_email_idx').on(table.email),
+  stripeCustomerIdx: index('user_subscriptions_stripe_customer_idx').on(table.stripeCustomerId),
+}));
