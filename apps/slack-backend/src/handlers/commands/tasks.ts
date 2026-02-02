@@ -3,7 +3,8 @@ import { getWorkspaceId } from '../../services/watch.js';
 import { getPendingActionables } from '../../services/actionables.js';
 import { logger } from '../../utils/logger.js';
 import { formatDistanceToNow, format } from 'date-fns';
-import { env } from '../../env.js';
+
+const WEB_PORTAL_URL = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
 
 export function registerTasksCommand(app: App): void {
   app.command('/tasks', async ({ command, ack, respond }) => {
@@ -43,7 +44,7 @@ export function registerTasksCommand(app: App): void {
               elements: [
                 {
                   type: 'mrkdwn',
-                  text: `<${env.APP_URL}/dashboard/tasks|View all tasks in dashboard>`,
+                  text: `<${WEB_PORTAL_URL}/dashboard/tasks|View all tasks in dashboard>`,
                 },
               ],
             },
@@ -228,7 +229,7 @@ export function registerTasksCommand(app: App): void {
           elements: [
             {
               type: 'mrkdwn',
-              text: `<${env.APP_URL}/dashboard/tasks|:bar_chart: View all tasks in dashboard>`,
+              text: `<${WEB_PORTAL_URL}/dashboard/tasks|:bar_chart: View all tasks in dashboard>`,
             },
           ],
         }
