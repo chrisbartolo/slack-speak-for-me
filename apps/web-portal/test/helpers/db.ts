@@ -112,7 +112,9 @@ export async function setupTestDb() {
   }
 
   pgLite = new PGlite();
-  testDb = drizzle(pgLite, { schema });
+  // Type assertion needed due to PGlite version mismatch between workspace and root node_modules
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  testDb = drizzle(pgLite as any, { schema });
   await pgLite.exec(createTablesSQL);
 
   return testDb;
