@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     // If specific channel IDs are requested, fetch info for each
     if (channelIds.length > 0) {
-      const channels: Record<string, { id: string; name: string; isPrivate: boolean }> = {};
+      const channels: Record<string, { id: string; name: string; type: string; isPrivate: boolean }> = {};
 
       // Fetch info for each channel (Slack doesn't have a bulk endpoint)
       await Promise.all(
@@ -63,10 +63,47 @@ export async function GET(request: NextRequest) {
             const data = await response.json();
 
             if (data.ok && data.channel) {
+              const channel = data.channel;
+              let name = channel.name;
+              let type = 'channel';
+
+              // Handle DMs - fetch user info for display name
+              if (channel.is_im && channel.user) {
+                type = 'im';
+                try {
+                  const userResponse = await fetch(
+                    `https://slack.com/api/users.info?user=${channel.user}`,
+                    {
+                      method: 'GET',
+                      headers: {
+                        Authorization: `Bearer ${botToken}`,
+                        'Content-Type': 'application/json',
+                      },
+                    }
+                  );
+                  const userData = await userResponse.json();
+                  if (userData.ok && userData.user) {
+                    name = userData.user.profile?.display_name ||
+                           userData.user.profile?.real_name ||
+                           userData.user.name ||
+                           channel.user;
+                  }
+                } catch (userError) {
+                  console.error(`Error fetching user ${channel.user}:`, userError);
+                }
+              } else if (channel.is_mpim) {
+                type = 'mpim';
+                // For group DMs, use the purpose or name
+                name = channel.purpose?.value || channel.name || 'Group DM';
+              } else if (channel.is_group || channel.is_private) {
+                type = 'group';
+              }
+
               channels[channelId] = {
-                id: data.channel.id,
-                name: data.channel.name,
-                isPrivate: data.channel.is_private || false,
+                id: channel.id,
+                name: name,
+                type: type,
+                isPrivate: channel.is_private || channel.is_im || channel.is_mpim || false,
               };
             }
           } catch (error) {
@@ -81,14 +118,11 @@ export async function GET(request: NextRequest) {
         await Promise.all(
           Object.entries(channels).map(async ([channelId, info]) => {
             try {
-              // Determine channel type from API response
-              const channelType = info.isPrivate ? 'group' : 'channel';
-
               await db
                 .update(watchedConversations)
                 .set({
                   channelName: info.name,
-                  channelType: channelType,
+                  channelType: info.type,
                 })
                 .where(
                   and(

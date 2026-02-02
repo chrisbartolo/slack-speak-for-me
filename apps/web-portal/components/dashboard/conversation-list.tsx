@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Trash2, Hash, Lock, MessageSquare, FileText, Zap, ZapOff, Pencil } from 'lucide-react';
+import { useState, useTransition, useEffect } from 'react';
+import { Trash2, Hash, Lock, MessageSquare, FileText, Zap, ZapOff, Pencil, Info, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -26,6 +26,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { unwatchConversation, toggleAutoRespond, saveConversationContext } from '@/app/dashboard/conversations/actions';
@@ -52,16 +58,72 @@ interface ConversationListProps {
   contexts: ConversationContext[];
 }
 
-export function ConversationList({ conversations, contexts }: ConversationListProps) {
+export function ConversationList({ conversations: initialConversations, contexts }: ConversationListProps) {
   const [isPending, startTransition] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [editingContext, setEditingContext] = useState<string | null>(null);
   const [contextText, setContextText] = useState('');
   const [savingContext, setSavingContext] = useState(false);
+  const [conversations, setConversations] = useState(initialConversations);
+  const [refreshingNames, setRefreshingNames] = useState(false);
 
   // Create a map of channel contexts for quick lookup
   const contextMap = new Map(contexts.map(c => [c.channelId, c]));
+
+  // Check if any DMs need their names refreshed
+  const needsNameRefresh = (conv: Conversation) => {
+    const isDM = conv.channelType === 'im' || conv.channelType === 'mpim' || conv.channelId.startsWith('D');
+    const hasGenericName = !conv.channelName ||
+                          conv.channelName === 'Direct Message' ||
+                          conv.channelName === 'mpdm-' ||
+                          conv.channelName.startsWith('mpdm-');
+    return isDM && hasGenericName;
+  };
+
+  // Auto-refresh DM names on mount
+  useEffect(() => {
+    const conversationsNeedingRefresh = conversations.filter(needsNameRefresh);
+
+    if (conversationsNeedingRefresh.length > 0) {
+      refreshChannelNames(conversationsNeedingRefresh.map(c => c.channelId));
+    }
+  }, []); // Run once on mount
+
+  const refreshChannelNames = async (channelIds: string[]) => {
+    if (channelIds.length === 0) return;
+
+    setRefreshingNames(true);
+    try {
+      const response = await fetch(`/api/slack/channels?ids=${channelIds.join(',')}&refresh=true`);
+      const data = await response.json();
+
+      if (data.channels) {
+        // Update local state with new names
+        setConversations(prev => prev.map(conv => {
+          const updated = data.channels[conv.channelId];
+          if (updated) {
+            return {
+              ...conv,
+              channelName: updated.name,
+              channelType: updated.type,
+            };
+          }
+          return conv;
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to refresh channel names:', error);
+    } finally {
+      setRefreshingNames(false);
+    }
+  };
+
+  const handleRefreshAll = () => {
+    const allChannelIds = conversations.map(c => c.channelId);
+    refreshChannelNames(allChannelIds);
+    toast.success('Refreshing channel names...');
+  };
 
   const handleRemove = async (id: string) => {
     setRemovingId(id);
@@ -72,6 +134,8 @@ export function ConversationList({ conversations, contexts }: ConversationListPr
         toast.success('Channel removed', {
           description: 'You will no longer receive suggestions for this channel.',
         });
+        // Update local state
+        setConversations(prev => prev.filter(c => c.id !== id));
       } else {
         toast.error('Error', {
           description: result.error || 'Failed to remove channel',
@@ -94,6 +158,10 @@ export function ConversationList({ conversations, contexts }: ConversationListPr
             ? 'AI will now auto-respond on your behalf in this conversation.'
             : 'AI will offer suggestions instead of auto-responding.',
         });
+        // Update local state
+        setConversations(prev => prev.map(c =>
+          c.id === conversation.id ? { ...c, autoRespond: newValue } : c
+        ));
       } else {
         toast.error('Error', {
           description: result.error || 'Failed to update setting',
@@ -147,9 +215,15 @@ export function ConversationList({ conversations, contexts }: ConversationListPr
 
   // Helper to format display name
   const getDisplayName = (conversation: Conversation) => {
-    if (conversation.channelName) {
+    if (conversation.channelName &&
+        conversation.channelName !== 'Direct Message' &&
+        !conversation.channelName.startsWith('mpdm-')) {
       const isDM = conversation.channelType === 'im' || conversation.channelType === 'mpim';
       return isDM ? conversation.channelName : `#${conversation.channelName}`;
+    }
+    // Fallback for DMs without proper names
+    if (conversation.channelType === 'im' || conversation.channelId.startsWith('D')) {
+      return 'Loading...';
     }
     return conversation.channelId;
   };
@@ -165,154 +239,188 @@ export function ConversationList({ conversations, contexts }: ConversationListPr
   };
 
   return (
-    <div className="space-y-4">
-      {conversations.map((conversation) => {
-        const hasContext = contextMap.has(conversation.channelId);
+    <TooltipProvider>
+      <div className="space-y-4">
+        {/* Refresh button for all channels */}
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefreshAll}
+            disabled={refreshingNames}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshingNames ? 'animate-spin' : ''}`} />
+            Refresh Names
+          </Button>
+        </div>
 
-        return (
-          <Card key={conversation.id}>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="p-2 bg-muted rounded-lg shrink-0">
-                    {getChannelIcon(conversation.channelType)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-foreground truncate">
-                        {getDisplayName(conversation)}
-                      </p>
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        {getTypeLabel(conversation.channelType)}
-                      </Badge>
-                      {hasContext && (
-                        <Badge variant="secondary" className="text-xs shrink-0">
-                          <FileText className="h-3 w-3 mr-1" />
-                          Has Context
-                        </Badge>
-                      )}
-                      {conversation.autoRespond && (
-                        <Badge className="text-xs bg-amber-500 hover:bg-amber-600 shrink-0">
-                          <Zap className="h-3 w-3 mr-1" />
-                          YOLO
-                        </Badge>
-                      )}
+        {conversations.map((conversation) => {
+          const hasContext = contextMap.has(conversation.channelId);
+
+          return (
+            <Card key={conversation.id}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="p-2 bg-muted rounded-lg shrink-0">
+                      {getChannelIcon(conversation.channelType)}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {conversation.watchedAt
-                        ? `Added ${formatDistanceToNow(conversation.watchedAt, { addSuffix: true })}`
-                        : 'Recently added'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  {/* YOLO Mode Toggle */}
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor={`yolo-${conversation.id}`} className="text-xs text-muted-foreground cursor-pointer">
-                      {conversation.autoRespond ? <Zap className="h-4 w-4 text-amber-500" /> : <ZapOff className="h-4 w-4" />}
-                    </Label>
-                    <Switch
-                      id={`yolo-${conversation.id}`}
-                      checked={conversation.autoRespond || false}
-                      onCheckedChange={() => handleToggleAutoRespond(conversation)}
-                      disabled={isPending && togglingId === conversation.id}
-                    />
-                  </div>
-
-                  {/* Add/Edit Context Button */}
-                  <Dialog open={editingContext === conversation.channelId} onOpenChange={(open) => !open && setEditingContext(null)}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenContextDialog(conversation)}
-                      >
-                        {hasContext ? (
-                          <>
-                            <Pencil className="h-4 w-4 mr-1" />
-                            Edit Context
-                          </>
-                        ) : (
-                          <>
-                            <FileText className="h-4 w-4 mr-1" />
-                            Add Context
-                          </>
-                        )}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>
-                          Context for {getDisplayName(conversation)}
-                        </DialogTitle>
-                        <DialogDescription>
-                          Add context to help AI generate better suggestions for this conversation.
-                          This could include the purpose of the channel, typical discussions, or how you prefer to communicate here.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="py-4">
-                        <Textarea
-                          value={contextText}
-                          onChange={(e) => setContextText(e.target.value)}
-                          placeholder="e.g., This is the engineering team channel. We discuss technical issues and prefer detailed, specific responses. Keep it professional but friendly."
-                          rows={5}
-                          maxLength={2000}
-                        />
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {contextText.length}/2000 characters
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-foreground truncate">
+                          {getDisplayName(conversation)}
                         </p>
+                        <Badge variant="outline" className="text-xs shrink-0">
+                          {getTypeLabel(conversation.channelType)}
+                        </Badge>
+                        {hasContext && (
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            <FileText className="h-3 w-3 mr-1" />
+                            Has Context
+                          </Badge>
+                        )}
+                        {conversation.autoRespond && (
+                          <Badge className="text-xs bg-amber-500 hover:bg-amber-600 shrink-0">
+                            <Zap className="h-3 w-3 mr-1" />
+                            YOLO
+                          </Badge>
+                        )}
                       </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditingContext(null)}>
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={() => handleSaveContext(conversation)}
-                          disabled={savingContext || !contextText.trim()}
-                        >
-                          {savingContext ? 'Saving...' : 'Save Context'}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {conversation.watchedAt
+                          ? `Added ${formatDistanceToNow(conversation.watchedAt, { addSuffix: true })}`
+                          : 'Recently added'}
+                      </p>
+                    </div>
+                  </div>
 
-                  {/* Remove Button */}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={isPending && removingId === conversation.id}
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Remove channel?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          You will no longer receive AI suggestions for messages in this channel.
-                          You can add it back anytime using /watch in Slack.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleRemove(conversation.id)}
-                          className="bg-destructive hover:bg-destructive/90"
+                  <div className="flex items-center gap-3 shrink-0">
+                    {/* YOLO Mode Toggle with Label and Tooltip */}
+                    <div className="flex items-center gap-2 border rounded-lg px-3 py-1.5 bg-muted/50">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2 cursor-help">
+                            {conversation.autoRespond ? (
+                              <Zap className="h-4 w-4 text-amber-500" />
+                            ) : (
+                              <ZapOff className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <span className="text-xs font-medium">
+                              YOLO
+                            </span>
+                            <Info className="h-3 w-3 text-muted-foreground" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[250px]">
+                          <p className="font-semibold">YOLO Mode (Auto-Respond)</p>
+                          <p className="text-xs mt-1">
+                            When enabled, AI will automatically send responses on your behalf
+                            instead of showing suggestions. You can undo auto-sent messages.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Switch
+                        id={`yolo-${conversation.id}`}
+                        checked={conversation.autoRespond || false}
+                        onCheckedChange={() => handleToggleAutoRespond(conversation)}
+                        disabled={isPending && togglingId === conversation.id}
+                      />
+                    </div>
+
+                    {/* Add/Edit Context Button */}
+                    <Dialog open={editingContext === conversation.channelId} onOpenChange={(open) => !open && setEditingContext(null)}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenContextDialog(conversation)}
                         >
-                          Remove
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          {hasContext ? (
+                            <>
+                              <Pencil className="h-4 w-4 mr-1" />
+                              Edit Context
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="h-4 w-4 mr-1" />
+                              Add Context
+                            </>
+                          )}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            Context for {getDisplayName(conversation)}
+                          </DialogTitle>
+                          <DialogDescription>
+                            Add context to help AI generate better suggestions for this conversation.
+                            This could include the purpose of the channel, typical discussions, or how you prefer to communicate here.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <Textarea
+                            value={contextText}
+                            onChange={(e) => setContextText(e.target.value)}
+                            placeholder="e.g., This is the engineering team channel. We discuss technical issues and prefer detailed, specific responses. Keep it professional but friendly."
+                            rows={5}
+                            maxLength={2000}
+                          />
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {contextText.length}/2000 characters
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setEditingContext(null)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => handleSaveContext(conversation)}
+                            disabled={savingContext || !contextText.trim()}
+                          >
+                            {savingContext ? 'Saving...' : 'Save Context'}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Remove Button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={isPending && removingId === conversation.id}
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove channel?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You will no longer receive AI suggestions for messages in this channel.
+                            You can add it back anytime using /watch in Slack.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleRemove(conversation.id)}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Remove
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 }
