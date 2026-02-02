@@ -304,10 +304,15 @@ Plans:
   5. System correctly identifies if user has individual sub OR org-provided access
   6. Pricing page clearly shows individual vs team/org pricing options
   7. Individual users see simplified dashboard (no admin features)
-**Plans**: TBD (run /gsd:plan-phase 11 to break down)
+**Plans**: 6 plans in 4 waves
 
 Plans:
-- [ ] TBD
+- [ ] 11-01-PLAN.md — User subscriptions schema and session email extension
+- [ ] 11-02-PLAN.md — Individual checkout and webhook handling
+- [ ] 11-03-PLAN.md — Dual-path access checking and user portal
+- [ ] 11-04-PLAN.md — Pricing page billing mode toggle
+- [ ] 11-05-PLAN.md — Individual billing settings page
+- [ ] 11-06-PLAN.md — Human verification checkpoint
 
 ### Phase 12: Client Support Features
 **Goal**: Features specifically for teams providing client support via Slack
@@ -346,7 +351,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -361,7 +366,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 8. Production Security & Compliance | 7/7 | Complete | 2026-02-01 |
 | 9. Portal/Admin UX Polish | 5/5 | Complete | 2026-02-02 |
 | 10. Calendar Integration | 0/? | Deferred | - |
-| 11. Individual Billing | 0/? | Not started | - |
+| 11. Individual Billing | 0/6 | Planned | - |
 | 12. Client Support Features | 0/? | Not started | - |
 | 13. Team/Org Dashboard | 0/? | Not started | - |
 
