@@ -1,6 +1,11 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+type BillingMode = 'individual' | 'team';
 
 interface Plan {
   name: string;
@@ -9,14 +14,14 @@ interface Plan {
   features: string[];
   popular?: boolean;
   cta: string;
-  ctaHref: string;
+  planId: string;
 }
 
-const PLANS: Plan[] = [
+const INDIVIDUAL_PLANS: Plan[] = [
   {
     name: 'Starter',
     price: 10,
-    description: 'Perfect for individuals and small teams',
+    description: 'Perfect for individual professionals',
     features: [
       'AI response suggestions',
       'Watch up to 5 channels',
@@ -25,12 +30,12 @@ const PLANS: Plan[] = [
       'Email support',
     ],
     cta: 'Start Free Trial',
-    ctaHref: '/login?plan=starter',
+    planId: 'starter',
   },
   {
     name: 'Pro',
     price: 15,
-    description: 'For teams who need the full power',
+    description: 'For power users who need the full suite',
     features: [
       'Everything in Starter',
       'Unlimited channels',
@@ -41,7 +46,42 @@ const PLANS: Plan[] = [
     ],
     popular: true,
     cta: 'Start Free Trial',
-    ctaHref: '/login?plan=pro',
+    planId: 'pro',
+  },
+];
+
+const TEAM_PLANS: Plan[] = [
+  {
+    name: 'Team Starter',
+    price: 10,
+    description: 'Perfect for small teams getting started',
+    features: [
+      'AI response suggestions',
+      'Watch up to 5 channels per user',
+      'Copy to clipboard',
+      'Basic refinement',
+      'Email support',
+      'Centralized billing',
+    ],
+    cta: 'Start Free Trial',
+    planId: 'team-starter',
+  },
+  {
+    name: 'Team Pro',
+    price: 15,
+    description: 'For teams who need the full power',
+    features: [
+      'Everything in Team Starter',
+      'Unlimited channels per user',
+      'Style learning',
+      'Weekly reports',
+      'Google Sheets integration',
+      'Priority support',
+      'Admin dashboard',
+    ],
+    popular: true,
+    cta: 'Start Free Trial',
+    planId: 'team-pro',
   },
 ];
 
@@ -63,7 +103,45 @@ function CheckIcon() {
   );
 }
 
-function PricingCard({ plan }: { plan: Plan }) {
+function BillingModeToggle({
+  mode,
+  onChange,
+}: {
+  mode: BillingMode;
+  onChange: (mode: BillingMode) => void;
+}) {
+  return (
+    <div className="flex justify-center mb-12">
+      <div className="inline-flex items-center bg-gray-100 rounded-full p-1">
+        <button
+          onClick={() => onChange('individual')}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+            mode === 'individual'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          For Myself
+        </button>
+        <button
+          onClick={() => onChange('team')}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+            mode === 'team'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          For My Team
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PricingCard({ plan, mode }: { plan: Plan; mode: BillingMode }) {
+  const priceLabel = mode === 'individual' ? '/month' : '/seat/month';
+  const ctaHref = `/login?plan=${plan.planId}&mode=${mode}`;
+
   return (
     <Card
       className={`relative flex flex-col bg-white ${
@@ -89,7 +167,7 @@ function PricingCard({ plan }: { plan: Plan }) {
         <div className="text-center mb-6">
           <div className="flex items-baseline justify-center">
             <span className="text-4xl font-bold">${plan.price}</span>
-            <span className="text-gray-500 ml-1">/seat/month</span>
+            <span className="text-gray-500 ml-1">{priceLabel}</span>
           </div>
         </div>
 
@@ -102,7 +180,7 @@ function PricingCard({ plan }: { plan: Plan }) {
           ))}
         </ul>
 
-        <Link href={plan.ctaHref} className="block">
+        <Link href={ctaHref} className="block">
           <Button
             className={`w-full ${
               plan.popular
@@ -120,11 +198,17 @@ function PricingCard({ plan }: { plan: Plan }) {
 }
 
 export function PricingTable() {
+  const [mode, setMode] = useState<BillingMode>('individual');
+  const plans = mode === 'individual' ? INDIVIDUAL_PLANS : TEAM_PLANS;
+
   return (
-    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-      {PLANS.map((plan) => (
-        <PricingCard key={plan.name} plan={plan} />
-      ))}
+    <div>
+      <BillingModeToggle mode={mode} onChange={setMode} />
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        {plans.map((plan) => (
+          <PricingCard key={plan.name} plan={plan} mode={mode} />
+        ))}
+      </div>
     </div>
   );
 }
