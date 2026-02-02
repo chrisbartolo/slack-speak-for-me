@@ -1,5 +1,6 @@
 import type { App } from '@slack/bolt';
 import { trackDismissal } from '../../services/feedback-tracker.js';
+import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -16,8 +17,11 @@ export function registerDismissSuggestionAction(app: App): void {
     const suggestionId = actionBody.actions[0]?.value || '';
 
     const userId = 'user' in body ? body.user.id : '';
-    const workspaceId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
+    const teamId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
     const channelId = 'channel' in body && body.channel ? (body.channel as { id: string }).id : undefined;
+
+    // Convert Slack team ID to internal workspace UUID
+    const workspaceId = teamId ? await getWorkspaceId(teamId) : null;
 
     logger.info({
       suggestionId,
@@ -25,13 +29,15 @@ export function registerDismissSuggestionAction(app: App): void {
     }, 'Suggestion dismissed');
 
     // Track dismissal feedback
-    await trackDismissal(
-      workspaceId,
-      userId,
-      suggestionId,
-      undefined, // Don't need to store text for dismissals
-      channelId
-    );
+    if (workspaceId) {
+      await trackDismissal(
+        workspaceId,
+        userId,
+        suggestionId,
+        undefined, // Don't need to store text for dismissals
+        channelId
+      );
+    }
 
     // Replace with minimal message that confirms dismissal
     await respond({

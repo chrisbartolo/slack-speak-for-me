@@ -1,5 +1,6 @@
 import type { App } from '@slack/bolt';
 import { trackAcceptance } from '../../services/feedback-tracker.js';
+import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -25,8 +26,11 @@ export function registerCopySuggestionAction(app: App): void {
       const { suggestionId, suggestion } = JSON.parse(value);
 
       const userId = 'user' in body ? body.user.id : '';
-      const workspaceId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
+      const teamId = 'team' in body && body.team ? (body.team as { id: string }).id : '';
       const channelId = 'channel' in body && body.channel ? (body.channel as { id: string }).id : undefined;
+
+      // Convert Slack team ID to internal workspace UUID
+      const workspaceId = teamId ? await getWorkspaceId(teamId) : null;
 
       logger.info({
         suggestionId,
@@ -34,13 +38,15 @@ export function registerCopySuggestionAction(app: App): void {
       }, 'Copy button clicked');
 
       // Track acceptance (user copied without refinement)
-      await trackAcceptance(
-        workspaceId,
-        userId,
-        suggestionId,
-        suggestion,
-        channelId
-      );
+      if (workspaceId) {
+        await trackAcceptance(
+          workspaceId,
+          userId,
+          suggestionId,
+          suggestion,
+          channelId
+        );
+      }
 
       // Respond with instructions and prominent text for copying
       await respond({

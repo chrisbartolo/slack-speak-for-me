@@ -46,10 +46,28 @@ export function registerWatchCommands(app: App): void {
       try {
         const channelInfo = await client.conversations.info({ channel: channel_id });
         if (channelInfo.channel) {
-          channelName = channelInfo.channel.name;
-          channelType = channelInfo.channel.is_im ? 'im' :
-                        channelInfo.channel.is_mpim ? 'mpim' :
-                        channelInfo.channel.is_private ? 'group' : 'channel';
+          // Cast to access DM-specific properties
+          const channel = channelInfo.channel as { is_im?: boolean; is_mpim?: boolean; is_private?: boolean; name?: string; user?: string };
+
+          channelType = channel.is_im ? 'im' :
+                        channel.is_mpim ? 'mpim' :
+                        channel.is_private ? 'group' : 'channel';
+
+          // For DMs, fetch the other user's display name
+          if (channelType === 'im' && channel.user) {
+            try {
+              const userInfo = await client.users.info({ user: channel.user });
+              channelName = userInfo.user?.profile?.display_name ||
+                           userInfo.user?.profile?.real_name ||
+                           userInfo.user?.name ||
+                           channel.user;
+            } catch (userError) {
+              logger.warn({ error: userError, userId: channel.user }, 'Failed to get user info for DM');
+              channelName = channel.user; // Fallback to user ID
+            }
+          } else {
+            channelName = channel.name;
+          }
         }
       } catch (e) {
         // Proceed without name if API fails (e.g., bot not in channel)
