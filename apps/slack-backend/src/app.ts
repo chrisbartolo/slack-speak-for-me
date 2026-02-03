@@ -11,6 +11,8 @@ import {
   registerAppMentionHandler,
   registerMessageReplyHandler,
   registerWorkflowSubmissionHandler,
+  registerAppLifecycleHandlers,
+  registerAppHomeHandler,
   registerHelpMeRespondShortcut,
   registerCopySuggestionAction,
   registerDismissSuggestionAction,
@@ -87,6 +89,8 @@ app.error(errorHandler);
 registerAppMentionHandler(app);
 registerMessageReplyHandler(app);
 registerWorkflowSubmissionHandler(app);
+registerAppLifecycleHandlers(app);
+registerAppHomeHandler(app);
 
 // Register slash commands
 registerWatchCommands(app);

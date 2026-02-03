@@ -63,7 +63,7 @@ describe('Generate Report Command', () => {
     team_id: 'T123',
     user_id: 'U456',
     channel_id: 'C789',
-    command: '/generate-report',
+    command: '/speakforme-report',
     text: '',
     response_url: 'https://hooks.slack.com/commands/T123/456/abc',
     trigger_id: 'trigger_123',
@@ -86,7 +86,7 @@ describe('Generate Report Command', () => {
     // Capture handler when registered
     mockApp = {
       command: vi.fn((commandName: string, handler: unknown) => {
-        if (commandName === '/generate-report') {
+        if (commandName === '/speakforme-report') {
           commandHandler = handler as typeof commandHandler;
         }
       }),
@@ -107,7 +107,7 @@ describe('Generate Report Command', () => {
   });
 
   it('should register handler for /generate-report command', () => {
-    expect(mockApp.command).toHaveBeenCalledWith('/generate-report', expect.any(Function));
+    expect(mockApp.command).toHaveBeenCalledWith('/speakforme-report', expect.any(Function));
   });
 
   describe('Command acknowledgment', () => {
@@ -616,4 +616,24 @@ describe('Generate Report Command', () => {
       );
     });
   });
+
+  describe('Help text', () => {
+    it('should respond with help text when text is help', async () => {
+      const ack = vi.fn().mockResolvedValue(undefined);
+      const respond = vi.fn().mockResolvedValue(undefined);
+      const command = createMockCommand({ text: 'help' });
+
+      await commandHandler({ command, ack, respond });
+
+      expect(ack).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('/speakforme-report'),
+          response_type: 'ephemeral',
+        })
+      );
+      expect(mockQueueReportGeneration).not.toHaveBeenCalled();
+    });
+  });
+
 });

@@ -12,6 +12,16 @@ async function handleGenerateReport({ ack, command, respond }: SlackCommandMiddl
   // Acknowledge immediately (3-second requirement)
   await ack();
 
+  // Show help text if requested
+  const helpText = command.text?.trim().toLowerCase();
+  if (helpText === 'help') {
+    await respond({
+      text: '*Usage:* `/speakforme-report`\n\nGenerate your weekly standup report based on workflow submissions. Requires Google Sheets integration (configure in the web portal).\n\nThe report will be delivered to your DMs when ready.',
+      response_type: 'ephemeral',
+    });
+    return;
+  }
+
   const workspaceId = command.team_id;
   const userId = command.user_id;
 
@@ -76,5 +86,5 @@ async function handleGenerateReport({ ack, command, respond }: SlackCommandMiddl
  * Register /generate-report command with the Bolt app
  */
 export function registerGenerateReportCommand(app: App) {
-  app.command('/generate-report', handleGenerateReport);
+  app.command('/speakforme-report', handleGenerateReport);
 }

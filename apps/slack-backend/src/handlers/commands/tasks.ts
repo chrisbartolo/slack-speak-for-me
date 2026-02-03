@@ -7,10 +7,20 @@ import { formatDistanceToNow, format } from 'date-fns';
 const WEB_PORTAL_URL = process.env.WEB_PORTAL_URL || 'http://localhost:3001';
 
 export function registerTasksCommand(app: App): void {
-  app.command('/tasks', async ({ command, ack, respond }) => {
+  app.command('/speakforme-tasks', async ({ command, ack, respond }) => {
     try {
       // Acknowledge immediately (3-second requirement)
       await ack();
+
+      // Show help text if requested
+      const helpText = command.text?.trim().toLowerCase();
+      if (helpText === 'help') {
+        await respond({
+          text: '*Usage:* `/speakforme-tasks`\n\nView your pending tasks detected from messages in watched conversations. Tasks include action requests, commitments, and deadlines.\n\nYou can complete, snooze, or dismiss tasks from the list.',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
 
       const { team_id, user_id } = command;
 
@@ -249,7 +259,7 @@ export function registerTasksCommand(app: App): void {
         'Tasks command executed'
       );
     } catch (error) {
-      logger.error({ error, command: '/tasks' }, 'Failed to process /tasks command');
+      logger.error({ error, command: '/speakforme-tasks' }, 'Failed to process /speakforme-tasks command');
 
       try {
         await respond({

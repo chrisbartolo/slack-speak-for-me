@@ -4,6 +4,9 @@ display_information:
   background_color: "#4A154B"
 
 features:
+  app_home:
+    home_tab_enabled: true
+    messages_tab_enabled: false
   bot_user:
     display_name: Speak for Me
     always_online: true
@@ -13,13 +16,25 @@ features:
       callback_id: help_me_respond
       description: Get an AI-suggested response to this message
   slash_commands:
-    - command: /watch
+    - command: /speakforme-watch
       url: https://YOUR_BACKEND_URL/slack/events
       description: Enable AI suggestions for this conversation
+      usage_hint: "[help]"
       should_escape: false
-    - command: /unwatch
+    - command: /speakforme-unwatch
       url: https://YOUR_BACKEND_URL/slack/events
       description: Disable AI suggestions for this conversation
+      usage_hint: "[help]"
+      should_escape: false
+    - command: /speakforme-report
+      url: https://YOUR_BACKEND_URL/slack/events
+      description: Generate your weekly standup report
+      usage_hint: "[help]"
+      should_escape: false
+    - command: /speakforme-tasks
+      url: https://YOUR_BACKEND_URL/slack/events
+      description: View your pending tasks detected from messages
+      usage_hint: "[help]"
       should_escape: false
 
 oauth_config:
@@ -50,13 +65,16 @@ settings:
   event_subscriptions:
     request_url: https://YOUR_BACKEND_URL/slack/events
     bot_events:
+      - app_home_opened
       - app_mention
+      - app_uninstalled
       - assistant_thread_started
       - assistant_thread_context_changed
       - message.channels
       - message.groups
       - message.im
       - message.mpim
+      - tokens_revoked
   interactivity:
     is_enabled: true
     request_url: https://YOUR_BACKEND_URL/slack/events

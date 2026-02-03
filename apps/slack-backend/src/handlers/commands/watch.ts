@@ -11,11 +11,21 @@ import { logger } from '../../utils/logger.js';
  * Both commands respond with ephemeral messages confirming the action
  */
 export function registerWatchCommands(app: App): void {
-  // /watch command - enable AI suggestions for this conversation
-  app.command('/watch', async ({ command, ack, respond, client }) => {
+  // /speakforme-watch command - enable AI suggestions for this conversation
+  app.command('/speakforme-watch', async ({ command, ack, respond, client }) => {
     try {
       // Acknowledge command immediately (3-second requirement)
       await ack();
+
+      // Show help text if requested
+      const helpText = command.text?.trim().toLowerCase();
+      if (helpText === 'help') {
+        await respond({
+          text: '*Usage:* `/speakforme-watch`\n\nEnable AI-powered response suggestions for the current conversation. When someone messages in this channel, you\'ll receive private suggestions to help you respond.\n\n*Related:*\n• `/speakforme-unwatch` — Stop receiving suggestions\n• `/speakforme-tasks` — View detected tasks\n\nYou control which conversations get suggestions by watching/unwatching them.',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
 
       const { team_id, user_id, channel_id } = command;
 
@@ -94,7 +104,7 @@ export function registerWatchCommands(app: App): void {
       }, 'User enabled watch for conversation');
 
     } catch (error) {
-      logger.error({ error, command: '/watch' }, 'Failed to process /watch command');
+      logger.error({ error, command: '/speakforme-watch' }, 'Failed to process /speakforme-watch command');
 
       // Try to respond with error message
       try {
@@ -108,11 +118,21 @@ export function registerWatchCommands(app: App): void {
     }
   });
 
-  // /unwatch command - disable AI suggestions for this conversation
-  app.command('/unwatch', async ({ command, ack, respond }) => {
+  // /speakforme-unwatch command - disable AI suggestions for this conversation
+  app.command('/speakforme-unwatch', async ({ command, ack, respond }) => {
     try {
       // Acknowledge command immediately (3-second requirement)
       await ack();
+
+      // Show help text if requested
+      const helpText = command.text?.trim().toLowerCase();
+      if (helpText === 'help') {
+        await respond({
+          text: '*Usage:* `/speakforme-unwatch`\n\nStop receiving AI-powered response suggestions for the current conversation.\n\n*Related:*\n• `/speakforme-watch` — Start receiving suggestions',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
 
       const { team_id, user_id, channel_id } = command;
 
@@ -153,7 +173,7 @@ export function registerWatchCommands(app: App): void {
       }, 'User disabled watch for conversation');
 
     } catch (error) {
-      logger.error({ error, command: '/unwatch' }, 'Failed to process /unwatch command');
+      logger.error({ error, command: '/speakforme-unwatch' }, 'Failed to process /speakforme-unwatch command');
 
       // Try to respond with error message
       try {

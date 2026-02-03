@@ -34,7 +34,7 @@ describe('/tasks Command', () => {
     team_id: 'T123',
     user_id: 'U456',
     channel_id: 'C789',
-    command: '/tasks',
+    command: '/speakforme-tasks',
     text: '',
     response_url: 'https://hooks.slack.com/commands/T123/456/abc',
     trigger_id: 'trigger_123',
@@ -46,7 +46,7 @@ describe('/tasks Command', () => {
 
     mockApp = {
       command: vi.fn((commandName: string, h: unknown) => {
-        if (commandName === '/tasks') {
+        if (commandName === '/speakforme-tasks') {
           handler = h as typeof handler;
         }
       }),
@@ -56,7 +56,7 @@ describe('/tasks Command', () => {
   });
 
   it('should register handler for /tasks command', () => {
-    expect(mockApp.command).toHaveBeenCalledWith('/tasks', expect.any(Function));
+    expect(mockApp.command).toHaveBeenCalledWith('/speakforme-tasks', expect.any(Function));
   });
 
   it('should acknowledge the command immediately', async () => {
@@ -190,4 +190,27 @@ describe('/tasks Command', () => {
       })
     );
   });
+
+  describe('Help text', () => {
+    it('should respond with help text when text is help', async () => {
+      const ack = vi.fn().mockResolvedValue(undefined);
+      const respond = vi.fn().mockResolvedValue(undefined);
+
+      await handler({
+        command: createMockCommand({ text: 'help' }),
+        ack,
+        respond,
+      });
+
+      expect(ack).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('/speakforme-tasks'),
+          response_type: 'ephemeral',
+        })
+      );
+      expect(getPendingActionables).not.toHaveBeenCalled();
+    });
+  });
+
 });

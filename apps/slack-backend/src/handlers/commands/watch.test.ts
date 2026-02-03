@@ -42,7 +42,7 @@ describe('Watch Commands', () => {
     team_id: 'T123',
     user_id: 'U456',
     channel_id: 'C789',
-    command: '/watch',
+    command: '/speakforme-watch',
     text: '',
     response_url: 'https://hooks.slack.com/commands/T123/456/abc',
     trigger_id: 'trigger_123',
@@ -73,10 +73,10 @@ describe('Watch Commands', () => {
     // Capture handlers when registered
     mockApp = {
       command: vi.fn((commandName: string, handler: unknown) => {
-        if (commandName === '/watch') {
+        if (commandName === '/speakforme-watch') {
           watchHandler = handler as typeof watchHandler;
         }
-        if (commandName === '/unwatch') {
+        if (commandName === '/speakforme-unwatch') {
           unwatchHandler = handler as typeof unwatchHandler;
         }
       }),
@@ -85,9 +85,9 @@ describe('Watch Commands', () => {
     registerWatchCommands(mockApp as App);
   });
 
-  describe('/watch', () => {
-    it('should register handler for /watch command', () => {
-      expect(mockApp.command).toHaveBeenCalledWith('/watch', expect.any(Function));
+  describe('/speakforme-watch', () => {
+    it('should register handler for /speakforme-watch command', () => {
+      expect(mockApp.command).toHaveBeenCalledWith('/speakforme-watch', expect.any(Function));
     });
 
     it('should call ack() immediately (3-second requirement)', async () => {
@@ -197,7 +197,7 @@ describe('Watch Commands', () => {
       );
       expect(logger.error).toHaveBeenCalledWith(
         expect.objectContaining({ error: testError }),
-        'Failed to process /watch command'
+        'Failed to process /speakforme-watch command'
       );
     });
 
@@ -237,17 +237,51 @@ describe('Watch Commands', () => {
         'Failed to send error response'
       );
     });
+
+    it('should respond with help text when text is "help"', async () => {
+      const ack = vi.fn().mockResolvedValue(undefined);
+      const respond = vi.fn().mockResolvedValue(undefined);
+      const command = createMockCommand({ text: 'help' });
+      const client = createMockClient();
+
+      await watchHandler({ command, ack, respond, client });
+
+      expect(ack).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('/speakforme-watch'),
+          response_type: 'ephemeral',
+        })
+      );
+      expect(watchConversation).not.toHaveBeenCalled();
+    });
+
+    it('should respond with help text case insensitively', async () => {
+      const ack = vi.fn().mockResolvedValue(undefined);
+      const respond = vi.fn().mockResolvedValue(undefined);
+      const command = createMockCommand({ text: 'HELP' });
+      const client = createMockClient();
+
+      await watchHandler({ command, ack, respond, client });
+
+      expect(ack).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('/speakforme-watch'),
+        })
+      );
+    });
   });
 
-  describe('/unwatch', () => {
-    it('should register handler for /unwatch command', () => {
-      expect(mockApp.command).toHaveBeenCalledWith('/unwatch', expect.any(Function));
+  describe('/speakforme-unwatch', () => {
+    it('should register handler for /speakforme-unwatch command', () => {
+      expect(mockApp.command).toHaveBeenCalledWith('/speakforme-unwatch', expect.any(Function));
     });
 
     it('should call ack() immediately (3-second requirement)', async () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
-      const command = createMockCommand({ command: '/unwatch' });
+      const command = createMockCommand({ command: '/speakforme-unwatch' });
       const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
@@ -263,7 +297,7 @@ describe('Watch Commands', () => {
     it('should remove watch when currently watching', async () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
-      const command = createMockCommand({ command: '/unwatch' });
+      const command = createMockCommand({ command: '/speakforme-unwatch' });
       const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
@@ -284,7 +318,7 @@ describe('Watch Commands', () => {
     it('should not remove watch if not watching', async () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
-      const command = createMockCommand({ command: '/unwatch' });
+      const command = createMockCommand({ command: '/speakforme-unwatch' });
       const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(false);
@@ -306,7 +340,7 @@ describe('Watch Commands', () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
       const command = createMockCommand({
-        command: '/unwatch',
+        command: '/speakforme-unwatch',
         team_id: 'TWORKSPACE',
         user_id: 'UUSER',
         channel_id: 'CCHANNEL',
@@ -325,7 +359,7 @@ describe('Watch Commands', () => {
     it('should respond with error message on failure', async () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
-      const command = createMockCommand({ command: '/unwatch' });
+      const command = createMockCommand({ command: '/speakforme-unwatch' });
       const client = createMockClient();
       const testError = new Error('Database error');
 
@@ -342,14 +376,14 @@ describe('Watch Commands', () => {
       );
       expect(logger.error).toHaveBeenCalledWith(
         expect.objectContaining({ error: testError }),
-        'Failed to process /unwatch command'
+        'Failed to process /speakforme-unwatch command'
       );
     });
 
     it('should log success when watch is removed', async () => {
       const ack = vi.fn().mockResolvedValue(undefined);
       const respond = vi.fn().mockResolvedValue(undefined);
-      const command = createMockCommand({ command: '/unwatch' });
+      const command = createMockCommand({ command: '/speakforme-unwatch' });
       const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
@@ -371,7 +405,7 @@ describe('Watch Commands', () => {
       const respond = vi.fn()
         .mockRejectedValueOnce(new Error('Respond failed'))
         .mockResolvedValueOnce(undefined);
-      const command = createMockCommand({ command: '/unwatch' });
+      const command = createMockCommand({ command: '/speakforme-unwatch' });
       const client = createMockClient();
 
       vi.mocked(isWatching).mockResolvedValueOnce(true);
@@ -384,6 +418,24 @@ describe('Watch Commands', () => {
         expect.objectContaining({ error: expect.any(Error) }),
         'Failed to send error response'
       );
+    });
+
+    it('should respond with help text when text is "help"', async () => {
+      const ack = vi.fn().mockResolvedValue(undefined);
+      const respond = vi.fn().mockResolvedValue(undefined);
+      const command = createMockCommand({ text: 'help', command: '/speakforme-unwatch' });
+      const client = createMockClient();
+
+      await unwatchHandler({ command, ack, respond, client });
+
+      expect(ack).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining('/speakforme-unwatch'),
+          response_type: 'ephemeral',
+        })
+      );
+      expect(unwatchConversation).not.toHaveBeenCalled();
     });
   });
 });

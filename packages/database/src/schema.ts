@@ -28,6 +28,7 @@ export const workspaces = pgTable('workspaces', {
   enterpriseId: text('enterprise_id'),
   name: text('name'),
   organizationId: uuid('organization_id').references(() => organizations.id), // Link to organization for billing
+  isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
