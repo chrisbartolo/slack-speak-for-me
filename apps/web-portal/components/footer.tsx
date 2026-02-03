@@ -33,6 +33,9 @@ export function Footer() {
             <Link href="/#faq" className="hover:text-gray-900 transition-colors">
               FAQ
             </Link>
+            <Link href="/docs" className="hover:text-gray-900 transition-colors">
+              Docs
+            </Link>
             <a href="mailto:support@speakforme.app" className="hover:text-gray-900 transition-colors">
               Support
             </a>

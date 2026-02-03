@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SiteNav } from '@/components/site-nav';
+import { Footer } from '@/components/footer';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -8,7 +10,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FFFDF7]">
+      <SiteNav />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
         <p className="text-sm text-gray-500 mb-12">Last updated: February 1, 2026</p>
@@ -224,13 +227,8 @@ export default function PrivacyPage() {
           </section>
         </div>
 
-        {/* Back to Home */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 text-sm">
-            &larr; Back to Home
-          </Link>
-        </div>
       </div>
+      <Footer />
     </div>
   );
 }
