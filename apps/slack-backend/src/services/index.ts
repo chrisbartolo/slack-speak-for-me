@@ -118,3 +118,13 @@ export {
   deleteBrandVoiceTemplate,
   getBrandVoiceContext,
 } from './brand-voice.js';
+
+// Knowledge base - document indexing and semantic search
+export {
+  indexDocument,
+  searchKnowledgeBase,
+  getDocuments,
+  getDocumentById,
+  updateDocument,
+  deleteDocument,
+} from './knowledge-base.js';
