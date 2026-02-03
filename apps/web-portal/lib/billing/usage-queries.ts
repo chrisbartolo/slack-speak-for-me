@@ -1,6 +1,6 @@
 import 'server-only';
 import { db, schema } from '@/lib/db';
-import { eq, and, desc, lte, sql } from 'drizzle-orm';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 
 const { usageRecords, usageEvents, users, workspaces } = schema;
 
@@ -115,9 +115,7 @@ export async function getOrgUsageSummary(organizationId: string): Promise<{
       email: users.email,
     })
     .from(users)
-    .where(
-      sql`${users.workspaceId} = ANY(${workspaceIds})`
-    );
+    .where(inArray(users.workspaceId, workspaceIds));
 
   const emailList = orgUsers
     .map(u => u.email)
@@ -142,7 +140,7 @@ export async function getOrgUsageSummary(organizationId: string): Promise<{
     .from(usageRecords)
     .where(
       and(
-        sql`${usageRecords.email} = ANY(${emailList})`,
+        inArray(usageRecords.email, emailList),
         eq(usageRecords.billingPeriodStart, billingPeriodStart)
       )
     )
