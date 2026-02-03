@@ -1,0 +1,130 @@
+---
+title: Plan Management
+description: Assign plans, grant bonus suggestions, and manage user usage as a super admin
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Plan Management gives super admins direct control over user plans and usage limits. Use it to assign plans for goodwill gestures, testing purposes, or when handling payments outside the standard billing flow.
+
+<Callout type="warn">
+  Plan Management is a **super admin** feature. Only users with the super admin role can access these controls. Regular admins and team members will not see this section.
+</Callout>
+
+## Accessing Plan Management
+
+<Steps>
+  <Step>
+    ### Open the dashboard
+
+    Sign in to the [web portal](/dashboard) with your super admin account.
+  </Step>
+  <Step>
+    ### Navigate to System settings
+
+    In the sidebar, expand the **System** section and click **Plans & Usage**.
+  </Step>
+  <Step>
+    ### Search for a user
+
+    Use the search bar to find the user you want to manage by name or email address.
+  </Step>
+</Steps>
+
+## Assigning plans to users
+
+Super admins can manually assign any plan tier to a user, bypassing the standard subscription flow. This is useful for:
+
+- **Goodwill gestures** -- Upgrading a user who experienced an issue or provided valuable feedback
+- **Testing** -- Giving a team member access to a higher tier for evaluation purposes
+- **External payments** -- Assigning a plan when payment was handled outside Stripe (such as invoicing or partnerships)
+
+### Available plan tiers
+
+| Plan | Suggestions per month | Notes |
+|------|----------------------|-------|
+| **Free** | 10 | Default tier for all new accounts |
+| **Starter** | 100 | Includes full style preferences and limited person context |
+| **Pro** | Unlimited | All features including weekly reports and exports |
+| **Team** | 100 per seat | Organization-level plan with admin dashboard |
+| **Business** | Unlimited per seat | Full organization features with analytics |
+
+<Steps>
+  <Step>
+    ### Select the user
+
+    Find the user in the Plans & Usage list and click their row to open the management panel.
+  </Step>
+  <Step>
+    ### Choose a plan tier
+
+    Select the desired plan from the dropdown. The change takes effect immediately.
+  </Step>
+  <Step>
+    ### Confirm the assignment
+
+    Review the selection and confirm. The user will see their updated plan the next time they access Speak for Me.
+  </Step>
+</Steps>
+
+## The override indicator
+
+When a plan is assigned manually by a super admin rather than through the standard subscription flow, a **shield icon** appears next to the user's plan in the dashboard. This override indicator helps you distinguish between:
+
+- **Standard plans** -- Subscribed and managed through Stripe billing
+- **Admin-assigned plans** -- Manually set by a super admin, not tied to a Stripe subscription
+
+<Callout type="info">
+  Admin-assigned plans are not affected by billing changes. If a user has an admin-assigned Pro plan, downgrading or cancelling their Stripe subscription will not change their access. To revert them to standard billing, remove the admin override.
+</Callout>
+
+## Granting bonus suggestions
+
+In addition to assigning plans, you can grant bonus suggestions to a user. Bonus suggestions are added on top of the user's current plan allowance for the active billing period.
+
+For example, if a user on the Starter plan has used 80 of their 100 monthly suggestions and you grant 50 bonus suggestions, they will have 70 remaining (20 from their plan + 50 bonus).
+
+<Steps>
+  <Step>
+    ### Open the user's management panel
+
+    Find the user in Plans & Usage and click to open their details.
+  </Step>
+  <Step>
+    ### Enter the bonus amount
+
+    In the **Bonus Suggestions** field, enter the number of additional suggestions to grant.
+  </Step>
+  <Step>
+    ### Apply the bonus
+
+    Click **Grant Bonus** to apply. The bonus is added immediately and the user can start using the extra suggestions right away.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Bonus suggestions only apply to the current billing period. They do not carry over to the next month. If you need to permanently increase a user's allowance, consider assigning them a higher plan tier instead.
+</Callout>
+
+## Resetting usage counters
+
+Super admins can reset a user's suggestion usage counter back to zero. This effectively gives the user a fresh start for their current billing period without changing their plan.
+
+Common scenarios for resetting usage:
+
+- A bug caused suggestions to be counted incorrectly
+- A user ran extensive testing that consumed their allowance
+- A goodwill gesture after a service disruption
+
+To reset usage, open the user's management panel and click **Reset Usage**. The counter resets immediately and the user regains their full monthly allowance.
+
+<Callout type="warn">
+  Usage resets are logged in the [audit trail](/docs/admin/audit-trail). All plan management actions are tracked for accountability.
+</Callout>
+
+## Next Steps
+
+- [Billing & Subscriptions](/docs/admin/billing) -- Understand the standard billing flow and plan features
+- [Team Management](/docs/admin/team-management) -- Manage team members and roles
+- [Audit Trail](/docs/admin/audit-trail) -- Review admin actions and changes

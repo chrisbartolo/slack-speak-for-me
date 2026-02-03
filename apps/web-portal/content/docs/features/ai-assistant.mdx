@@ -1,0 +1,104 @@
+---
+title: AI Assistant Panel
+description: Interact directly with Speak for Me through Slack's AI assistant side panel
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+The AI Assistant panel gives you a dedicated space inside Slack to interact with Speak for Me directly. Instead of waiting for automatic suggestions, you can open the panel at any time to ask for help crafting a response, get context-aware prompts, and refine suggestions in real time.
+
+## What is the AI Assistant panel?
+
+Slack provides a side panel for AI-powered apps. Speak for Me uses this panel to offer a conversational interface where you can request suggestions on demand, refine them interactively, and send them directly into the conversation -- all without leaving Slack.
+
+<Callout type="info">
+  The AI Assistant panel is separate from the automatic [ephemeral message suggestions](/docs/features/suggestions). Ephemeral messages appear automatically when watched conversations receive new messages. The assistant panel is for when you want to initiate the interaction yourself.
+</Callout>
+
+## Accessing the AI Assistant
+
+<Steps>
+  <Step>
+    ### Open the Speak for Me app in Slack
+
+    Find **Speak for Me** in your Slack sidebar under Apps, or use the search bar to locate it.
+  </Step>
+  <Step>
+    ### Go to the Messages tab
+
+    Click the **Messages** tab in the app view to open the AI Assistant panel. This is where you can start a conversation with the assistant.
+  </Step>
+  <Step>
+    ### Start a conversation
+
+    Type a message or select one of the suggested prompts to begin. The assistant will respond with a crafted suggestion based on your context.
+  </Step>
+</Steps>
+
+## Streaming responses
+
+Suggestions in the AI Assistant panel appear in real time as they are generated. You can see the response being composed word by word, giving you immediate feedback rather than waiting for the entire suggestion to finish processing.
+
+This streaming experience makes the interaction feel more natural and lets you assess the suggestion as it forms.
+
+## Context-aware suggested prompts
+
+When you open the AI Assistant panel, Speak for Me analyzes the channel or conversation you are currently viewing and offers suggested prompts tailored to that context. For example:
+
+- In a project channel, you might see prompts like "Draft a status update" or "Respond to the latest question"
+- In a DM with a colleague, prompts might include "Reply professionally" or "Acknowledge and follow up"
+- In a client channel, prompts can incorporate your [client context](/docs/features/client-context) and brand voice
+
+These prompts adapt automatically as you navigate between channels, so the assistant is always ready with relevant options.
+
+## Action buttons
+
+Each suggestion in the AI Assistant panel includes action buttons to help you act on it quickly:
+
+| Button | What it does |
+|--------|-------------|
+| **Send as Me** | Sends the suggestion directly into the conversation as your message |
+| **Refine** | Opens a refinement flow where you can provide feedback like "make it shorter" or "add more detail" |
+| **Dismiss** | Removes the suggestion if you do not need it |
+
+<Callout type="warn">
+  **Send as Me** posts the message immediately to the conversation. Make sure you are satisfied with the suggestion before using this button. Use **Refine** first if you want to adjust it.
+</Callout>
+
+## Feedback buttons
+
+Each suggestion also includes thumbs up and thumbs down buttons. Your feedback helps Speak for Me learn your preferences over time:
+
+- **Thumbs up** -- Signals that the suggestion matched your expectations and style
+- **Thumbs down** -- Signals that the suggestion missed the mark, helping the AI improve future responses
+
+Providing feedback is optional but encouraged. The more feedback you give, the better your suggestions become.
+
+## Assistant panel vs. ephemeral messages
+
+Speak for Me offers two ways to receive suggestions. Here is how they compare:
+
+| | AI Assistant Panel | Ephemeral Messages |
+|---|---|---|
+| **Trigger** | You open the panel and ask for help | Automatic when a watched conversation receives a message |
+| **Delivery** | Streaming response in the side panel | Private ephemeral message in the channel |
+| **Interaction** | Conversational -- ask follow-ups, refine inline | Action buttons on the ephemeral message |
+| **Send directly** | Yes, via Send as Me button | No, copy and paste into the message input |
+| **Best for** | On-demand help, proactive drafting | Passive monitoring and quick replies |
+
+Both methods use the same AI engine and respect your [style settings](/docs/features/style-settings), [person context](/docs/features/suggestions#what-the-ai-considers), and [organization guardrails](/docs/admin/guardrails).
+
+## Tips for using the assistant
+
+- **Use suggested prompts** -- They are tailored to your current context and save you from typing a request from scratch
+- **Refine iteratively** -- You can refine a suggestion multiple times until it sounds right
+- **Provide feedback** -- Thumbs up and down help the AI learn your preferences
+- **Combine with watching** -- Use the assistant for on-demand help and [watched conversations](/docs/features/watching) for automatic coverage
+
+## Related
+
+- [AI Suggestions](/docs/features/suggestions) -- How automatic ephemeral message suggestions work
+- [Refining Suggestions](/docs/features/refinement) -- Adjust suggestions with natural language feedback
+- [Style Settings](/docs/features/style-settings) -- Configure how suggestions should sound
+- [Watching Conversations](/docs/features/watching) -- Set up automatic monitoring

@@ -1,0 +1,85 @@
+---
+title: Tasks
+description: AI-detected action items from your Slack conversations
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Speak for Me automatically detects actionable items from messages in your watched conversations and surfaces them as tasks. Whether someone asks you to review a document, you commit to sending a follow-up, or a deadline is mentioned, Speak for Me captures it so nothing falls through the cracks.
+
+## How it works
+
+When a message arrives in a watched conversation, the AI analyzes it for actionable content. If it detects a request, commitment, or deadline directed at you, it creates a task with a title, description, and optional due date. Tasks are stored per user and per workspace, and you can manage them from Slack or the web dashboard.
+
+## Task types
+
+Speak for Me categorizes detected tasks into three types:
+
+- **Action Request** -- Someone asks you to do something. Examples: "Can you review this PR?", "Please handle the deployment", "When can you send the report?"
+- **Commitment** -- You commit to doing something. Examples: "I'll take care of it", "Sure, I'll send it over", "Let me follow up on that"
+- **Deadline** -- A time constraint is mentioned for an action. Examples: "Need this by Friday", "Before EOD tomorrow", "Due March 15"
+
+<Callout type="info">
+  Only actionable items with a confidence score of 50 or higher are surfaced as tasks. The AI filters out general discussions, status updates, and informational messages.
+</Callout>
+
+## Using the `/speakforme-tasks` command
+
+<Steps>
+  <Step>
+    ### View your pending tasks
+
+    Type `/speakforme-tasks` in any Slack channel or DM. Your tasks are displayed as a private ephemeral message visible only to you.
+  </Step>
+
+  <Step>
+    ### Review tasks by urgency
+
+    Tasks are grouped into sections so you can focus on what matters most:
+    - **Overdue** -- Tasks past their due date, shown with a warning indicator
+    - **Due Today** -- Tasks due within the current day
+    - **Other Tasks** -- Everything else, sorted by due date and confidence score
+  </Step>
+
+  <Step>
+    ### Take action on a task
+
+    Each task has an overflow menu with the following options:
+    - **Complete** -- Mark the task as done
+    - **Snooze 1 day** -- Push the task back by one day so it reappears later
+    - **Dismiss** -- Remove the task from your list if it is no longer relevant
+    - **View in Slack** -- Jump to the original message that triggered the task
+  </Step>
+
+  <Step>
+    ### Get help
+
+    Run `/speakforme-tasks help` for a quick usage summary directly in Slack.
+  </Step>
+</Steps>
+
+## Managing tasks from the dashboard
+
+The [web portal dashboard](/dashboard/tasks) provides a full view of all your tasks, including completed and dismissed items. From the dashboard you can:
+
+- Filter tasks by status (pending, completed, dismissed, snoozed)
+- View task details including the original message text and AI reasoning
+- See statistics such as total pending, overdue, and due today counts
+- Review historical tasks for accountability and tracking
+
+## How due dates are determined
+
+When the AI detects a deadline, it assigns a confidence level to the due date:
+
+- **Explicit** -- A specific date or time is stated in the message (e.g., "by March 15")
+- **Implicit** -- A relative time reference is used (e.g., "tomorrow", "next week")
+- **Inferred** -- The AI infers urgency from context (e.g., "ASAP", "as soon as possible")
+
+Tasks without a clear time constraint are created without a due date and appear at the end of your task list.
+
+## Related
+
+- [Watching Conversations](/docs/features/watching) -- Tasks are only detected in watched conversations
+- [AI Suggestions](/docs/features/suggestions) -- How the AI analyzes your Slack messages
+- [Complete Setup Guide](/docs/getting-started/onboarding) -- Full setup walkthrough
