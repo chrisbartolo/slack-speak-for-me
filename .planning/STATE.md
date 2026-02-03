@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 12 (Client Context Support)
-Plan: 3 of ? in phase (plans 01, 02, 03 complete)
+Plan: 5 of ? in phase (plans 01, 02, 03, 05 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 12 plan 03 complete (Brand voice service and admin UI)
-Last activity: 2026-02-03 - Completed 12-03-PLAN.md (Brand voice templates with prepareForAI sanitization and admin CRUD interface)
+Status: Phase 12 plan 05 complete (Knowledge base with RAG semantic search)
+Last activity: 2026-02-03 - Completed 12-05-PLAN.md (pgvector-based RAG with hash pseudo-embeddings, background indexing, and admin document management)
 
-Progress: [██████████████████████████████░░] ~100% (75/75 plans complete)
+Progress: [██████████████████████████████░░] ~100% (76/76 plans complete)
 
 ## Production Deployment
 
@@ -35,9 +35,9 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 49
-- Average duration: 3.2 min
-- Total execution time: ~2.6 hours
+- Total plans completed: 50
+- Average duration: 3.3 min
+- Total execution time: ~2.75 hours
 
 **By Phase:**
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 12 - Client Context Support | 4 | 15 min | 3.8 min |
+| 12 - Client Context Support | 5 | 23 min | 4.6 min |
 | 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
@@ -65,6 +65,11 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 12 Plan 05: Hash-based pseudo-embeddings - Placeholder algorithm allows immediate functionality without API costs, replaceable later
+- Phase 12 Plan 05: 500ms search timeout - Promise.race pattern prevents blocking suggestion generation, returns empty array on timeout
+- Phase 12 Plan 05: Automatic chunking for large docs - Documents >500 words split into 500-word chunks with 50-word overlap
+- Phase 12 Plan 05: Inline embedding in web-portal - Duplicated logic for independence and immediate admin feedback
+- Phase 12 Plan 05: Soft delete pattern - isActive flag preserves history and allows recovery
 - Phase 12 Plan 03: prepareForAI sanitization with XML spotlighting - All brand voice text sanitized before AI use to prevent prompt injection
 - Phase 12 Plan 03: Single default template per org - Auto-clear other defaults when new default set, prevents ambiguity
 - Phase 12 Plan 03: Three applicability levels (All/Client/Internal) - Simple categorization covers main use cases
