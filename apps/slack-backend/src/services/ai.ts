@@ -611,6 +611,85 @@ Please suggest a professional response the user could send. Use the provided con
 }
 
 /**
+ * Generate a streaming AI suggestion for the assistant panel.
+ * Returns an async iterable of text deltas that can be piped to chatStream.
+ */
+export async function generateSuggestionStream(
+  context: SuggestionContext
+): Promise<{
+  stream: AsyncIterable<{ type: string; delta?: { type: string; text: string } }>;
+  usageCheck: { currentUsage: number; limit: number; isOverage: boolean };
+}> {
+  // Check usage limits before generating
+  const usageCheck = await checkUsageAllowed({
+    workspaceId: context.workspaceId,
+    userId: context.userId,
+  });
+
+  if (!usageCheck.allowed) {
+    throw new UsageLimitExceededError(usageCheck.currentUsage, usageCheck.limit);
+  }
+
+  // Build style context
+  const formattedContext = context.contextMessages
+    .map(m => `[${m.ts}] User ${m.userId}: ${m.text}`)
+    .join('\n');
+
+  const styleContext = await buildStyleContext({
+    workspaceId: context.workspaceId,
+    userId: context.userId,
+    conversationContext: formattedContext,
+  });
+
+  // Prepare user content with sanitization
+  const sanitizedTrigger = prepareForAI(context.triggerMessage).sanitized;
+  const sanitizedContext = prepareForAI(formattedContext).sanitized;
+
+  const userPrompt = `Here is the recent conversation context:
+${sanitizedContext}
+
+The user needs help responding to this message:
+${sanitizedTrigger}
+
+Trigger type: ${context.triggeredBy}
+
+Please suggest a professional response the user could send. Use Slack mrkdwn formatting (use *bold*, _italic_, \`code\`). Provide only the suggested response text, no additional commentary.`;
+
+  const stream = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1024,
+    stream: true,
+    system: [
+      {
+        type: 'text',
+        text: BASE_SYSTEM_PROMPT,
+        cache_control: { type: 'ephemeral' },
+      },
+      {
+        type: 'text',
+        text: styleContext.promptText,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    messages: [
+      {
+        role: 'user',
+        content: userPrompt,
+      },
+    ],
+  });
+
+  return {
+    stream: stream as AsyncIterable<any>,
+    usageCheck: {
+      currentUsage: usageCheck.currentUsage,
+      limit: usageCheck.limit,
+      isOverage: usageCheck.isOverage,
+    },
+  };
+}
+
+/**
  * Refine an existing suggestion based on user feedback
  * Supports multi-turn refinement with history tracking
  * Automatically tracks refinement for feedback learning
