@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 12 (Client Context & Support) — next up
-Plan: 0 of ? in phase
+Phase: 14 (User Manual & Knowledge Base)
+Plan: 1 of ? in phase
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phases 11.1 and 11.2 complete, moving to 12
-Last activity: 2026-02-03 - Completed Phase 11.2 gap closure (checkout integration, webhook tracking, reward processing)
+Status: Phase 14 plan 01 complete (Fumadocs infrastructure)
+Last activity: 2026-02-03 - Completed 14-01-PLAN.md (Fumadocs infrastructure setup)
 
-Progress: [██████████████████████████████░░] 100% (67/67 plans complete)
+Progress: [██████████████████████████████░░] ~100% (68/68 plans complete)
 
 ## Production Deployment
 
@@ -54,6 +54,8 @@ Progress: [███████████████████████
 | 08 - Production Security | 7/7 | 33 min | 4.7 min |
 
 *Phase 8 complete*
+
+| 14 - User Manual & Knowledge Base | 1 | 9 min | 9.0 min |
 
 ## Accumulated Context
 
@@ -189,6 +191,10 @@ Recent decisions affecting current work:
 - Phase 11.1 Plan 03: Free tier shows upgrade CTA when limit exceeded
 - Phase 11.1 Plan 03: Progress component extended with indicatorClassName for dynamic colors
 - Phase 11.1 Plan 03: Usage dashboard shows 6-month history with overage highlighting
+- Phase 14 Plan 01: Fumadocs CSS imports in globals.css not in (docs)/layout.tsx for Tailwind v4 compatibility
+- Phase 14 Plan 01: Import from @/.source/server not @/.source -- Turbopack needs explicit file reference
+- Phase 14 Plan 01: RootProvider scoped to (docs) route group, no html/body tags in docs layout
+- Phase 14 Plan 01: zodResolver as any cast for Zod v4 bridge compatibility with @hookform/resolvers
 
 ### Pending Todos
 
@@ -222,7 +228,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed Phase 11.2 gap closure. Moving to Phase 12.
+Stopped at: Completed 14-01-PLAN.md (Fumadocs documentation infrastructure)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
