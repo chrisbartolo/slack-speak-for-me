@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11.1 of 11 (Usage Tracking & Enforcement)
-Plan: 3 of 6 in phase
+Plan: 4 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-03 - Completed 11.1-03-PLAN.md (Usage Dashboard)
+Last activity: 2026-02-03 - Completed 11.1-04-PLAN.md (Stripe Billing Meters Integration)
 
-Progress: [██████████████████████████████░░] 100% (66/66 plans complete)
+Progress: [██████████████████████████████░░] 100% (67/67 plans complete)
 
 ## Production Deployment
 
@@ -177,6 +177,11 @@ Recent decisions affecting current work:
 - Phase 11.1 Plan 02: Usage checked before AI generation to prevent wasted API calls
 - Phase 11.1 Plan 02: Free-tier users blocked at 100% get informative ephemeral message
 - Phase 11.1 Plan 02: All usage operations wrapped in try/catch (fail open for UX)
+- Phase 11.1 Plan 04: Idempotency identifier format: ${workspaceId}-${userId}-${eventId}
+- Phase 11.1 Plan 04: Dual-path customer lookup (individual subscription -> organization)
+- Phase 11.1 Plan 04: Free tier users skipped in Stripe reporting (no customer ID)
+- Phase 11.1 Plan 04: Daily 2 AM UTC scheduling for batch usage reporting
+- Phase 11.1 Plan 04: 500 event batch limit prevents long-running transactions
 - Phase 11.1 Plan 02: Usage info passed to delivery for contextual footer display
 - Phase 11.1 Plan 02: Warning emojis: ⚠️ at 80%, 🚨 at 95%, 📊 for overage
 - Phase 11.1 Plan 03: Progress bar colors: indigo (<80%), yellow (80-95%), red (95%+)
@@ -217,7 +222,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 11.1-03-PLAN.md (Usage Dashboard)
+Stopped at: Completed 11.1-04-PLAN.md (Stripe Billing Meters Integration)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
