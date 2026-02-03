@@ -25,6 +25,7 @@
     "limiter": "^3.0.0",
     "pino": "^9.6.0",
     "postgres": "^3.4.5",
+    "stripe": "^20.3.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
