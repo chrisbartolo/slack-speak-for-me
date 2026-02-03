@@ -89,3 +89,22 @@ export {
   reportUsageToStripe,
   reportUnreportedUsageBatch,
 } from './stripe-meter-reporter.js';
+
+// Client profiles - client relationship management
+export {
+  getClientProfiles,
+  getClientProfileById,
+  createClientProfile,
+  updateClientProfile,
+  deleteClientProfile,
+  getClientContactBySlackUserId,
+  getClientContactsByProfile,
+  addClientContact,
+  removeClientContact,
+} from './client-profiles.js';
+
+// Sentiment detector - conversation tone and tension analysis
+export {
+  analyzeSentiment,
+  type SentimentAnalysis,
+} from './sentiment-detector.js';
