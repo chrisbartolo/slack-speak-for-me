@@ -52,6 +52,7 @@ export const users = pgTable('users', {
   slackUserId: text('slack_user_id').notNull(),
   email: text('email'),
   role: text('role').default('member'), // 'admin' | 'member' | 'viewer'
+  assistantDelivery: boolean('assistant_delivery').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
   workspaceIdx: index('users_workspace_id_idx').on(table.workspaceId),

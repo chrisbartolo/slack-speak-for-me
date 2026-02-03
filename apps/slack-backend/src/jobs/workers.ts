@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult } from './types.js';
 import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
+import { routeDelivery } from '../services/delivery-router.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -266,11 +267,12 @@ export async function startWorkers() {
             mode: 'suggestion_via_response_url',
           }, 'Suggestion delivered via response_url in DM');
         } else {
-          // Normal mode: Send ephemeral suggestion (tries ephemeral, falls back to DM)
-          await sendSuggestionEphemeral({
+          // Normal mode: Route through delivery router
+          const deliveryMode = await routeDelivery({
             client,
-            channelId,
+            workspaceId,
             userId,
+            channelId,
             suggestionId,
             suggestion: result.suggestion,
             triggerContext: triggeredBy,
@@ -283,8 +285,8 @@ export async function startWorkers() {
             suggestionId,
             channelId,
             userId,
-            mode: 'suggestion',
-          }, 'Suggestion delivered successfully');
+            mode: deliveryMode,
+          }, 'Suggestion delivered via delivery router');
         }
       } catch (deliveryError) {
         // Log delivery failure but don't throw - suggestion was still generated
