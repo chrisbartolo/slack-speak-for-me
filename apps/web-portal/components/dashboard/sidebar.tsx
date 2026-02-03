@@ -62,6 +62,8 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               icon={Settings}
               defaultOpen={false}
               items={[
+                { href: '/admin/analytics', label: 'Analytics' },
+                { href: '/admin/settings', label: 'Settings' },
                 { href: '/admin/organizations', label: 'Organizations' },
                 { href: '/admin/users', label: 'Users' },
                 { href: '/admin/billing', label: 'Billing' },
