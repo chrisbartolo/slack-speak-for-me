@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData } from './types.js';
+import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData } from './types.js';
 
 export const aiResponseQueue = new Queue<AIResponseJobData>('ai-responses', {
   connection: redis,
@@ -72,3 +72,20 @@ export const usageReporterQueue = new Queue<UsageReporterJobData>('usage-reporte
     removeOnFail: { count: 50 },
   },
 });
+
+export const kbIndexQueue = new Queue<KBIndexJobData>('kb-indexer', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 500 },
+  },
+});
+
+export async function queueKBIndexing(data: KBIndexJobData) {
+  return kbIndexQueue.add('index-document', data);
+}

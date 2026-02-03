@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 12 (Client Context Support)
-Plan: 5 of ? in phase (plans 01, 02, 04 complete)
+Plan: 3 of ? in phase (plans 01, 02, 03 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 12 plan 02 complete (Client profile CRUD service and admin UI)
-Last activity: 2026-02-03 - Completed 12-02-PLAN.md (Backend CRUD with 9 functions and admin UI for client profiles/contacts)
+Status: Phase 12 plan 03 complete (Brand voice service and admin UI)
+Last activity: 2026-02-03 - Completed 12-03-PLAN.md (Brand voice templates with prepareForAI sanitization and admin CRUD interface)
 
-Progress: [██████████████████████████████░░] ~100% (74/74 plans complete)
+Progress: [██████████████████████████████░░] ~100% (75/75 plans complete)
 
 ## Production Deployment
 
@@ -35,9 +35,9 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 48
+- Total plans completed: 49
 - Average duration: 3.2 min
-- Total execution time: ~2.5 hours
+- Total execution time: ~2.6 hours
 
 **By Phase:**
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 12 - Client Context Support | 3 | 9 min | 3.0 min |
+| 12 - Client Context Support | 4 | 15 min | 3.8 min |
 | 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
@@ -65,6 +65,9 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 12 Plan 03: prepareForAI sanitization with XML spotlighting - All brand voice text sanitized before AI use to prevent prompt injection
+- Phase 12 Plan 03: Single default template per org - Auto-clear other defaults when new default set, prevents ambiguity
+- Phase 12 Plan 03: Three applicability levels (All/Client/Internal) - Simple categorization covers main use cases
 - Phase 12 Plan 02: getClientContactBySlackUserId critical for AI - Quick lookup enables AI to identify client contacts and adjust context
 - Phase 12 Plan 02: Contract details limited to 2000 chars - Balance between detail and performance, validated at service and API layers
 - Phase 12 Plan 02: Cascade delete contacts - Contacts only make sense with their profile, prevents orphaned records

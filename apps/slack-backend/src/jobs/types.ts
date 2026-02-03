@@ -63,3 +63,17 @@ export interface UsageReporterJobResult {
   skipped: number;
   failed: number;
 }
+
+export interface KBIndexJobData {
+  organizationId: string;
+  title: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  sourceUrl?: string;
+}
+
+export interface KBIndexJobResult {
+  documentId: string;
+  chunksCreated: number;
+}

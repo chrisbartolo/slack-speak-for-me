@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -12,6 +12,7 @@ let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = nu
 let sheetsWorker: Worker<SheetsWriteJobData, SheetsWriteJobResult> | null = null;
 let reportWorker: Worker<ReportGenerationJobData, ReportGenerationJobResult> | null = null;
 let usageReporterWorker: Worker<UsageReporterJobData, UsageReporterJobResult> | null = null;
+let kbIndexWorker: Worker<KBIndexJobData, KBIndexJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -495,6 +496,54 @@ export async function startWorkers() {
   usageReporterWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Usage reporter job completed'));
 
   logger.info('Usage reporter worker started');
+
+  // Knowledge base indexer worker
+  kbIndexWorker = new Worker<KBIndexJobData, KBIndexJobResult>(
+    'kb-indexer',
+    async (job) => {
+      const { organizationId, title, content, category, tags, sourceUrl } = job.data;
+
+      logger.info({
+        jobId: job.id,
+        organizationId,
+        title,
+      }, 'Processing KB index job');
+
+      const documentId = await indexDocument({
+        organizationId,
+        title,
+        content,
+        category,
+        tags,
+        sourceUrl,
+      });
+
+      // Calculate number of chunks created (rough estimate based on word count)
+      const wordCount = content.split(/\s+/).length;
+      const chunksCreated = Math.ceil(wordCount / 450); // Approximate, actual chunking has overlap
+
+      logger.info({
+        jobId: job.id,
+        documentId,
+        chunksCreated,
+      }, 'Document indexed successfully');
+
+      return {
+        documentId,
+        chunksCreated,
+      };
+    },
+    {
+      connection: redis,
+      concurrency: 2,
+    }
+  );
+
+  kbIndexWorker.on('error', (err) => logger.error({ err }, 'KB index worker error'));
+  kbIndexWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'KB index job failed'));
+  kbIndexWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'KB index job completed'));
+
+  logger.info('KB index worker started');
 }
 
 export async function stopWorkers() {
@@ -517,5 +566,10 @@ export async function stopWorkers() {
     await usageReporterWorker.close();
     usageReporterWorker = null;
     logger.info('Usage reporter worker stopped');
+  }
+  if (kbIndexWorker) {
+    await kbIndexWorker.close();
+    kbIndexWorker = null;
+    logger.info('KB index worker stopped');
   }
 }
