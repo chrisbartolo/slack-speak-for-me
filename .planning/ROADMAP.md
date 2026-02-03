@@ -33,6 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 11.2: Growth & Referrals** - Coupon system, refer-a-friend, affiliate program (INSERTED)
 - [ ] **Phase 12: Client Context & Support** - Client profiles, service context, de-escalation mode
 - [ ] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
+- [ ] **Phase 14: User Manual & Knowledge Base** - Documentation, help center, and onboarding guides
 
 ## Phase Details
 
@@ -396,6 +397,27 @@ Plans:
 Plans:
 - [ ] TBD
 
+### Phase 14: User Manual & Knowledge Base
+**Goal**: Comprehensive user documentation, help center, and knowledge base for Speak For Me
+**Depends on**: Phase 13
+**Requirements**: TBD
+**Success Criteria** (what must be TRUE):
+  1. User manual covers all features (watching, suggestions, refinement, style settings)
+  2. Knowledge base articles explain common workflows and troubleshooting
+  3. In-app help links point to relevant documentation
+  4. Onboarding guide walks new users through setup and first use
+  5. Admin documentation covers organization setup, billing, and team management
+  6. API/integration documentation for advanced users
+  7. FAQ section addresses common questions and issues
+**Plans**: 5 plans in 4 waves
+
+Plans:
+- [ ] 14-01-PLAN.md — MDX infrastructure, docs layout, and custom components
+- [ ] 14-02-PLAN.md — Dynamic route and user documentation (getting-started + features)
+- [ ] 14-03-PLAN.md — Admin, troubleshooting, API, and FAQ documentation
+- [ ] 14-04-PLAN.md — Documentation search and in-app help links
+- [ ] 14-05-PLAN.md — Human verification checkpoint
+
 ## Progress
 
 **Execution Order:**
@@ -419,7 +441,8 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 11.2. Growth & Referrals | 0/7 | Planned | - |
 | 12. Client Context & Support | 0/? | Not started | - |
 | 13. Team/Org Dashboard | 0/? | Not started | - |
+| 14. User Manual & Knowledge Base | 0/5 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-02-02*
+*Last updated: 2026-02-03*
