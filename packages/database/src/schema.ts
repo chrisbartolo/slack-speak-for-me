@@ -321,6 +321,11 @@ export const userSubscriptions = pgTable('user_subscriptions', {
   planId: text('plan_id'), // 'individual_starter' | 'individual_pro'
   trialEndsAt: timestamp('trial_ends_at'),
 
+  // Admin override (plan assigned without Stripe — comps, testing, external payment)
+  adminOverride: boolean('admin_override').default(false).notNull(),
+  overrideReason: text('override_reason'), // Why the plan was manually set
+  overriddenBy: text('overridden_by'), // Email of admin who made the change
+
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
@@ -343,6 +348,7 @@ export const usageRecords = pgTable('usage_records', {
   // Counts
   suggestionsUsed: integer('suggestions_used').default(0).notNull(),
   suggestionsIncluded: integer('suggestions_included').notNull(), // Snapshot of plan limit
+  bonusSuggestions: integer('bonus_suggestions').default(0).notNull(), // Admin-granted extra suggestions
   overageReported: boolean('overage_reported').default(false), // Has overage been sent to Stripe
 
   // Stripe metered billing

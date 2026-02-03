@@ -169,8 +169,8 @@ export async function checkUsageAllowed(
     }
 
     const currentUsage = record.suggestionsUsed;
-    const limit = record.suggestionsIncluded;
-    const isOverage = currentUsage >= limit;
+    const effectiveLimit = record.suggestionsIncluded + (record.bonusSuggestions ?? 0);
+    const isOverage = currentUsage >= effectiveLimit;
 
     // Get user's subscription to check for overage allowance
     const [subscription] = await db
@@ -182,34 +182,22 @@ export async function checkUsageAllowed(
     const planId = subscription?.planId || 'free';
     const planConfig = PLAN_LIMITS[planId] || DEFAULT_LIMIT;
 
-    // Free tier: hard cap, no overage
-    if (planId === 'free' && currentUsage >= limit) {
-      return {
-        allowed: false,
-        reason: 'limit_reached',
-        currentUsage,
-        limit,
-        isOverage: true,
-      };
-    }
-
-    // Paid tiers: allow overage (will be billed)
+    // Hard-capped plans (free or any plan with overageRate 0): block at limit
     if (isOverage && planConfig.overageRate === 0) {
-      // No overage rate means hard cap
       return {
         allowed: false,
         reason: 'limit_reached',
         currentUsage,
-        limit,
+        limit: effectiveLimit,
         isOverage: true,
       };
     }
 
     // Calculate overage count for billing purposes
-    const overageCount = Math.max(0, currentUsage - limit);
+    const overageCount = Math.max(0, currentUsage - effectiveLimit);
 
     // Calculate warning level
-    const usagePercent = currentUsage / limit;
+    const usagePercent = currentUsage / effectiveLimit;
     let warningLevel: 'none' | 'warning' | 'critical' = 'none';
     if (usagePercent >= USAGE_THRESHOLDS.CRITICAL) {
       warningLevel = 'critical';
@@ -220,7 +208,7 @@ export async function checkUsageAllowed(
     return {
       allowed: true,
       currentUsage,
-      limit,
+      limit: effectiveLimit,
       isOverage,
       overageCount: isOverage ? overageCount + 1 : undefined,
       warningLevel,
@@ -239,7 +227,14 @@ export async function checkUsageAllowed(
 }
 
 /**
- * Record a usage event after successful AI generation
+ * Record a usage event after successful AI generation.
+ *
+ * For free-tier users the increment is guarded by a WHERE clause that
+ * prevents `suggestions_used` from exceeding `suggestions_included`,
+ * closing the race window that previously allowed 6/5.
+ *
+ * Returns false if the increment was rejected (free tier cap hit
+ * concurrently).
  */
 export async function recordUsageEvent(
   context: UsageRecordContext & {
@@ -248,7 +243,7 @@ export async function recordUsageEvent(
     costEstimate?: number;
     channelId?: string;
   }
-): Promise<void> {
+): Promise<boolean> {
   const { workspaceId, userId, eventType, tokensUsed, costEstimate, channelId } = context;
 
   try {
@@ -257,24 +252,54 @@ export async function recordUsageEvent(
 
     if (!email) {
       logger.warn({ workspaceId, userId }, 'Could not record usage - user has no email');
-      return;
+      return true; // allow - can't enforce without email
     }
 
     const record = await getOrCreateUsageRecord(email);
 
     if (!record) {
       logger.warn({ email }, 'Could not record usage - no record found');
-      return;
+      return true;
     }
 
-    // Update usage record with atomic increment (prevents race conditions)
-    await db
+    // Determine plan to decide whether to guard the increment
+    const [subscription] = await db
+      .select({ planId: userSubscriptions.planId })
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.email, email))
+      .limit(1);
+
+    const planId = subscription?.planId || 'free';
+    const planConfig = PLAN_LIMITS[planId] || DEFAULT_LIMIT;
+    const isFreeOrHardCapped = planConfig.overageRate === 0;
+
+    // Atomic increment with optional guard for hard-capped plans.
+    // The WHERE condition prevents concurrent requests from pushing
+    // usage above the included limit on plans with no overage.
+    const effectiveLimit = sql`${usageRecords.suggestionsIncluded} + ${usageRecords.bonusSuggestions}`;
+    const updateResult = await db
       .update(usageRecords)
       .set({
         suggestionsUsed: sql`${usageRecords.suggestionsUsed} + 1`,
         updatedAt: new Date(),
       })
-      .where(eq(usageRecords.id, record.id));
+      .where(
+        isFreeOrHardCapped
+          ? and(
+              eq(usageRecords.id, record.id),
+              sql`${usageRecords.suggestionsUsed} < ${effectiveLimit}`
+            )
+          : eq(usageRecords.id, record.id)
+      )
+      .returning({ newCount: usageRecords.suggestionsUsed });
+
+    if (updateResult.length === 0) {
+      // Guard rejected the increment — concurrent request already hit cap
+      logger.info({ email, userId, planId }, 'Usage increment rejected by concurrent guard');
+      return false;
+    }
+
+    const newUsageCount = updateResult[0].newCount;
 
     // Record individual event
     await db.insert(usageEvents).values({
@@ -283,25 +308,28 @@ export async function recordUsageEvent(
       workspaceId,
       eventType,
       channelId,
-      inputTokens: tokensUsed ? Math.floor(tokensUsed * 0.3) : null, // Approximate split
+      inputTokens: tokensUsed ? Math.floor(tokensUsed * 0.3) : null,
       outputTokens: tokensUsed ? Math.floor(tokensUsed * 0.7) : null,
       estimatedCost: costEstimate || null,
     });
 
-    const newUsageCount = record.suggestionsUsed + 1;
-    const isOverage = newUsageCount > record.suggestionsIncluded;
+    const limit = record.suggestionsIncluded + (record.bonusSuggestions ?? 0);
+    const isOverage = newUsageCount > limit;
 
     logger.info({
       email,
       userId,
       eventType,
       newUsageCount,
-      limit: record.suggestionsIncluded,
+      limit,
       isOverage,
     }, 'Usage event recorded');
+
+    return true;
   } catch (error) {
     // Non-fatal - don't fail the request if usage tracking fails
     logger.error({ error, workspaceId, userId, eventType }, 'Failed to record usage event');
+    return true;
   }
 }
 
@@ -362,8 +390,9 @@ export async function getUsageStatus(
 
     const planId = subscription?.planId || 'free';
     const planConfig = PLAN_LIMITS[planId] || DEFAULT_LIMIT;
-    const percentUsed = (record.suggestionsUsed / record.suggestionsIncluded) * 100;
-    const usagePercent = record.suggestionsUsed / record.suggestionsIncluded;
+    const effectiveLimit = record.suggestionsIncluded + (record.bonusSuggestions ?? 0);
+    const percentUsed = (record.suggestionsUsed / effectiveLimit) * 100;
+    const usagePercent = record.suggestionsUsed / effectiveLimit;
 
     // Calculate warning level
     let warningLevel: 'none' | 'warning' | 'critical' = 'none';
@@ -375,7 +404,7 @@ export async function getUsageStatus(
 
     return {
       used: record.suggestionsUsed,
-      limit: record.suggestionsIncluded,
+      limit: effectiveLimit,
       percentUsed,
       isNearLimit: percentUsed >= 80 && percentUsed < 100,
       isAtLimit: percentUsed >= 100,
