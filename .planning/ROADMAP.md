@@ -332,11 +332,11 @@ Plans:
 **Plans**: 6 plans in 3 waves
 
 Plans:
-- [ ] 11.1-01-PLAN.md — Pricing config and usage tracking schema
-- [ ] 11.1-02-PLAN.md — Usage recording service and limit enforcement
-- [ ] 11.1-03-PLAN.md — Usage dashboard component and alerts
-- [ ] 11.1-04-PLAN.md — Stripe metered billing integration
-- [ ] 11.1-05-PLAN.md — Pricing page update with usage info
+- [ ] 11.1-01-PLAN.md — Schema extensions, usage queries, and enforcement alignment
+- [ ] 11.1-02-PLAN.md — Usage check/record pipeline and Slack message footers
+- [ ] 11.1-03-PLAN.md — Usage dashboard page with meter, alerts, and history
+- [ ] 11.1-04-PLAN.md — Stripe Billing Meters integration and daily batch job
+- [ ] 11.1-05-PLAN.md — Admin usage analytics page
 - [ ] 11.1-06-PLAN.md — Human verification checkpoint
 
 ### Phase 11.2: Growth & Referrals (INSERTED)
