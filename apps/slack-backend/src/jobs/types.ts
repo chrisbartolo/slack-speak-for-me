@@ -11,6 +11,7 @@ export interface AIResponseJobData {
     ts: string;
   }>;
   triggeredBy: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm';
+  responseUrl?: string; // From interaction payloads - enables posting directly in DMs
 }
 
 export interface AIResponseJobResult {

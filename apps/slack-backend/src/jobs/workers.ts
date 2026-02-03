@@ -22,7 +22,7 @@ export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
     'ai-responses',
     async (job: Job<AIResponseJobData>) => {
-      const { workspaceId, userId, channelId, messageTs, triggerMessageText, contextMessages, triggeredBy } = job.data;
+      const { workspaceId, userId, channelId, messageTs, triggerMessageText, contextMessages, triggeredBy, responseUrl } = job.data;
 
       logger.info({
         jobId: job.id,
@@ -225,8 +225,33 @@ export async function startWorkers() {
             userId,
             mode: 'auto_respond',
           }, 'Auto-response sent (YOLO mode)');
+        } else if (responseUrl && channelId.startsWith('D')) {
+          // DM with response_url: post directly in the conversation via response_url
+          // This works like Giphy - interaction response_url can post to any channel
+          const { buildSuggestionBlocks: buildBlocks } = await import('../services/suggestion-delivery.js');
+          const blocks = buildBlocks(
+            suggestionId, result.suggestion, triggeredBy, usageInfo, channelId, job.data.threadTs
+          );
+          await fetch(responseUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: 'Here\'s a suggested response for you',
+              blocks,
+              response_type: 'ephemeral',
+              replace_original: false,
+            }),
+          });
+
+          logger.info({
+            jobId: job.id,
+            suggestionId,
+            channelId,
+            userId,
+            mode: 'suggestion_via_response_url',
+          }, 'Suggestion delivered via response_url in DM');
         } else {
-          // Normal mode: Send ephemeral suggestion
+          // Normal mode: Send ephemeral suggestion (tries ephemeral, falls back to DM)
           await sendSuggestionEphemeral({
             client,
             channelId,
@@ -234,6 +259,7 @@ export async function startWorkers() {
             suggestionId,
             suggestion: result.suggestion,
             triggerContext: triggeredBy,
+            threadTs: job.data.threadTs,
             usageInfo,
           });
 

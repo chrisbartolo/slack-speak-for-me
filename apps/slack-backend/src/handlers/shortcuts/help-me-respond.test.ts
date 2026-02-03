@@ -425,6 +425,53 @@ describe('Help Me Respond Shortcut', () => {
     );
   });
 
+  it('should pass response_url to job data when available', async () => {
+    const ack = vi.fn().mockResolvedValue(undefined);
+    const shortcut = {
+      user: { id: 'U123' },
+      channel: { id: 'D123_DM' },
+      message: { text: 'DM message', ts: '1234567890.123456' },
+      response_url: 'https://hooks.slack.com/actions/T123/456/abc',
+    };
+    const client = {
+      chat: {
+        postEphemeral: mockPostEphemeral,
+        postMessage: vi.fn().mockResolvedValue({ ok: true }),
+      },
+    };
+    const context = { teamId: 'T123' };
+
+    await shortcutHandler({ shortcut, ack, client, context });
+
+    expect(queueAIResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        responseUrl: 'https://hooks.slack.com/actions/T123/456/abc',
+      })
+    );
+  });
+
+  it('should pass undefined responseUrl when not in payload', async () => {
+    const ack = vi.fn().mockResolvedValue(undefined);
+    const shortcut = {
+      user: { id: 'U123' },
+      channel: { id: 'C123' },
+      message: { text: 'Channel message', ts: '1234567890.123456' },
+      // no response_url
+    };
+    const client = {
+      chat: { postEphemeral: mockPostEphemeral },
+    };
+    const context = { teamId: 'T123' };
+
+    await shortcutHandler({ shortcut, ack, client, context });
+
+    expect(queueAIResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        responseUrl: undefined,
+      })
+    );
+  });
+
   it('should ignore ephemeral send failure on error path', async () => {
     const mockQueueAIResponse = vi.mocked(queueAIResponse);
     mockQueueAIResponse.mockRejectedValueOnce(new Error('Queue error'));

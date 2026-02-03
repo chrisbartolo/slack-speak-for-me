@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { WebClient } from '@slack/web-api';
 import type { KnownBlock } from '@slack/types';
+
+vi.mock('../utils/logger.js', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 import { buildSuggestionBlocks, sendSuggestionEphemeral } from './suggestion-delivery.js';
 
 describe('Suggestion Delivery Service', () => {
@@ -142,6 +152,7 @@ describe('Suggestion Delivery Service', () => {
       mockClient = {
         chat: {
           postEphemeral: vi.fn().mockResolvedValue({ ok: true, message_ts: '1234567890.123456' }),
+          postMessage: vi.fn().mockResolvedValue({ ok: true }),
         },
       } as unknown as WebClient;
     });
@@ -201,9 +212,28 @@ describe('Suggestion Delivery Service', () => {
       );
     });
 
-    it('should propagate API errors', async () => {
-      const error = new Error('Slack API error');
-      (mockClient.chat.postEphemeral as ReturnType<typeof vi.fn>).mockRejectedValue(error);
+    it('should fall back to postMessage when postEphemeral fails', async () => {
+      (mockClient.chat.postEphemeral as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('not_in_channel'));
+
+      await sendSuggestionEphemeral({
+        client: mockClient,
+        channelId: 'C123',
+        userId: 'U456',
+        suggestionId: 'sug_789',
+        suggestion: 'Test suggestion',
+        triggerContext: 'mention',
+      });
+
+      expect(mockClient.chat.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          channel: 'U456',
+        })
+      );
+    });
+
+    it('should propagate error when both postEphemeral and postMessage fail', async () => {
+      (mockClient.chat.postEphemeral as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('ephemeral failed'));
+      (mockClient.chat.postMessage as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DM also failed'));
 
       await expect(
         sendSuggestionEphemeral({
@@ -214,7 +244,7 @@ describe('Suggestion Delivery Service', () => {
           suggestion: 'Test suggestion',
           triggerContext: 'mention',
         })
-      ).rejects.toThrow('Slack API error');
+      ).rejects.toThrow('DM also failed');
     });
 
     it('should work with all trigger context types', async () => {

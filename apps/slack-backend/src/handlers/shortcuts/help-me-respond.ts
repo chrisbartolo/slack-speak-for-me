@@ -67,6 +67,11 @@ export function registerHelpMeRespondShortcut(app: App): void {
         logger.warn({ contextError, channelId }, 'Could not fetch conversation context (likely a DM), proceeding with trigger message only');
       }
 
+      // Extract response_url from shortcut payload for direct DM delivery
+      const responseUrl = 'response_url' in messageShortcut
+        ? (messageShortcut as { response_url?: string }).response_url
+        : undefined;
+
       // Queue AI response job
       await queueAIResponse({
         workspaceId,
@@ -77,6 +82,7 @@ export function registerHelpMeRespondShortcut(app: App): void {
         triggerMessageText: messageText,
         contextMessages,
         triggeredBy: 'message_action',
+        responseUrl,
       });
 
       logger.info({

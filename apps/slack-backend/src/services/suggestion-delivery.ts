@@ -1,5 +1,6 @@
 import type { WebClient } from '@slack/web-api';
 import type { Block, KnownBlock } from '@slack/types';
+import { logger } from '../utils/logger.js';
 
 interface UsageInfo {
   used: number;
@@ -15,6 +16,7 @@ interface SuggestionDeliveryOptions {
   suggestionId: string;
   suggestion: string;
   triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm';
+  threadTs?: string;
   usageInfo?: UsageInfo;
 }
 
@@ -25,7 +27,9 @@ export function buildSuggestionBlocks(
   suggestionId: string,
   suggestion: string,
   triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm',
-  usageInfo?: UsageInfo
+  usageInfo?: UsageInfo,
+  channelId?: string,
+  threadTs?: string,
 ): (Block | KnownBlock)[] {
   // Map trigger context to user-friendly text
   const contextLabels: Record<typeof triggerContext, string> = {
@@ -75,7 +79,7 @@ export function buildSuggestionBlocks(
             emoji: true,
           },
           action_id: 'send_suggestion',
-          value: JSON.stringify({ suggestionId, suggestion }),
+          value: JSON.stringify({ suggestionId, suggestion, channelId, threadTs }),
           style: 'primary',
         },
         {
@@ -86,7 +90,7 @@ export function buildSuggestionBlocks(
             emoji: true,
           },
           action_id: 'refine_suggestion',
-          value: JSON.stringify({ suggestionId, suggestion }),
+          value: JSON.stringify({ suggestionId, suggestion, channelId, threadTs }),
         },
         {
           type: 'button',
@@ -138,11 +142,11 @@ export function buildSuggestionBlocks(
 }
 
 /**
- * Post a message to a user, handling DM channels gracefully.
+ * Post a message to a user, trying ephemeral first and falling back gracefully.
  *
- * In DM channels (IDs starting with 'D'), the bot is not a member of the
- * conversation between two users, so postEphemeral fails. Instead, we send
- * a regular message to the bot's own DM with the user.
+ * For channels and bot-user DMs, postEphemeral works directly.
+ * For DMs between two other users (where bot isn't a member), postEphemeral
+ * fails, so we fall back to a regular message in the bot's own DM with the user.
  */
 export async function postToUser(
   client: WebClient,
@@ -150,19 +154,18 @@ export async function postToUser(
   userId: string,
   options: { text: string; blocks?: (Block | KnownBlock)[] }
 ): Promise<void> {
-  const isDM = channelId.startsWith('D');
-
-  if (isDM) {
-    // Bot can't post ephemeral messages in DMs between other users.
-    // Send as a regular message to the bot's own DM with the user.
-    await client.chat.postMessage({
-      channel: userId,
-      ...options,
-    });
-  } else {
+  try {
     await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
+      ...options,
+    });
+  } catch (ephemeralError) {
+    // Ephemeral failed (likely a DM where bot isn't a member).
+    // Fall back to regular message in the bot's own DM with the user.
+    logger.debug({ channelId, userId, error: ephemeralError }, 'postEphemeral failed, falling back to DM');
+    await client.chat.postMessage({
+      channel: userId,
       ...options,
     });
   }
@@ -174,9 +177,9 @@ export async function postToUser(
 export async function sendSuggestionEphemeral(
   options: SuggestionDeliveryOptions
 ): Promise<void> {
-  const { client, channelId, userId, suggestionId, suggestion, triggerContext, usageInfo } = options;
+  const { client, channelId, userId, suggestionId, suggestion, triggerContext, threadTs, usageInfo } = options;
 
-  const blocks = buildSuggestionBlocks(suggestionId, suggestion, triggerContext, usageInfo);
+  const blocks = buildSuggestionBlocks(suggestionId, suggestion, triggerContext, usageInfo, channelId, threadTs);
 
   await postToUser(client, channelId, userId, {
     text: 'Here\'s a suggested response for you',

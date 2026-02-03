@@ -19,11 +19,15 @@ export function registerRefineSuggestionAction(app: App): void {
 
         let suggestionId = '';
         let currentSuggestion = '';
+        let parsedChannelId = '';
+        let parsedThreadTs: string | undefined;
 
         try {
           const parsed = JSON.parse(actionValue);
           suggestionId = parsed.suggestionId || '';
           currentSuggestion = parsed.suggestion || '';
+          parsedChannelId = parsed.channelId || '';
+          parsedThreadTs = parsed.threadTs;
         } catch {
           logger.error({ actionValue }, 'Failed to parse refine action value');
           return;
@@ -39,10 +43,11 @@ export function registerRefineSuggestionAction(app: App): void {
         const userId = 'user' in body && body.user ? (body.user as { id: string }).id : '';
         const triggerId = 'trigger_id' in body ? body.trigger_id : '';
 
-        // Get channel ID and thread_ts from container (for ephemeral messages)
+        // Get channel ID from button value (preferred - correct for DM fallback),
+        // then from body/container as fallback
         const container = 'container' in body ? body.container as { channel_id?: string; message_ts?: string; thread_ts?: string } : null;
-        const channelId = ('channel' in body && body.channel ? (body.channel as { id: string }).id : null) || container?.channel_id || '';
-        const threadTs = container?.thread_ts;
+        const channelId = parsedChannelId || ('channel' in body && body.channel ? (body.channel as { id: string }).id : null) || container?.channel_id || '';
+        const threadTs = parsedThreadTs || container?.thread_ts;
 
         if (!triggerId) {
           logger.error('trigger_id not found in action body');
