@@ -36,7 +36,7 @@ Chris (Me): Will do! I'll let you know when I get to it.
 - Auto-detect completion ("Done!", "Completed", etc.)
 
 **Potential UI:**
-- `/tasks` command to see pending items
+- `/speakforme-tasks` command to see pending items
 - Daily morning summary in DM
 - "Mark complete" button on task cards
 - Integration with external task managers (Todoist, Linear, etc.)
