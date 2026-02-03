@@ -16,13 +16,6 @@ COPY . .
 # Install all dependencies
 RUN npm ci
 
-# Merge workspace-specific node_modules into root before build
-# (some packages like @slack/bolt 4.x are not hoisted to root in npm workspaces)
-# Note: Alpine BusyBox cp does not support -n, so use plain -r
-RUN if [ -d "apps/slack-backend/node_modules" ]; then \
-      cp -r apps/slack-backend/node_modules/. node_modules/ 2>/dev/null || true; \
-    fi
-
 # Build packages in correct order (database first, then others depend on it)
 RUN npm run build --workspace=@slack-speak/database
 RUN npm run build --workspace=@slack-speak/validation
