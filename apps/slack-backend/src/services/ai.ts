@@ -3,9 +3,13 @@ import { env } from '../env.js';
 import { prepareForAI, sanitizeAIOutput } from '@slack-speak/validation';
 import { logger } from '../utils/logger.js';
 import { buildStyleContext, trackRefinement } from './personalization/index.js';
-import { db, personContext, conversationContext } from '@slack-speak/database';
+import { db, personContext, conversationContext, workspaces, clientProfiles } from '@slack-speak/database';
 import { eq, and, inArray } from 'drizzle-orm';
 import { checkUsageAllowed, recordUsageEvent } from './usage-enforcement.js';
+import { getClientContactBySlackUserId } from './client-profiles.js';
+import { getBrandVoiceContext } from './brand-voice.js';
+import { analyzeSentiment, type SentimentAnalysis } from './sentiment-detector.js';
+import { searchKnowledgeBase } from './knowledge-base.js';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -218,6 +222,118 @@ ${personContextEntries}
 </people_context>\n`;
   }
 
+  // Check if any conversation participant is a client contact
+  let clientContext = '';
+  let sentimentResult: SentimentAnalysis | null = null;
+  let kbResults: Array<{ id: string; title: string; content: string; similarity: number }> = [];
+
+  // Get organizationId from workspace
+  const [workspace] = await db
+    .select({ organizationId: workspaces.organizationId })
+    .from(workspaces)
+    .where(eq(workspaces.id, context.workspaceId))
+    .limit(1);
+
+  const organizationId = workspace?.organizationId;
+
+  if (organizationId) {
+    // Check participants for client contacts (prioritize trigger message sender)
+    const triggerUserId = context.contextMessages.length > 0
+      ? context.contextMessages[context.contextMessages.length - 1].userId
+      : '';
+
+    const clientContactResult = await getClientContactBySlackUserId(
+      context.workspaceId,
+      triggerUserId
+    ).catch(err => {
+      logger.warn({ error: err }, 'Failed to check client contact');
+      return null;
+    });
+
+    if (clientContactResult) {
+      // Load client profile context
+      const [clientProfile] = await db
+        .select()
+        .from(clientProfiles)
+        .where(eq(clientProfiles.id, clientContactResult.clientProfileId))
+        .limit(1)
+        .catch(err => {
+          logger.warn({ error: err }, 'Failed to load client profile');
+          return [];
+        });
+
+      if (clientProfile) {
+        clientContext += `\n<client_context>
+This conversation involves a client: ${prepareForAI(clientProfile.companyName).sanitized}
+${clientProfile.servicesProvided?.length ? `Services provided: ${clientProfile.servicesProvided.join(', ')}` : ''}
+${clientProfile.contractDetails ? `Contract context: ${prepareForAI(clientProfile.contractDetails).sanitized}` : ''}
+Relationship status: ${clientProfile.relationshipStatus || 'active'}
+Your response should be professional, solution-focused, and aligned with service commitments.
+</client_context>\n`;
+      }
+
+      // Load brand voice
+      const brandVoice = await getBrandVoiceContext({
+        organizationId,
+        conversationType: 'client',
+      }).catch(err => {
+        logger.warn({ error: err }, 'Failed to load brand voice');
+        return '';
+      });
+
+      if (brandVoice) {
+        clientContext += brandVoice;
+      }
+
+      // Analyze sentiment
+      sentimentResult = await analyzeSentiment({
+        conversationMessages: context.contextMessages,
+        targetMessage: context.triggerMessage,
+      }).catch(err => {
+        logger.warn({ error: err }, 'Sentiment analysis failed');
+        return null;
+      });
+
+      if (sentimentResult && (sentimentResult.riskLevel === 'high' || sentimentResult.riskLevel === 'critical')) {
+        clientContext += `\n<de_escalation_mode>
+ALERT: Client message shows ${sentimentResult.tone} tone (risk: ${sentimentResult.riskLevel.toUpperCase()})
+Indicators: ${sentimentResult.indicators.join(', ')}
+
+Your response MUST:
+1. Acknowledge their concern explicitly
+2. Show empathy ("I understand this is frustrating...")
+3. Take ownership (no blame/excuses)
+4. Provide clear next steps with timeline
+5. Maintain calm, professional tone
+
+Avoid: Defensive language, technical jargon, dismissing concerns, promising what you can't deliver
+</de_escalation_mode>\n`;
+      }
+
+      // Search knowledge base (with 500ms timeout)
+      kbResults = await searchKnowledgeBase({
+        organizationId,
+        query: context.triggerMessage,
+        limit: 3,
+        timeout: 500,
+      }).catch(err => {
+        logger.warn({ error: err }, 'Knowledge base search failed');
+        return [];
+      });
+
+      if (kbResults.length > 0 && kbResults[0].similarity > 0.7) {
+        clientContext += `\n<knowledge_base>
+Relevant product/service documentation:
+${kbResults.map((doc, idx) => `[${idx + 1}] ${doc.title} (${(doc.similarity * 100).toFixed(0)}% relevant)\n${doc.content.slice(0, 400)}...`).join('\n\n')}
+Reference this information when appropriate to provide accurate, helpful responses.
+</knowledge_base>\n`;
+      }
+    }
+  }
+
+  // Append client context to additional context section
+  additionalContextSection += clientContext;
+
   const userPrompt = `Here is the recent conversation context:
 ${sanitizedContext}
 ${additionalContextSection}
@@ -289,6 +405,9 @@ Please suggest a professional response the user could send. Use the provided con
       learningPhase: styleContext.learningPhase,
       usedHistory: styleContext.usedHistory,
       usageCheck: { used: usageCheck.currentUsage, limit: usageCheck.limit, isOverage: usageCheck.isOverage },
+      hasClientContext: !!clientContext,
+      sentimentRisk: sentimentResult?.riskLevel || 'none',
+      kbDocsRetrieved: kbResults?.length || 0,
     }, 'AI suggestion generated with personalization');
 
     return {
