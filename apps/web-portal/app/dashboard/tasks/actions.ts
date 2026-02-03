@@ -7,7 +7,7 @@ import { verifySession } from '@/lib/auth/dal';
 
 const { actionableItems } = schema;
 
-export async function completeTask(taskId: string) {
+export async function completeTask(taskId: string, completionNote?: string) {
   try {
     const session = await verifySession();
 
@@ -16,6 +16,7 @@ export async function completeTask(taskId: string) {
       .set({
         status: 'completed',
         completedAt: new Date(),
+        completionNote: completionNote || null,
         updatedAt: new Date(),
       })
       .where(

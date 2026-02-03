@@ -201,7 +201,8 @@ export async function updateActionableStatus(
   userId: string,
   actionableId: string,
   status: ActionableStatus,
-  snoozedUntil?: Date
+  snoozedUntil?: Date,
+  completionNote?: string
 ): Promise<boolean> {
   const updated = await db
     .update(actionableItems)
@@ -210,6 +211,7 @@ export async function updateActionableStatus(
       snoozedUntil: status === 'snoozed' ? snoozedUntil : null,
       completedAt: status === 'completed' ? new Date() : null,
       dismissedAt: status === 'dismissed' ? new Date() : null,
+      completionNote: status === 'completed' ? (completionNote || null) : undefined,
       updatedAt: new Date(),
     })
     .where(

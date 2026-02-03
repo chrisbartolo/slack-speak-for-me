@@ -518,6 +518,10 @@ export const actionableItems = pgTable('actionable_items', {
   // Snooze handling
   snoozedUntil: timestamp('snoozed_until'),
 
+  // Completion reply
+  completionNote: text('completion_note'),       // User's note when completing
+  completionReplyTs: text('completion_reply_ts'), // Slack ts of the posted reply
+
   // Timestamps
   detectedAt: timestamp('detected_at').defaultNow(),
   completedAt: timestamp('completed_at'),

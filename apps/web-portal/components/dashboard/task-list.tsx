@@ -84,12 +84,14 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
   const [snoozeDialogOpen, setSnoozeDialogOpen] = useState(false);
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [taskToAction, setTaskToAction] = useState<string | null>(null);
+  const [completionNote, setCompletionNote] = useState('');
 
-  const handleComplete = async (id: string) => {
+  const handleComplete = async (id: string, note?: string) => {
     setSelectedId(id);
     startTransition(async () => {
-      const result = await completeTask(id);
+      const result = await completeTask(id, note || undefined);
 
       if (result.success) {
         toast.success('Task marked as complete');
@@ -102,7 +104,16 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
         toast.error('Failed to complete task', { description: result.error });
       }
       setSelectedId(null);
+      setCompleteDialogOpen(false);
+      setTaskToAction(null);
+      setCompletionNote('');
     });
+  };
+
+  const openCompleteDialog = (id: string) => {
+    setTaskToAction(id);
+    setCompletionNote('');
+    setCompleteDialogOpen(true);
   };
 
   const handleDismiss = async (id: string) => {
@@ -249,7 +260,7 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleComplete(task.id)}
+                              onClick={() => openCompleteDialog(task.id)}
                               disabled={isLoading}
                             >
                               <CheckCircle className="h-5 w-5 text-green-600" />
@@ -294,6 +305,37 @@ export function TaskList({ tasks: initialTasks }: TaskListProps) {
           );
         })}
       </div>
+
+      <AlertDialog open={completeDialogOpen} onOpenChange={(open) => {
+        setCompleteDialogOpen(open);
+        if (!open) setCompletionNote('');
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Complete task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Add an optional note about what was done. To reply in the original Slack thread, complete tasks via <code>/tasks</code> in Slack.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="px-6 pb-2">
+            <textarea
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              rows={3}
+              placeholder="e.g., Deployed the fix to staging"
+              value={completionNote}
+              onChange={(e) => setCompletionNote(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => taskToAction && handleComplete(taskToAction, completionNote)}
+            >
+              Complete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={dismissDialogOpen} onOpenChange={setDismissDialogOpen}>
         <AlertDialogContent>

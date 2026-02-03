@@ -23,6 +23,7 @@ import {
   registerTaskActionHandlers,
   registerRefinementModalHandler,
   registerReportRefinementViewHandler,
+  registerTaskCompletionModalHandler,
 } from './handlers/index.js';
 import {
   testRoutes,
@@ -103,6 +104,7 @@ registerTaskActionHandlers(app);
 // Register view handlers
 registerRefinementModalHandler(app);
 registerReportRefinementViewHandler(app);
+registerTaskCompletionModalHandler(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();

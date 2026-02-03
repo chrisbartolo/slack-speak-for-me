@@ -12,4 +12,4 @@ export {
   registerUndoAutoResponseAction,
   registerTaskActionHandlers,
 } from './actions/index.js';
-export { registerRefinementModalHandler, registerReportRefinementViewHandler } from './views/index.js';
+export { registerRefinementModalHandler, registerReportRefinementViewHandler, registerTaskCompletionModalHandler } from './views/index.js';
