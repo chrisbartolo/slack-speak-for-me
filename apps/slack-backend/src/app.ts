@@ -29,6 +29,7 @@ import {
   logTestEndpointsRegistered,
 } from './routes/test.js';
 import { assistant } from './assistant/assistant.js';
+import { registerAssistantActions } from './assistant/actions/index.js';
 
 /**
  * Slack Bolt app with OAuth configuration and health endpoints.
@@ -112,6 +113,7 @@ registerTaskCompletionModalHandler(app);
 
 // Register AI assistant
 app.assistant(assistant);
+registerAssistantActions(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();

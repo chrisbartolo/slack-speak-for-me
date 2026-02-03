@@ -5,7 +5,7 @@ interface TrackFeedbackParams {
   workspaceId: string;
   userId: string;
   suggestionId: string;
-  action: 'accepted' | 'refined' | 'dismissed' | 'sent';
+  action: 'accepted' | 'refined' | 'dismissed' | 'sent' | 'liked' | 'disliked';
   originalText?: string;
   finalText?: string;
   triggerContext?: string;

@@ -68,12 +68,14 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
     thread_ts: threadTs,
   });
 
-  // Pipe Anthropic stream chunks to Slack chatStream
+  // Pipe Anthropic stream chunks to Slack chatStream, accumulating full text
+  let fullText = '';
   for await (const event of stream) {
     if (
       event.type === 'content_block_delta' &&
       event.delta?.type === 'text_delta'
     ) {
+      fullText += event.delta.text;
       await streamer.append({ markdown_text: event.delta.text });
     }
   }
@@ -85,6 +87,44 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
   // Stop the stream with feedback buttons
   await streamer.stop({
     blocks: [createFeedbackBlock(suggestionId) as any],
+  });
+
+  // Post action buttons as a follow-up message in the thread
+  await client.chat.postMessage({
+    channel: channelId,
+    thread_ts: threadTs,
+    text: 'What would you like to do with this suggestion?',
+    blocks: [
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: 'Send as Me', emoji: true },
+            action_id: 'assistant_send_suggestion',
+            value: JSON.stringify({
+              suggestionId,
+              suggestion: fullText,
+              channelId: viewingChannelId,
+              threadTs: viewingThreadTs,
+            }),
+            style: 'primary',
+          },
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: 'Refine', emoji: true },
+            action_id: 'assistant_refine_suggestion',
+            value: JSON.stringify({ suggestionId, suggestion: fullText }),
+          },
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: 'Dismiss', emoji: true },
+            action_id: 'assistant_dismiss_suggestion',
+            value: JSON.stringify({ suggestionId }),
+          },
+        ],
+      },
+    ],
   });
 
   const processingTimeMs = Date.now() - startTime;
