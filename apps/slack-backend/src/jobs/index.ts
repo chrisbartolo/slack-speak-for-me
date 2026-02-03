@@ -10,6 +10,7 @@ export {
   removeReportScheduler,
   syncAllReportSchedulers,
   getReportSchedulers,
+  setupUsageReporterScheduler,
 } from './schedulers.js';
 
 // Re-export types

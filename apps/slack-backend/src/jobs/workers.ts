@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -11,6 +11,7 @@ import { WebClient } from '@slack/web-api';
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
 let sheetsWorker: Worker<SheetsWriteJobData, SheetsWriteJobResult> | null = null;
 let reportWorker: Worker<ReportGenerationJobData, ReportGenerationJobResult> | null = null;
+let usageReporterWorker: Worker<UsageReporterJobData, UsageReporterJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -473,6 +474,27 @@ export async function startWorkers() {
   reportWorker.on('completed', (job) => logger.info({ jobId: job.id }, 'Report job completed'));
 
   logger.info('Report worker started');
+
+  // Usage reporter worker
+  usageReporterWorker = new Worker<UsageReporterJobData, UsageReporterJobResult>(
+    'usage-reporter',
+    async (job) => {
+      logger.info({ jobId: job.id, triggeredBy: job.data.triggeredBy }, 'Processing usage reporter job');
+      const result = await reportUnreportedUsageBatch();
+      logger.info({ jobId: job.id, ...result }, 'Usage reporting completed');
+      return result;
+    },
+    {
+      connection: redis,
+      concurrency: 1, // Only one batch at a time
+    }
+  );
+
+  usageReporterWorker.on('error', (err) => logger.error({ err }, 'Usage reporter worker error'));
+  usageReporterWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Usage reporter job failed'));
+  usageReporterWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Usage reporter job completed'));
+
+  logger.info('Usage reporter worker started');
 }
 
 export async function stopWorkers() {
@@ -490,5 +512,10 @@ export async function stopWorkers() {
     await reportWorker.close();
     reportWorker = null;
     logger.info('Report worker stopped');
+  }
+  if (usageReporterWorker) {
+    await usageReporterWorker.close();
+    usageReporterWorker = null;
+    logger.info('Usage reporter worker stopped');
   }
 }

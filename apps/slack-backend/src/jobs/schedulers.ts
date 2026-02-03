@@ -1,8 +1,8 @@
 import { db, reportSettings as reportSettingsTable } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
-import { reportQueue } from './queues.js';
+import { reportQueue, usageReporterQueue } from './queues.js';
 import { logger } from '../utils/logger.js';
-import type { ReportGenerationJobData } from './types.js';
+import type { ReportGenerationJobData, UsageReporterJobData } from './types.js';
 
 /**
  * Convert day of week (0-6) and time (HH:mm) to cron pattern
@@ -187,6 +187,33 @@ export async function getReportSchedulers(): Promise<
     }));
   } catch (error) {
     logger.error({ error }, 'Failed to get report schedulers');
+    throw error;
+  }
+}
+
+/**
+ * Setup daily usage reporter scheduler
+ * Runs at 2:00 AM UTC to report previous day's usage to Stripe
+ */
+export async function setupUsageReporterScheduler(): Promise<void> {
+  try {
+    const jobData: UsageReporterJobData = {
+      triggeredBy: 'schedule',
+    };
+
+    // Upsert the job scheduler (daily at 2 AM UTC)
+    await usageReporterQueue.upsertJobScheduler(
+      'daily-usage-report',
+      { pattern: '0 2 * * *' }, // 2:00 AM UTC daily
+      {
+        name: 'daily-usage-report',
+        data: jobData,
+      }
+    );
+
+    logger.info('Usage reporter scheduler configured (daily 2 AM UTC)');
+  } catch (error) {
+    logger.error({ error }, 'Failed to setup usage reporter scheduler');
     throw error;
   }
 }

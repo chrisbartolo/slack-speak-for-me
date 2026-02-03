@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData } from './types.js';
+import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData } from './types.js';
 
 export const aiResponseQueue = new Queue<AIResponseJobData>('ai-responses', {
   connection: redis,
@@ -62,3 +62,13 @@ export const reportQueue = new Queue<ReportGenerationJobData>('report-generation
 export async function queueReportGeneration(data: ReportGenerationJobData) {
   return reportQueue.add('generate-report', data);
 }
+
+export const usageReporterQueue = new Queue<UsageReporterJobData>('usage-reporter', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 60000 }, // 1 min, 2 min, 4 min
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
+  },
+});

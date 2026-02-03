@@ -52,3 +52,14 @@ export interface ReportGenerationJobResult {
   missingSubmitters?: string[];
   processingTimeMs?: number;
 }
+
+export interface UsageReporterJobData {
+  triggeredBy: 'schedule' | 'manual';
+}
+
+export interface UsageReporterJobResult {
+  total: number;
+  reported: number;
+  skipped: number;
+  failed: number;
+}

@@ -1,6 +1,6 @@
 import { app } from './app.js'; // Importing app triggers side effects: error handler + health endpoints
 import { env } from './env.js';
-import { startWorkers, stopWorkers, syncAllReportSchedulers } from './jobs/index.js';
+import { startWorkers, stopWorkers, syncAllReportSchedulers, setupUsageReporterScheduler } from './jobs/index.js';
 import { logger } from './utils/logger.js';
 
 async function main() {
@@ -23,6 +23,10 @@ async function main() {
     // Sync all report schedulers from database
     await syncAllReportSchedulers();
     logger.info('Report schedulers synchronized');
+
+    // Setup daily usage reporter scheduler
+    await setupUsageReporterScheduler();
+    logger.info('Usage reporter scheduler configured');
 
     // Log success with OAuth install URL
     logger.info({
