@@ -11,6 +11,7 @@ import { getBrandVoiceContext } from './brand-voice.js';
 import { analyzeSentiment, type SentimentAnalysis } from './sentiment-detector.js';
 import { searchKnowledgeBase } from './knowledge-base.js';
 import { triggerEscalationAlert } from './escalation-monitor.js';
+import { resolveStyleContext, checkAndEnforceGuardrails, findRelevantTemplates } from './index.js';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -237,6 +238,60 @@ ${personContextEntries}
 
   const organizationId = workspace?.organizationId;
 
+  // Resolve org-wide style settings (if organization exists)
+  let orgStyleContext = '';
+  if (organizationId) {
+    try {
+      const orgStyle = await resolveStyleContext(
+        organizationId,
+        context.workspaceId,
+        context.userId
+      );
+
+      // Build org style guidance for prompt
+      const orgStyleParts: string[] = [];
+      if (orgStyle.tone) {
+        orgStyleParts.push(`Tone: ${orgStyle.tone}`);
+      }
+      if (orgStyle.formality) {
+        orgStyleParts.push(`Formality: ${orgStyle.formality}`);
+      }
+      if (orgStyle.preferredPhrases && orgStyle.preferredPhrases.length > 0) {
+        orgStyleParts.push(`Preferred phrases: ${orgStyle.preferredPhrases.join(', ')}`);
+      }
+      if (orgStyle.avoidPhrases && orgStyle.avoidPhrases.length > 0) {
+        orgStyleParts.push(`Avoid phrases: ${orgStyle.avoidPhrases.join(', ')}`);
+      }
+      if (orgStyle.customGuidance) {
+        orgStyleParts.push(`Additional guidance: ${orgStyle.customGuidance}`);
+      }
+
+      if (orgStyleParts.length > 0) {
+        orgStyleContext = `\n<organization_style_guidelines>
+${orgStyleParts.join('\n')}
+</organization_style_guidelines>\n`;
+      }
+    } catch (error) {
+      // Non-fatal - log and continue without org style
+      logger.warn({ error, organizationId }, 'Failed to resolve org style context');
+    }
+  }
+
+  // Find relevant response templates (if organization exists)
+  let templateContext = '';
+  if (organizationId) {
+    try {
+      templateContext = await findRelevantTemplates(
+        organizationId,
+        context.triggerMessage,
+        2 // Max 2 templates
+      );
+    } catch (error) {
+      // Non-fatal - log and continue without templates
+      logger.warn({ error, organizationId }, 'Failed to find relevant templates');
+    }
+  }
+
   if (organizationId) {
     // Check participants for client contacts (prioritize trigger message sender)
     const triggerUserId = context.contextMessages.length > 0
@@ -346,8 +401,10 @@ Reference this information when appropriate to provide accurate, helpful respons
     }
   }
 
-  // Append client context to additional context section
+  // Append client context and new admin features to additional context section
   additionalContextSection += clientContext;
+  additionalContextSection += orgStyleContext;
+  additionalContextSection += templateContext;
 
   const userPrompt = `Here is the recent conversation context:
 ${sanitizedContext}
@@ -359,7 +416,14 @@ Trigger type: ${context.triggeredBy}
 
 Please suggest a professional response the user could send. Use the provided context about this conversation and the people involved to make your suggestion more appropriate. Provide only the suggested response text, no additional commentary.`;
 
-  try {
+  // Helper function to generate suggestion with optional regeneration for guardrails
+  const generateWithGuardrails = async (avoidTopics?: string[]): Promise<{ suggestion: string; response: any; guardrailWarnings?: string[] }> => {
+    // Build user prompt with optional guardrail avoidance instruction
+    let finalUserPrompt = userPrompt;
+    if (avoidTopics && avoidTopics.length > 0) {
+      finalUserPrompt += `\n\n**IMPORTANT**: Avoid these topics in your response: ${avoidTopics.join(', ')}. Generate an alternative suggestion that addresses the message without touching these subjects.`;
+    }
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
@@ -380,7 +444,7 @@ Please suggest a professional response the user could send. Use the provided con
       messages: [
         {
           role: 'user',
-          content: userPrompt,
+          content: finalUserPrompt,
         },
       ],
     });
@@ -389,8 +453,107 @@ Please suggest a professional response the user could send. Use the provided con
       ? response.content[0].text
       : '';
 
-    // Sanitize AI output before returning
-    const suggestion = sanitizeAIOutput(rawSuggestion);
+    // Sanitize AI output before guardrail check
+    const sanitizedSuggestion = sanitizeAIOutput(rawSuggestion);
+
+    // Check guardrails (if organization exists)
+    let finalSuggestion = sanitizedSuggestion;
+    let guardrailWarnings: string[] | undefined;
+
+    if (organizationId) {
+      try {
+        const guardrailResult = await checkAndEnforceGuardrails(
+          organizationId,
+          context.workspaceId,
+          context.userId,
+          sanitizedSuggestion,
+          context.channelId
+        );
+
+        if (guardrailResult.blocked) {
+          // Hard block - throw error to prevent delivery
+          logger.warn({
+            organizationId,
+            workspaceId: context.workspaceId,
+            userId: context.userId,
+            blockReason: guardrailResult.blockReason,
+          }, 'Suggestion blocked by guardrails');
+
+          throw new Error(`This suggestion was blocked by your organization's content guardrails: ${guardrailResult.blockReason}`);
+        }
+
+        if (guardrailResult.shouldRegenerate && guardrailResult.avoidTopics) {
+          // Regenerate mode - return signal to retry (handled by caller)
+          logger.info({
+            organizationId,
+            avoidTopics: guardrailResult.avoidTopics,
+          }, 'Guardrail violation detected - regeneration requested');
+
+          return {
+            suggestion: '',
+            response,
+            guardrailWarnings: undefined,
+          };
+        }
+
+        if (guardrailResult.warnings && guardrailResult.warnings.length > 0) {
+          // Soft warning - append to suggestion
+          guardrailWarnings = guardrailResult.warnings;
+          finalSuggestion = guardrailResult.text || sanitizedSuggestion;
+
+          logger.info({
+            organizationId,
+            warnings: guardrailResult.warnings,
+          }, 'Guardrail warnings attached to suggestion');
+        }
+      } catch (guardrailError: any) {
+        // If it's our block error, re-throw it
+        if (guardrailError.message?.includes('blocked by')) {
+          throw guardrailError;
+        }
+        // Otherwise log and continue (fail open)
+        logger.warn({ error: guardrailError, organizationId }, 'Guardrail check failed, allowing suggestion');
+      }
+    }
+
+    return {
+      suggestion: finalSuggestion,
+      response,
+      guardrailWarnings,
+    };
+  };
+
+  try {
+    // First attempt: Generate with guardrails
+    let result = await generateWithGuardrails();
+
+    // If regeneration requested, try once more with avoid topics
+    if (!result.suggestion && organizationId) {
+      logger.info({ organizationId }, 'Regenerating suggestion to avoid guardrail violations');
+
+      // Get avoid topics from first attempt
+      const guardrailConfig = await import('./guardrails.js').then(m => m.getGuardrailConfig(organizationId));
+      const allTopics = [
+        ...(guardrailConfig.blockedKeywords || []),
+        ...(guardrailConfig.enabledCategories || []).map(cat => cat),
+      ];
+
+      // Retry once with avoidance instruction (max 1 retry to prevent infinite loops)
+      result = await generateWithGuardrails(allTopics.slice(0, 5)); // Limit to top 5 to keep prompt manageable
+    }
+
+    const { suggestion, response, guardrailWarnings } = result;
+
+    // If still no suggestion after retry, something went wrong
+    if (!suggestion) {
+      throw new Error('Failed to generate suggestion after guardrail regeneration');
+    }
+
+    // Append guardrail warnings to suggestion if present
+    let finalSuggestion = suggestion;
+    if (guardrailWarnings && guardrailWarnings.length > 0) {
+      finalSuggestion += `\n\n:warning: *Note*: This suggestion may contain content flagged by org guardrails: ${guardrailWarnings.join(', ')}`;
+    }
 
     const processingTimeMs = Date.now() - startTime;
 
@@ -423,10 +586,13 @@ Please suggest a professional response the user could send. Use the provided con
       hasClientContext: !!clientContext,
       sentimentRisk: sentimentResult?.riskLevel || 'none',
       kbDocsRetrieved: kbResults?.length || 0,
-    }, 'AI suggestion generated with personalization');
+      hasOrgStyle: !!orgStyleContext,
+      hasTemplates: !!templateContext,
+      guardrailWarnings: guardrailWarnings?.length || 0,
+    }, 'AI suggestion generated with personalization and admin features');
 
     return {
-      suggestion,
+      suggestion: finalSuggestion,
       processingTimeMs,
       personalization: {
         learningPhase: styleContext.learningPhase,

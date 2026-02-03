@@ -1,8 +1,8 @@
 import { db, reportSettings as reportSettingsTable } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
-import { reportQueue, usageReporterQueue, escalationScanQueue } from './queues.js';
+import { reportQueue, usageReporterQueue, escalationScanQueue, dataRetentionQueue } from './queues.js';
 import { logger } from '../utils/logger.js';
-import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData } from './types.js';
+import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData, DataRetentionJobData } from './types.js';
 
 /**
  * Convert day of week (0-6) and time (HH:mm) to cron pattern
@@ -241,6 +241,33 @@ export async function setupEscalationScannerScheduler(): Promise<void> {
     logger.info('Escalation scanner scheduler configured (every 15 minutes)');
   } catch (error) {
     logger.error({ error }, 'Failed to setup escalation scanner scheduler');
+    throw error;
+  }
+}
+
+/**
+ * Setup data retention scheduler
+ * Runs at 3:00 AM UTC daily to clean up expired audit data
+ */
+export async function setupDataRetentionScheduler(): Promise<void> {
+  try {
+    const jobData: DataRetentionJobData = {
+      triggeredBy: 'schedule',
+    };
+
+    // Upsert the job scheduler (daily at 3 AM UTC)
+    await dataRetentionQueue.upsertJobScheduler(
+      'daily-data-retention',
+      { pattern: '0 3 * * *' }, // 3:00 AM UTC daily
+      {
+        name: 'data-retention-cleanup',
+        data: jobData,
+      }
+    );
+
+    logger.info('Data retention scheduler configured (daily 3 AM UTC)');
+  } catch (error) {
+    logger.error({ error }, 'Failed to setup data retention scheduler');
     throw error;
   }
 }

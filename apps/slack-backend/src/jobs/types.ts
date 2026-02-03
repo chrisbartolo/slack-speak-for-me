@@ -86,3 +86,15 @@ export interface EscalationScanJobResult {
   organizationsScanned: number;
   alertsCreated: number;
 }
+
+export interface DataRetentionJobData {
+  triggeredBy: 'schedule' | 'manual';
+}
+
+export interface DataRetentionJobResult {
+  organizationsProcessed: number;
+  feedbackDeleted: number;
+  violationsDeleted: number;
+  auditLogsDeleted: number;
+  errors: number;
+}

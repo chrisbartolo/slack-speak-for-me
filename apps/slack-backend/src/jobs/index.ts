@@ -12,6 +12,7 @@ export {
   getReportSchedulers,
   setupUsageReporterScheduler,
   setupEscalationScannerScheduler,
+  setupDataRetentionScheduler,
 } from './schedulers.js';
 
 // Re-export types
