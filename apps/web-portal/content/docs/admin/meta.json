@@ -1,4 +1,4 @@
 {
   "title": "Administration",
-  "pages": ["index", "org-setup", "billing", "team-management", "compliance"]
+  "pages": ["index", "org-setup", "billing", "team-management", "analytics", "org-style", "templates", "audit-trail", "guardrails", "client-management", "compliance"]
 }

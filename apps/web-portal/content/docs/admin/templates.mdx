@@ -1,0 +1,76 @@
+---
+title: Response Templates
+description: Create and manage shared response templates with approval workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Response templates let your team share pre-approved responses that the AI can reference when generating suggestions. When a message relates to a topic covered by an approved template, the AI incorporates the template content to produce more consistent and accurate suggestions.
+
+## Template types
+
+| Type | Purpose |
+|---|---|
+| **Canned response** | A complete, ready-to-use reply for common questions or situations |
+| **Starter** | An opening or framework that the AI builds upon with conversation context |
+| **Playbook** | Detailed guidance for handling specific scenarios (for example, handling refund requests) |
+
+## Approval workflow
+
+Templates go through a review process before the AI can use them.
+
+<Steps>
+  <Step>
+    ### Submit a template
+
+    Any team member can submit a template by providing a name, type, keywords, and content. The template enters **Pending** status.
+  </Step>
+  <Step>
+    ### Admin review
+
+    An admin reviews the submitted template and decides whether to approve or reject it. Rejected templates include a reason that the submitter can see.
+  </Step>
+  <Step>
+    ### Template goes live
+
+    Once approved, the template becomes available to the AI for all team members in the organization. The AI uses keyword matching to determine when a template is relevant.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Only approved templates are used by the AI. Pending and rejected templates have no effect on suggestion generation.
+</Callout>
+
+## How templates are matched
+
+When generating a suggestion, the AI compares the incoming message against the keywords defined in each approved template. If there is sufficient keyword overlap, the template content is included as additional context for the AI.
+
+The AI does not copy templates verbatim. Instead, it uses the template as a reference point, combining it with conversation context and the user's style to produce a natural-sounding suggestion.
+
+## Managing templates
+
+Admins can manage templates from the [admin dashboard](/admin/templates):
+
+- **Filter** by status (all, pending, approved, rejected)
+- **Approve or reject** pending templates
+- **Delete** templates that are no longer needed
+- **Create** new templates directly
+
+## Plan limits
+
+The number of templates available depends on your plan:
+
+| Plan | Max templates |
+|---|---|
+| Free | 5 |
+| Starter | 20 |
+| Pro | 50 |
+| Team | 200 |
+| Business | Unlimited |
+
+## Related
+
+- [AI Suggestions](/docs/features/suggestions) -- How the AI uses templates during generation
+- [Organization Style](/docs/admin/org-style) -- Organization-wide communication guidelines
+- [Content Guardrails](/docs/admin/guardrails) -- Prevent inappropriate content

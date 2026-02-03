@@ -1,0 +1,77 @@
+---
+title: Content Guardrails
+description: Configure content restrictions and monitor AI suggestion compliance
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Content guardrails let admins define topics and keywords that should be restricted in AI-generated suggestions. When a suggestion violates a guardrail rule, the system takes the configured action -- blocking, regenerating, or warning the user.
+
+## Accessing guardrails
+
+Sign in to the [admin dashboard](/admin/guardrails) and select **Guardrails** from the admin sidebar.
+
+## Predefined categories
+
+Speak for Me includes seven predefined topic categories that can be enabled or disabled:
+
+| Category | Restricts |
+|---|---|
+| **Legal** | Legal advice, liability statements, contract interpretations |
+| **Pricing** | Specific pricing, discounts, or financial commitments |
+| **Competitor** | Mentions of competitor products or comparisons |
+| **Medical** | Medical advice or health-related claims |
+| **Financial** | Financial advice or investment recommendations |
+| **HR** | HR policy statements, employment decisions |
+| **Confidential** | References to confidential or internal-only information |
+
+Enable a category to have the system check suggestions for content related to that topic.
+
+## Custom blocked keywords
+
+In addition to predefined categories, you can add specific keywords or phrases to block. The system checks for these using word-boundary matching, which means:
+
+- "price" will match "price" but not "priceless"
+- Matching is case-insensitive
+- You can add single words or multi-word phrases
+
+<Callout type="info">
+  The maximum number of custom blocked keywords depends on your plan tier. Free plans support up to 5 keywords; Business plans have no limit.
+</Callout>
+
+## Trigger modes
+
+When a guardrail violation is detected, the system responds based on the configured trigger mode:
+
+| Mode | Behavior |
+|---|---|
+| **Hard block** | The suggestion is blocked entirely. The user sees a message that the suggestion was blocked by organizational guardrails. |
+| **Regenerate** | The AI generates a new suggestion, instructed to avoid the flagged topic. This happens once -- if the second attempt also violates, it is delivered with a warning. |
+| **Soft warning** | The suggestion is delivered with a warning footer noting which guardrail was triggered. The user can still use the suggestion. |
+
+## Violations report
+
+The **Violations** tab on the guardrails page shows:
+
+- Total violation count and trend over the past 30 days
+- Breakdown by violation type (which categories or keywords are triggered most)
+- Recent individual violations with timestamps and users
+
+This helps admins understand which guardrails are triggered frequently and whether the configuration needs adjustment.
+
+## How guardrails work in the AI pipeline
+
+1. The AI generates a suggestion using all available context (style, templates, conversation)
+2. The guardrail system checks the generated text against enabled categories and blocked keywords
+3. Based on the trigger mode, the suggestion is blocked, regenerated, or delivered with a warning
+4. All violations are logged to the audit trail
+
+<Callout type="warn">
+  Guardrails are designed to fail open. If the guardrail check encounters an error, the suggestion is delivered normally rather than being blocked. This ensures guardrail configuration issues never prevent users from receiving suggestions.
+</Callout>
+
+## Related
+
+- [Organization Style](/docs/admin/org-style) -- Organization-wide style guidelines
+- [Audit Trail](/docs/admin/audit-trail) -- View guardrail violation logs
+- [Response Templates](/docs/admin/templates) -- Pre-approved content for consistent responses

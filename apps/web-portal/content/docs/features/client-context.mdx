@@ -1,0 +1,66 @@
+---
+title: Client Context
+description: Enhance AI suggestions with client profiles, brand voice, and knowledge base documents
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Client context features help professionals who communicate with external clients in Slack. By adding client profiles, brand voice guidelines, and knowledge base documents, the AI generates suggestions that are informed by your relationship with each client and your organization's communication standards.
+
+## Client profiles
+
+A client profile stores information about an external company or client you communicate with. This includes:
+
+| Field | Description |
+|---|---|
+| **Company name** | The client's organization name |
+| **Industry** | The client's industry for context-appropriate language |
+| **Services provided** | What your organization provides to this client |
+| **Contract details** | Key terms, SLA details, or relationship notes |
+| **Communication preferences** | How this client prefers to be communicated with |
+
+When the AI detects that a message is from a known client contact, it automatically incorporates the client profile into its suggestion generation. This means your suggestions will reference the right services, use appropriate terminology, and respect the client relationship.
+
+## Client contacts
+
+Client contacts link Slack users to client profiles. When you add a Slack user as a contact for a client, the AI will recognize messages from that person and apply the relevant client context.
+
+You can manage client contacts from the [Client Management](/docs/admin/client-management) admin page or through the dashboard.
+
+## Brand voice
+
+Brand voice templates define how your organization communicates with clients. These guidelines are applied to all AI suggestions when responding to client contacts.
+
+A brand voice template includes:
+
+- **Approved phrases** -- Language your organization encourages (for example, "We are committed to your success")
+- **Forbidden phrases** -- Language to avoid (for example, informal slang or competitor names)
+- **Tone guidance** -- Specific instructions for how suggestions should sound when addressing clients
+
+<Callout type="info">
+  Brand voice templates are applied on top of your personal style settings. The AI combines both to generate suggestions that match your voice while respecting organizational guidelines.
+</Callout>
+
+## Knowledge base
+
+The knowledge base stores documents that the AI can reference when generating suggestions. This is useful for product documentation, FAQs, policies, or any reference material that helps the AI provide accurate responses.
+
+When a message relates to a topic covered in the knowledge base, the AI retrieves relevant documents using semantic search and incorporates that information into the suggestion. This helps you respond with accurate, up-to-date information without having to look it up manually.
+
+### How knowledge base search works
+
+Documents are automatically chunked and indexed using vector embeddings. When a suggestion is generated, the system searches for the most relevant chunks and includes them as context for the AI. This means:
+
+- You do not need to memorize every detail in your documentation
+- Suggestions reference the correct product names, features, and specifications
+- Responses stay consistent with your organization's official information
+
+<Callout type="warn">
+  Knowledge base documents are processed and indexed after upload. Large documents may take a moment to become available for AI reference.
+</Callout>
+
+## Related
+
+- [AI Suggestions](/docs/features/suggestions) -- How suggestions are generated and delivered
+- [Escalation Alerts](/docs/features/escalation-alerts) -- Automated detection of tense client conversations
+- [Client Management](/docs/admin/client-management) -- Admin guide for managing profiles and knowledge base

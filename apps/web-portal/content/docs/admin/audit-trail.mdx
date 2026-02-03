@@ -1,0 +1,83 @@
+---
+title: Audit Trail
+description: Track AI-assisted responses and admin actions for compliance
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The compliance audit trail provides a detailed record of all AI-assisted activity and administrative changes within your organization. This helps meet compliance requirements and gives admins visibility into how Speak for Me is being used.
+
+## Accessing the audit trail
+
+Sign in to the [admin dashboard](/admin/audit-trail) and select **Audit Trail** from the admin sidebar.
+
+## What is logged
+
+The audit trail captures two categories of events:
+
+### AI activity
+
+| Event | Details captured |
+|---|---|
+| **Suggestion generated** | Timestamp, user, channel, action taken |
+| **Suggestion accepted** | When a user copies a suggestion |
+| **Suggestion refined** | When a user refines a suggestion before use |
+| **Suggestion dismissed** | When a user dismisses a suggestion |
+| **Guardrail violation** | When a suggestion is blocked or flagged by guardrails |
+
+### Admin actions
+
+| Event | Details captured |
+|---|---|
+| **Settings changed** | Which setting was modified and by whom |
+| **Template approved/rejected** | Template name, reviewer, decision |
+| **User role changed** | Who changed, old role, new role |
+| **Guardrail config updated** | What was added or removed |
+
+<Callout type="info">
+  Suggestion text visibility in the audit trail depends on your plan tier. Higher-tier plans include the full suggestion text; lower tiers show metadata only.
+</Callout>
+
+## Filtering and sorting
+
+The audit trail table supports:
+
+- **Search** by user name or event type
+- **Filter** by date range, action type, or user
+- **Sort** by any column (timestamp, user, action, channel)
+- **Pagination** for navigating large datasets
+
+## Exporting audit data
+
+Two export formats are available:
+
+| Format | Availability | Best for |
+|---|---|---|
+| **CSV** | Starter plans and above | Spreadsheet analysis, custom reporting |
+| **PDF** | Team plans and above | Compliance documentation, formal reports |
+
+Click the **Export CSV** or **Export PDF** button at the top of the audit trail page.
+
+## Data retention
+
+Audit trail data is retained based on your plan tier:
+
+| Plan | Retention period |
+|---|---|
+| Free | 7 days |
+| Starter | 30 days |
+| Pro | 90 days |
+| Team | 90 days |
+| Business | 90 days |
+
+Data older than your retention period is automatically deleted by a daily cleanup job.
+
+<Callout type="warn">
+  Exported data is not subject to retention limits. If you need long-term audit records, export regularly.
+</Callout>
+
+## Related
+
+- [Compliance & Data Privacy](/docs/admin/compliance) -- GDPR compliance and data handling
+- [Content Guardrails](/docs/admin/guardrails) -- How guardrail violations are logged
+- [Team Analytics](/docs/admin/analytics) -- Aggregated team usage metrics

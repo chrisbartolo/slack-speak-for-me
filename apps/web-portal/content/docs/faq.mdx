@@ -63,6 +63,26 @@ There is no limit on the number of conversations you can watch, regardless of yo
 
 Person context lets you add notes about specific people you interact with (for example, "Sarah is the project lead, prefers concise updates"). Conversation context lets you add notes about channels or DMs (for example, "This channel is for client communication, keep tone formal"). These notes help the AI generate more relevant suggestions.
 
+### What are client profiles?
+
+Client profiles let you store information about external companies your team communicates with -- including industry, services provided, and communication preferences. When the AI detects a message from a known client contact, it automatically applies the client profile to generate more relevant suggestions. See [Client Context](/docs/features/client-context) for details.
+
+### What are content guardrails?
+
+Content guardrails let admins restrict specific topics or keywords from appearing in AI-generated suggestions. You can enable predefined categories (legal, pricing, competitor, etc.) or add custom blocked keywords. When a suggestion violates a guardrail, it can be blocked, regenerated, or delivered with a warning depending on the configured trigger mode. See [Content Guardrails](/docs/admin/guardrails) for setup instructions.
+
+### What is YOLO mode?
+
+YOLO mode (auto-send) allows suggestions to be sent automatically without requiring you to review and copy them first. This is controlled by your organization admin and can be enabled globally or for specific users. See [Organization Style & YOLO Mode](/docs/admin/org-style) for details.
+
+### How do response templates work?
+
+Response templates are pre-approved responses that the AI can reference when generating suggestions. Any team member can submit a template, and an admin reviews and approves it before it becomes active. The AI matches templates to conversations by keyword overlap and uses them as additional context -- not as verbatim responses. See [Response Templates](/docs/admin/templates) for the full workflow.
+
+### How does escalation detection work?
+
+Speak for Me monitors conversations with known client contacts for signs of frustration or tension. When detected, it assigns a severity level (medium, high, or critical) and sends a Slack DM alert to the responsible team member. The AI also switches to de-escalation mode, generating more empathetic suggestions. See [Escalation Alerts](/docs/features/escalation-alerts) for more details.
+
 ---
 
 ## Billing

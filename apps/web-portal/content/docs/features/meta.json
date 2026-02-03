@@ -1,4 +1,4 @@
 {
   "title": "Features",
-  "pages": ["index", "watching", "suggestions", "refinement", "style-settings", "reports", "shortcuts"]
+  "pages": ["index", "watching", "suggestions", "refinement", "style-settings", "client-context", "escalation-alerts", "reports", "shortcuts"]
 }

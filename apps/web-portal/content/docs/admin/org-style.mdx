@@ -1,0 +1,63 @@
+---
+title: Organization Style & YOLO Mode
+description: Set organization-wide style guidelines and auto-send permissions
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Organization style settings let admins define communication guidelines that apply across all team members. Combined with YOLO mode controls, admins can govern both how suggestions sound and whether they can be sent automatically.
+
+## Accessing organization style
+
+Sign in to the [admin dashboard](/admin/settings) and select **Settings** from the admin sidebar.
+
+## Style modes
+
+The style mode determines how organization-wide settings interact with each team member's personal style preferences:
+
+| Mode | Behavior |
+|---|---|
+| **Override** | Organization settings replace all individual preferences. Every team member's suggestions follow the org style. |
+| **Layer** | Organization settings provide a base. Individual preferences override where they have been set. |
+| **Fallback** | Individual preferences take priority. Organization settings fill in any gaps where a user has not configured a preference. |
+
+<Callout type="info">
+  Most teams start with **Fallback** mode to respect individual preferences while ensuring consistency where users have not customized their style. Use **Override** when strict brand consistency is required.
+</Callout>
+
+## Available settings
+
+Organization style settings mirror individual style options:
+
+- **Tone** -- The overall emotional quality (professional, friendly, direct, empathetic)
+- **Formality level** -- How formal or casual suggestions should be
+- **Preferred phrases** -- Words and expressions the organization encourages
+- **Phrases to avoid** -- Words and expressions the organization discourages
+- **Custom guidance** -- Free-text instructions for the AI (for example, "Always close with an offer to help")
+
+## YOLO mode (auto-send)
+
+YOLO mode allows suggestions to be sent automatically without requiring the user to review and copy them first. This is useful for high-volume, low-risk conversations where speed matters.
+
+### Global toggle
+
+Admins can enable or disable YOLO mode for the entire organization. When disabled globally, no team member can use auto-send regardless of their individual preferences.
+
+### Per-user overrides
+
+Even when YOLO mode is enabled globally, admins can override the setting for specific users:
+
+- **Allow** -- User can use auto-send even if globally disabled
+- **Deny** -- User cannot use auto-send even if globally enabled
+
+This lets admins grant auto-send to experienced team members while restricting it for others.
+
+<Callout type="warn">
+  YOLO mode sends messages on behalf of users without review. Enable it only for team members who are comfortable with AI-generated responses being sent directly.
+</Callout>
+
+## Related
+
+- [Style Settings](/docs/features/style-settings) -- Individual style configuration
+- [AI Suggestions](/docs/features/suggestions) -- How suggestions are generated
+- [Content Guardrails](/docs/admin/guardrails) -- Prevent inappropriate content from being sent

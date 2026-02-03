@@ -1,0 +1,70 @@
+---
+title: Escalation Alerts
+description: Automated detection and alerts for tense or frustrated client conversations
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Escalation alerts automatically monitor conversations with known client contacts for signs of tension, frustration, or dissatisfaction. When the system detects a potentially escalating situation, it notifies the relevant team members so they can intervene early.
+
+## How detection works
+
+The AI analyzes messages from client contacts in watched conversations and evaluates the emotional tone. Detection runs in the background and does not affect suggestion generation speed.
+
+The system looks for signals such as:
+
+- Expressions of frustration or dissatisfaction
+- Repeated requests or follow-ups indicating unresolved issues
+- Language suggesting urgency or threat of churn
+- Negative sentiment about your product or service
+
+## Severity levels
+
+Each detected escalation is assigned a severity level:
+
+| Level | Description | Typical triggers |
+|---|---|---|
+| **Medium** | Mild frustration or concern detected | Slightly negative tone, minor complaints |
+| **High** | Clear dissatisfaction or repeated issues | Strong negative language, unresolved follow-ups |
+| **Critical** | Urgent situation requiring immediate attention | Threats to cancel, legal language, extreme frustration |
+
+## How you are notified
+
+When an escalation is detected, the system sends a direct message to the team member responsible for that client. The alert includes:
+
+- The severity level
+- A summary of what triggered the detection
+- A link to the conversation in Slack
+- The client profile for quick reference
+
+<Callout type="info">
+  Escalation alerts are sent as Slack DMs to ensure they are seen promptly. They do not appear in the client's conversation.
+</Callout>
+
+## De-escalation mode
+
+When a conversation is flagged as escalating, the AI automatically switches to **de-escalation mode** for its suggestions. In this mode, suggestions are:
+
+- More empathetic and understanding in tone
+- Focused on acknowledging the client's concerns
+- Structured to move toward resolution
+- Careful to avoid defensive or dismissive language
+
+De-escalation mode is applied automatically and does not require any action from you. It remains active for the duration of the escalated conversation.
+
+## Managing alerts
+
+Admins can view and manage escalation alerts from the [Client Management](/docs/admin/client-management) admin page. Each alert can be:
+
+- **Acknowledged** -- Marks that someone is aware and handling the situation
+- **Resolved** -- Marks the escalation as addressed
+
+<Callout type="warn">
+  Escalation detection requires client contacts to be configured. The system only monitors conversations with known client contacts, not all watched conversations.
+</Callout>
+
+## Related
+
+- [Client Context](/docs/features/client-context) -- Set up client profiles and contacts
+- [AI Suggestions](/docs/features/suggestions) -- How suggestions are generated
+- [Client Management](/docs/admin/client-management) -- Admin guide for escalation monitoring

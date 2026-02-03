@@ -1,0 +1,105 @@
+---
+title: Client Management
+description: Manage client profiles, brand voice, knowledge base, and escalation alerts
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Client management tools help admins configure how the AI handles conversations with external clients. This includes maintaining client profiles, setting brand voice guidelines, managing knowledge base documents, and monitoring escalation alerts.
+
+## Client profiles
+
+Client profiles store information about the external companies your team communicates with. The AI uses this information to generate more relevant and informed suggestions.
+
+### Creating a client profile
+
+<Steps>
+  <Step>
+    ### Open client management
+
+    Navigate to the [admin dashboard](/admin/clients) and select **Clients** from the admin sidebar.
+  </Step>
+  <Step>
+    ### Add a new client
+
+    Click **Add Client** and fill in the company name, industry, services provided, and any relevant contract details or communication preferences.
+  </Step>
+  <Step>
+    ### Link contacts
+
+    Add Slack users who represent this client. When messages from these users are detected, the AI will automatically apply the client profile context.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  A Slack user can only be linked to one client profile. If a contact changes companies, update or remove the existing link before creating a new one.
+</Callout>
+
+## Brand voice
+
+Brand voice templates define organizational communication standards that apply when responding to client contacts.
+
+### Configuring brand voice
+
+From the [Brand Voice](/admin/brand-voice) admin page, you can set:
+
+- **Approved phrases** -- Language your team should use (for example, "Thank you for your partnership")
+- **Forbidden phrases** -- Language to avoid (for example, competitor names, informal slang)
+- **Tone guidance** -- Specific instructions for client-facing communication
+
+Brand voice applies in addition to individual style settings and organization style. The AI combines all sources to generate suggestions that sound natural while respecting organizational standards.
+
+## Knowledge base
+
+The knowledge base stores documents that the AI references when generating suggestions. This is useful for product documentation, pricing guides, technical specs, or any information that helps your team respond accurately.
+
+### Uploading documents
+
+<Steps>
+  <Step>
+    ### Open knowledge base
+
+    Navigate to the [admin dashboard](/admin/knowledge-base) and select **Knowledge Base** from the admin sidebar.
+  </Step>
+  <Step>
+    ### Upload a document
+
+    Click **Upload Document** and provide a title, category, and the document content. The system automatically chunks the content and creates vector embeddings for semantic search.
+  </Step>
+  <Step>
+    ### Verify indexing
+
+    After upload, the document appears in the list. Once indexed, the AI can reference it when generating suggestions related to the document's content.
+  </Step>
+</Steps>
+
+<Callout type="warn">
+  Keep knowledge base documents up to date. Outdated information will lead to inaccurate AI suggestions. Review and update documents regularly.
+</Callout>
+
+## Escalation alerts
+
+The escalation monitoring system detects tension or frustration in client conversations and alerts the responsible team members.
+
+### Viewing alerts
+
+From the [Escalations](/admin/escalations) admin page, you can see all active and resolved escalation alerts. Each alert shows:
+
+- Severity level (medium, high, critical)
+- The client and contact involved
+- A summary of the detected issue
+- The Slack conversation link
+
+### Managing alerts
+
+- **Acknowledge** an alert to indicate someone is handling the situation
+- **Resolve** an alert when the issue has been addressed
+
+Unresolved critical alerts should be addressed promptly, as they indicate a client at risk of churn or serious dissatisfaction.
+
+## Related
+
+- [Client Context](/docs/features/client-context) -- How client profiles enhance AI suggestions
+- [Escalation Alerts](/docs/features/escalation-alerts) -- How detection and de-escalation work
+- [Organization Style](/docs/admin/org-style) -- Organization-wide communication guidelines
