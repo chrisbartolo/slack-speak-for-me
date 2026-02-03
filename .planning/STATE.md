@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 14 (User Manual & Knowledge Base)
-Plan: 1 of ? in phase
+Plan: 2 of ? in phase
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 14 plan 01 complete (Fumadocs infrastructure)
-Last activity: 2026-02-03 - Completed 14-01-PLAN.md (Fumadocs infrastructure setup)
+Status: Phase 14 plan 02 complete (Getting Started and Features documentation)
+Last activity: 2026-02-03 - Completed 14-02-PLAN.md (Getting Started and Features docs)
 
-Progress: [██████████████████████████████░░] ~100% (68/68 plans complete)
+Progress: [██████████████████████████████░░] ~100% (69/69 plans complete)
 
 ## Production Deployment
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 14 - User Manual & Knowledge Base | 1 | 9 min | 9.0 min |
+| 14 - User Manual & Knowledge Base | 2 | 13 min | 6.5 min |
 
 ## Accumulated Context
 
@@ -195,6 +195,10 @@ Recent decisions affecting current work:
 - Phase 14 Plan 01: Import from @/.source/server not @/.source -- Turbopack needs explicit file reference
 - Phase 14 Plan 01: RootProvider scoped to (docs) route group, no html/body tags in docs layout
 - Phase 14 Plan 01: zodResolver as any cast for Zod v4 bridge compatibility with @hookform/resolvers
+- Phase 14 Plan 02: Cards components for section index pages with visual navigation
+- Phase 14 Plan 02: Steps/Step components for procedural guides (installation, onboarding, refinement)
+- Phase 14 Plan 02: Related links section at bottom of each article for cross-navigation
+- Phase 14 Plan 02: 150-400 word target per article balancing conciseness with completeness
 
 ### Pending Todos
 
@@ -228,7 +232,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 14-01-PLAN.md (Fumadocs documentation infrastructure)
+Stopped at: Completed 14-02-PLAN.md (Getting Started and Features documentation)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
