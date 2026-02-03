@@ -36,6 +36,9 @@ export function SiteNav() {
             <Link href="/docs" className="text-gray-600 hover:text-gray-900">
               Docs
             </Link>
+            <Link href="/support" className="text-gray-600 hover:text-gray-900">
+              Support
+            </Link>
             <Link href="/login">
               <Button variant="ghost" size="sm">Sign In</Button>
             </Link>
@@ -75,6 +78,13 @@ export function SiteNav() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Docs
+              </Link>
+              <Link
+                href="/support"
+                className="text-gray-600 hover:text-gray-900 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Support
               </Link>
               <Link
                 href="/login"

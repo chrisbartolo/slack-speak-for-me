@@ -9,9 +9,11 @@ vi.mock('../utils/logger.js', () => ({
   },
 }));
 
-const mockDelete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
-const mockUpdate = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
-const mockInsert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+const { mockDelete, mockUpdate, mockInsert } = vi.hoisted(() => ({
+  mockDelete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
+  mockUpdate: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) }),
+  mockInsert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) }),
+}));
 
 vi.mock('@slack-speak/database', () => {
   const createTable = (name: string) => ({ workspaceId: name, [Symbol.for('name')]: name });

@@ -36,9 +36,9 @@ export function Footer() {
             <Link href="/docs" className="hover:text-gray-900 transition-colors">
               Docs
             </Link>
-            <a href="mailto:support@speakforme.app" className="hover:text-gray-900 transition-colors">
+            <Link href="/support" className="hover:text-gray-900 transition-colors">
               Support
-            </a>
+            </Link>
             <span className="text-gray-300">|</span>
             <Link href="/privacy" className="hover:text-gray-900 transition-colors">
               Privacy Policy

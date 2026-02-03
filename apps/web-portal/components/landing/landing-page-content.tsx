@@ -112,6 +112,9 @@ export function LandingPageContent() {
               Get contextually-aware response suggestions for challenging workplace messages.
               Speak for Me uses Claude AI to help you communicate professionally and effectively.
             </p>
+            <p className="mt-3 text-sm text-gray-500 italic">
+              AI-generated suggestions may not always be accurate. Always review before sending.
+            </p>
             <div className="mt-10 flex items-center gap-x-6">
               <a href={slackInstallUrl}>
                 <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-lg px-8 py-6 shadow-lg shadow-indigo-500/25">
