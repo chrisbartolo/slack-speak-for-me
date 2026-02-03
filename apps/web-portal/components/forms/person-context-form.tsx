@@ -43,7 +43,8 @@ export function PersonContextForm({ defaultValues, trigger, onSuccess }: PersonC
   const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
 
   const form = useForm<PersonContextInput>({
-    resolver: zodResolver(personContextSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(personContextSchema as any),
     defaultValues: defaultValues ?? {
       targetSlackUserId: '',
       contextText: '',

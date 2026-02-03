@@ -5,7 +5,7 @@ const protectedRoutes = [
   '/dashboard',
   '/admin', // Admin routes require auth; role check happens at page level via requireAdmin()
 ];
-const publicRoutes = ['/', '/login', '/callback', '/install'];
+const publicRoutes = ['/', '/login', '/callback', '/install', '/docs'];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

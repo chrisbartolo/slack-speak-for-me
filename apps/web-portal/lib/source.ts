@@ -1,11 +1,7 @@
-import { docs, meta } from '@/.source';
+import { docs } from '@/.source/server';
 import { loader } from 'fumadocs-core/source';
 
 export const source = loader({
   baseUrl: '/docs',
-  source: createSource(),
+  source: docs.toFumadocsSource(),
 });
-
-function createSource() {
-  return { ...docs.toFumadocsSource(), ...meta.toFumadocsSource() };
-}

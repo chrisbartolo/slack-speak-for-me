@@ -66,7 +66,8 @@ export function ReportSettingsForm({ defaultValues, disabled }: ReportSettingsFo
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ReportSettings>({
-    resolver: zodResolver(reportSettingsSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(reportSettingsSchema as any),
     defaultValues: {
       enabled: defaultValues?.enabled ?? false,
       dayOfWeek: defaultValues?.dayOfWeek ?? 1,

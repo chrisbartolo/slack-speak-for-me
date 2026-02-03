@@ -35,7 +35,8 @@ export function StylePreferencesForm({ defaultValues }: StylePreferencesFormProp
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<StylePreferences>({
-    resolver: zodResolver(stylePreferencesSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(stylePreferencesSchema as any),
     defaultValues: {
       tone: defaultValues?.tone ?? null,
       formality: defaultValues?.formality ?? null,
