@@ -14,7 +14,9 @@ interface NavItemProps {
 
 export function NavItem({ href, icon: Icon, label, compact }: NavItemProps) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  // Exact match for top-level items; prefix match for group children (compact)
+  // to support drill-down routes like /admin/organizations/[orgId]
+  const isActive = pathname === href || (compact && pathname.startsWith(href + '/'));
 
   return (
     <Link

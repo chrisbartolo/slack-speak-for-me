@@ -1,8 +1,8 @@
 import 'server-only';
 import { db, schema } from '@/lib/db';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, isNull } from 'drizzle-orm';
 
-const { users, userSubscriptions, usageRecords } = schema;
+const { users, workspaces, userSubscriptions, usageRecords } = schema;
 
 export interface UserPlanInfo {
   email: string;
@@ -255,4 +255,123 @@ export async function resetUsage(email: string): Promise<void> {
         eq(usageRecords.billingPeriodStart, periodStart)
       )
     );
+}
+
+/**
+ * Get all users with plan and usage info for an organization (across all its workspaces).
+ * Uses JOINs instead of N+1 queries.
+ */
+export async function getOrganizationUserPlans(organizationId: string): Promise<(UserPlanInfo & { workspaceName: string | null })[]> {
+  const now = new Date();
+  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const rows = await db
+    .select({
+      email: users.email,
+      slackUserId: users.slackUserId,
+      workspaceName: workspaces.name,
+      planId: userSubscriptions.planId,
+      subscriptionStatus: userSubscriptions.subscriptionStatus,
+      adminOverride: userSubscriptions.adminOverride,
+      overrideReason: userSubscriptions.overrideReason,
+      suggestionsUsed: usageRecords.suggestionsUsed,
+      suggestionsIncluded: usageRecords.suggestionsIncluded,
+      bonusSuggestions: usageRecords.bonusSuggestions,
+      billingPeriodStart: usageRecords.billingPeriodStart,
+      billingPeriodEnd: usageRecords.billingPeriodEnd,
+    })
+    .from(users)
+    .innerJoin(workspaces, eq(users.workspaceId, workspaces.id))
+    .leftJoin(userSubscriptions, eq(userSubscriptions.email, users.email))
+    .leftJoin(
+      usageRecords,
+      and(
+        eq(usageRecords.email, users.email),
+        eq(usageRecords.billingPeriodStart, periodStart)
+      )
+    )
+    .where(eq(workspaces.organizationId, organizationId))
+    .orderBy(workspaces.name, users.email);
+
+  return rows
+    .filter(row => row.email)
+    .map(row => {
+      const included = row.suggestionsIncluded ?? 5;
+      const bonus = row.bonusSuggestions ?? 0;
+      return {
+        email: row.email!,
+        slackUserId: row.slackUserId,
+        displayName: row.email!,
+        planId: row.planId ?? 'free',
+        subscriptionStatus: row.subscriptionStatus ?? null,
+        adminOverride: row.adminOverride ?? false,
+        overrideReason: row.overrideReason ?? null,
+        suggestionsUsed: row.suggestionsUsed ?? 0,
+        suggestionsIncluded: included,
+        bonusSuggestions: bonus,
+        effectiveLimit: included + bonus,
+        billingPeriodStart: row.billingPeriodStart ?? null,
+        billingPeriodEnd: row.billingPeriodEnd ?? null,
+        workspaceName: row.workspaceName,
+      };
+    });
+}
+
+/**
+ * Get all users with plan and usage info from workspaces not linked to any organization.
+ */
+export async function getUnaffiliatedUserPlans(): Promise<(UserPlanInfo & { workspaceName: string | null })[]> {
+  const now = new Date();
+  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const rows = await db
+    .select({
+      email: users.email,
+      slackUserId: users.slackUserId,
+      workspaceName: workspaces.name,
+      planId: userSubscriptions.planId,
+      subscriptionStatus: userSubscriptions.subscriptionStatus,
+      adminOverride: userSubscriptions.adminOverride,
+      overrideReason: userSubscriptions.overrideReason,
+      suggestionsUsed: usageRecords.suggestionsUsed,
+      suggestionsIncluded: usageRecords.suggestionsIncluded,
+      bonusSuggestions: usageRecords.bonusSuggestions,
+      billingPeriodStart: usageRecords.billingPeriodStart,
+      billingPeriodEnd: usageRecords.billingPeriodEnd,
+    })
+    .from(users)
+    .innerJoin(workspaces, eq(users.workspaceId, workspaces.id))
+    .leftJoin(userSubscriptions, eq(userSubscriptions.email, users.email))
+    .leftJoin(
+      usageRecords,
+      and(
+        eq(usageRecords.email, users.email),
+        eq(usageRecords.billingPeriodStart, periodStart)
+      )
+    )
+    .where(isNull(workspaces.organizationId))
+    .orderBy(workspaces.name, users.email);
+
+  return rows
+    .filter(row => row.email)
+    .map(row => {
+      const included = row.suggestionsIncluded ?? 5;
+      const bonus = row.bonusSuggestions ?? 0;
+      return {
+        email: row.email!,
+        slackUserId: row.slackUserId,
+        displayName: row.email!,
+        planId: row.planId ?? 'free',
+        subscriptionStatus: row.subscriptionStatus ?? null,
+        adminOverride: row.adminOverride ?? false,
+        overrideReason: row.overrideReason ?? null,
+        suggestionsUsed: row.suggestionsUsed ?? 0,
+        suggestionsIncluded: included,
+        bonusSuggestions: bonus,
+        effectiveLimit: included + bonus,
+        billingPeriodStart: row.billingPeriodStart ?? null,
+        billingPeriodEnd: row.billingPeriodEnd ?? null,
+        workspaceName: row.workspaceName,
+      };
+    });
 }

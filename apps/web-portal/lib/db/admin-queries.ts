@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { eq, desc, count } from 'drizzle-orm';
+import { eq, desc, count, isNull, sql } from 'drizzle-orm';
 import { db, schema } from './index';
 import { requireAdmin } from '../auth/admin';
 import { isSuperAdmin } from '../auth/super-admin';
@@ -108,4 +108,83 @@ export const getUserCounts = cache(async (organizationId: string) => {
     .groupBy(workspaces.id);
 
   return Object.fromEntries(results.map(r => [r.workspaceId, r.userCount]));
+});
+
+/**
+ * Get organizations with user and workspace counts.
+ * Super admins see all, regular admins see their own.
+ */
+export const getOrganizationsWithCounts = cache(async () => {
+  const session = await requireAdmin();
+  const superAdmin = await isSuperAdmin();
+
+  // Build base query - get orgs with workspace count
+  const baseQuery = db
+    .select({
+      id: organizations.id,
+      name: organizations.name,
+      slug: organizations.slug,
+      planId: organizations.planId,
+      seatCount: organizations.seatCount,
+      subscriptionStatus: organizations.subscriptionStatus,
+      createdAt: organizations.createdAt,
+      workspaceCount: count(workspaces.id),
+    })
+    .from(organizations)
+    .leftJoin(workspaces, eq(workspaces.organizationId, organizations.id))
+    .groupBy(organizations.id)
+    .orderBy(desc(organizations.createdAt));
+
+  const orgs = superAdmin
+    ? await baseQuery
+    : session.organizationId
+      ? await baseQuery.where(eq(organizations.id, session.organizationId))
+      : [];
+
+  // Get user counts per org (separate query to avoid double-join counting issues)
+  const orgIds = orgs.map(o => o.id);
+  if (orgIds.length === 0) return [];
+
+  const userCountRows = await db
+    .select({
+      orgId: workspaces.organizationId,
+      userCount: count(users.id),
+    })
+    .from(users)
+    .innerJoin(workspaces, eq(users.workspaceId, workspaces.id))
+    .where(sql`${workspaces.organizationId} IN (${sql.join(orgIds.map(id => sql`${id}`), sql`, `)})`)
+    .groupBy(workspaces.organizationId);
+
+  const userCountMap = Object.fromEntries(
+    userCountRows.map(r => [r.orgId, r.userCount])
+  );
+
+  return orgs.map(org => ({
+    ...org,
+    userCount: userCountMap[org.id] ?? 0,
+  }));
+});
+
+/**
+ * Get workspaces that are not linked to any organization, with user counts.
+ */
+export const getUnaffiliatedWorkspaces = cache(async () => {
+  await requireAdmin();
+
+  const results = await db
+    .select({
+      id: workspaces.id,
+      teamId: workspaces.teamId,
+      name: workspaces.name,
+      isActive: workspaces.isActive,
+      createdAt: workspaces.createdAt,
+      userCount: count(users.id),
+    })
+    .from(workspaces)
+    .leftJoin(users, eq(users.workspaceId, workspaces.id))
+    .where(isNull(workspaces.organizationId))
+    .groupBy(workspaces.id)
+    .orderBy(desc(workspaces.createdAt));
+
+  return results;
 });

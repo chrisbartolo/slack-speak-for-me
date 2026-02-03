@@ -45,6 +45,7 @@ interface UserPlanInfo {
   effectiveLimit: number;
   billingPeriodStart: Date | string | null;
   billingPeriodEnd: Date | string | null;
+  workspaceName?: string | null;
 }
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
@@ -55,7 +56,7 @@ const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   business: { label: 'Business', color: 'bg-amber-100 text-amber-700' },
 };
 
-export function PlanManagementTable({ users }: { users: UserPlanInfo[] }) {
+export function PlanManagementTable({ users, showWorkspace = false }: { users: UserPlanInfo[]; showWorkspace?: boolean }) {
   const [selectedUser, setSelectedUser] = useState<UserPlanInfo | null>(null);
   const [dialogMode, setDialogMode] = useState<'plan' | 'grant' | 'reset' | null>(null);
   const [loading, setLoading] = useState(false);
@@ -150,6 +151,7 @@ export function PlanManagementTable({ users }: { users: UserPlanInfo[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
+              {showWorkspace && <TableHead>Workspace</TableHead>}
               <TableHead>Plan</TableHead>
               <TableHead>Usage</TableHead>
               <TableHead>Bonus</TableHead>
@@ -159,8 +161,8 @@ export function PlanManagementTable({ users }: { users: UserPlanInfo[] }) {
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No users found in this workspace
+                <TableCell colSpan={showWorkspace ? 6 : 5} className="text-center text-muted-foreground py-8">
+                  No users found
                 </TableCell>
               </TableRow>
             ) : (
@@ -177,6 +179,11 @@ export function PlanManagementTable({ users }: { users: UserPlanInfo[] }) {
                       <div className="font-medium">{user.displayName}</div>
                       <div className="text-xs text-muted-foreground">{user.email}</div>
                     </TableCell>
+                    {showWorkspace && (
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">{user.workspaceName || 'Unknown'}</span>
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className={planInfo.color}>

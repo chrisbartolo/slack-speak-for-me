@@ -83,8 +83,6 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               defaultOpen={false}
               items={[
                 { href: '/admin/organizations', label: 'Organizations' },
-                { href: '/admin/users', label: 'Users' },
-                { href: '/admin/plan-management', label: 'Plans & Usage' },
                 { href: '/admin/coupons', label: 'Coupons' },
               ]}
             />
