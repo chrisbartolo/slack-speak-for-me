@@ -1,5 +1,4 @@
-import pkg from '@slack/bolt';
-const { App } = pkg;
+import { App } from '@slack/bolt';
 import { env } from './env.js';
 import { installationStore } from './oauth/installation-store.js';
 import { errorHandler } from './middleware/error-handler.js';
@@ -44,6 +43,7 @@ export const app = new App({
   stateSecret: env.SLACK_STATE_SECRET,
   installationStore,
   scopes: [
+    'assistant:write',  // AI assistant panel
     'channels:history',
     'channels:read',
     'chat:write',

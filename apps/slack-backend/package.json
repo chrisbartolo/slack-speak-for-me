@@ -14,7 +14,7 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@slack-speak/database": "*",
     "@slack-speak/validation": "*",
-    "@slack/bolt": "^3.22.0",
+    "@slack/bolt": "^4.6.0",
     "bullmq": "^5.28.2",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",

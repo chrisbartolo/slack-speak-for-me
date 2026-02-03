@@ -143,7 +143,6 @@ export function withRateLimit(
 
     return new Promise<void>((resolve) => {
       // Run the rate limiter middleware
-      // @ts-expect-error - We're adapting Node HTTP to Express-like interface
       limiter(expressReq, expressRes, async (err?: Error) => {
         if (err) {
           logger.error({ err }, 'Rate limiter error');
