@@ -37,6 +37,12 @@ oauth_config:
       - channels:read
       - chat:write
       - commands
+      - groups:read
+      - groups:history
+      - im:read
+      - im:history
+      - mpim:read
+      - mpim:history
       - users:read
 
 settings:
@@ -45,6 +51,9 @@ settings:
     bot_events:
       - app_mention
       - message.channels
+      - message.groups
+      - message.im
+      - message.mpim
   interactivity:
     is_enabled: true
     request_url: https://YOUR_BACKEND_URL/slack/events
