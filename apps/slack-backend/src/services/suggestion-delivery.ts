@@ -1,6 +1,13 @@
 import type { WebClient } from '@slack/web-api';
 import type { Block, KnownBlock } from '@slack/types';
 
+interface UsageInfo {
+  used: number;
+  limit: number;
+  warningLevel: 'safe' | 'warning' | 'critical' | 'exceeded';
+  planId: string;
+}
+
 interface SuggestionDeliveryOptions {
   client: WebClient;
   channelId: string;
@@ -8,6 +15,7 @@ interface SuggestionDeliveryOptions {
   suggestionId: string;
   suggestion: string;
   triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm';
+  usageInfo?: UsageInfo;
 }
 
 /**
@@ -16,7 +24,8 @@ interface SuggestionDeliveryOptions {
 export function buildSuggestionBlocks(
   suggestionId: string,
   suggestion: string,
-  triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm'
+  triggerContext: 'mention' | 'reply' | 'thread' | 'message_action' | 'dm',
+  usageInfo?: UsageInfo
 ): (Block | KnownBlock)[] {
   // Map trigger context to user-friendly text
   const contextLabels: Record<typeof triggerContext, string> = {
@@ -27,7 +36,7 @@ export function buildSuggestionBlocks(
     dm: 'someone messaged you directly',
   };
 
-  return [
+  const blocks: (Block | KnownBlock)[] = [
     {
       type: 'header',
       text: {
@@ -101,6 +110,31 @@ export function buildSuggestionBlocks(
       ],
     },
   ];
+
+  // Add usage context block if provided
+  if (usageInfo) {
+    let usageText = `${usageInfo.used}/${usageInfo.limit} suggestions used this month`;
+
+    if (usageInfo.warningLevel === 'warning') {
+      const percentUsed = Math.round((usageInfo.used / usageInfo.limit) * 100);
+      usageText = `⚠️ ${usageInfo.used}/${usageInfo.limit} suggestions used this month (${percentUsed}% used)`;
+    } else if (usageInfo.warningLevel === 'critical') {
+      const remaining = Math.max(0, usageInfo.limit - usageInfo.used);
+      usageText = `🚨 Only ${remaining} suggestion${remaining !== 1 ? 's' : ''} remaining this month!`;
+    } else if (usageInfo.warningLevel === 'exceeded') {
+      usageText = `📊 Over limit: ${usageInfo.used}/${usageInfo.limit} used (overage charges apply)`;
+    }
+
+    blocks.push({
+      type: 'context',
+      elements: [{
+        type: 'mrkdwn',
+        text: usageText,
+      }],
+    });
+  }
+
+  return blocks;
 }
 
 /**
@@ -109,9 +143,9 @@ export function buildSuggestionBlocks(
 export async function sendSuggestionEphemeral(
   options: SuggestionDeliveryOptions
 ): Promise<void> {
-  const { client, channelId, userId, suggestionId, suggestion, triggerContext } = options;
+  const { client, channelId, userId, suggestionId, suggestion, triggerContext, usageInfo } = options;
 
-  const blocks = buildSuggestionBlocks(suggestionId, suggestion, triggerContext);
+  const blocks = buildSuggestionBlocks(suggestionId, suggestion, triggerContext, usageInfo);
 
   await client.chat.postEphemeral({
     channel: channelId,
