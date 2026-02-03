@@ -23,6 +23,10 @@ vi.mock('../../services/context.js', () => ({
   ]),
 }));
 
+vi.mock('../../services/actionables.js', () => ({
+  processMessageForActionables: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('../../utils/logger.js', () => ({
   logger: {
     info: vi.fn(),
