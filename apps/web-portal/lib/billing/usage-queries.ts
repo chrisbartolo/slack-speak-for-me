@@ -5,6 +5,23 @@ import { eq, and, desc, inArray } from 'drizzle-orm';
 const { usageRecords, usageEvents, users, workspaces } = schema;
 
 /**
+ * Look up user email from the users table by workspace + Slack user ID.
+ * Used as a fallback when the session email is empty (OIDC fetch failed at login).
+ */
+export async function lookupUserEmail(
+  workspaceId: string,
+  slackUserId: string
+): Promise<string> {
+  const [user] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(and(eq(users.workspaceId, workspaceId), eq(users.slackUserId, slackUserId)))
+    .limit(1);
+
+  return user?.email || '';
+}
+
+/**
  * Get current billing period usage for a user by email
  */
 export async function getCurrentUsage(email: string): Promise<{

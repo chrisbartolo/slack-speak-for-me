@@ -48,14 +48,14 @@ export async function exchangeCodeForTokens(code: string): Promise<OAuthTokenRes
 export interface UserInfoResponse {
   ok: boolean;
   error?: string;
-  user?: {
-    email?: string;
-  };
+  email?: string;
+  email_verified?: boolean;
 }
 
 /**
- * Fetch user email from Slack using the OpenID Connect userinfo endpoint
- * Requires 'email' user scope
+ * Fetch user email from Slack using the OpenID Connect userinfo endpoint.
+ * The OIDC response puts email at the top level (not nested under .user).
+ * Requires 'email' user scope.
  */
 export async function fetchUserEmail(userAccessToken: string): Promise<string | null> {
   const response = await fetch('https://slack.com/api/openid.connect.userInfo', {
@@ -67,11 +67,11 @@ export async function fetchUserEmail(userAccessToken: string): Promise<string | 
 
   const data: UserInfoResponse = await response.json();
 
-  if (!data.ok || !data.user?.email) {
+  if (!data.ok || !data.email) {
     console.warn('Could not fetch user email from Slack:', data.error);
     return null;
   }
 
   // Normalize email to lowercase for consistent lookup
-  return data.user.email.toLowerCase();
+  return data.email.toLowerCase();
 }

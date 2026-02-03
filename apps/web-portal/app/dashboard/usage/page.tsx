@@ -2,6 +2,7 @@ import { verifySession } from '@/lib/auth/dal';
 import { getCurrentUsage, getUsageHistory } from '@/lib/billing/usage-queries';
 import { getPlanById, USAGE_THRESHOLDS, CURRENCY, formatOverageRate } from '@/lib/billing/plans.config';
 import { checkUserAccess } from '@/lib/billing/access-check';
+import { lookupUserEmail } from '@/lib/billing/usage-queries';
 import { UsageMeter } from '@/components/usage/usage-meter';
 import { UsageAlert } from '@/components/usage/usage-alert';
 import { HelpLink } from '@/components/help/help-link';
@@ -13,9 +14,11 @@ export const metadata = {
 
 export default async function UsagePage() {
   const session = await verifySession();
-  const access = await checkUserAccess(session.email, session.workspaceId);
-  const usage = session.email ? await getCurrentUsage(session.email) : null;
-  const history = session.email ? await getUsageHistory(session.email, 6) : [];
+  // Session email may be empty if OIDC fetch failed at login — fall back to DB
+  const email = session.email || await lookupUserEmail(session.workspaceId, session.userId);
+  const access = await checkUserAccess(email, session.workspaceId);
+  const usage = email ? await getCurrentUsage(email) : null;
+  const history = email ? await getUsageHistory(email, 6) : [];
 
   // Determine plan info
   const planId = access.hasAccess ? (access.planId || 'free') : 'free';
