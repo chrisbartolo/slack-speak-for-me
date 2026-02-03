@@ -129,7 +129,7 @@ export default function InstallSuccessPage() {
             </Button>
           </Link>
           <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
-            <a href={`https://slack.com/app_redirect?app=${process.env.NEXT_PUBLIC_SLACK_APP_ID || ''}`} target="_blank" rel="noopener noreferrer">
+            <a href="https://app.slack.com" target="_blank" rel="noopener noreferrer">
               Open Slack
             </a>
           </Button>
