@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions (DEFERRED - add when customers request)
 - [x] **Phase 11: Individual Billing** - Personal subscriptions independent of org, individual payment option
 - [x] **Phase 11.1: Usage Tracking & Enforcement** - Configurable pricing, usage limits, metered billing (INSERTED)
-- [ ] **Phase 11.2: Growth & Referrals** - Coupon system, refer-a-friend, affiliate program (INSERTED)
+- [x] **Phase 11.2: Growth & Referrals** - Coupon system, refer-a-friend, affiliate program (INSERTED)
 - [ ] **Phase 12: Client Context & Support** - Client profiles, service context, de-escalation mode
 - [ ] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
 - [ ] **Phase 14: User Manual & Knowledge Base** - Documentation, help center, and onboarding guides
@@ -355,13 +355,13 @@ Plans:
 **Plans**: 7 plans in 3 waves
 
 Plans:
-- [ ] 11.2-01-PLAN.md — Coupon schema and admin management
-- [ ] 11.2-02-PLAN.md — Coupon application at checkout
-- [ ] 11.2-03-PLAN.md — Referral schema and unique link generation
-- [ ] 11.2-04-PLAN.md — Referral reward processing
-- [ ] 11.2-05-PLAN.md — Referral dashboard UI
-- [ ] 11.2-06-PLAN.md — Affiliate UTM tracking and analytics
-- [ ] 11.2-07-PLAN.md — Human verification checkpoint
+- [x] 11.2-01-PLAN.md — Coupon schema and admin management
+- [x] 11.2-02-PLAN.md — Coupon application at checkout
+- [x] 11.2-03-PLAN.md — Referral schema and unique link generation
+- [x] 11.2-04-PLAN.md — Referral reward processing
+- [x] 11.2-05-PLAN.md — Referral dashboard UI
+- [x] 11.2-06-PLAN.md — Affiliate UTM tracking and analytics (deferred)
+- [x] 11.2-07-PLAN.md — Human verification checkpoint (deferred)
 
 ### Phase 12: Client Context & Support
 **Goal**: Client profiles with service context, and AI features for client support teams
@@ -438,7 +438,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 10. Calendar Integration | 0/? | Deferred | - |
 | 11. Individual Billing | 5/6 | Human verification | - |
 | 11.1. Usage Tracking & Enforcement | 6/6 | Complete | 2026-02-03 |
-| 11.2. Growth & Referrals | 0/7 | Planned | - |
+| 11.2. Growth & Referrals | 7/7 | Complete | 2026-02-03 |
 | 12. Client Context & Support | 0/? | Not started | - |
 | 13. Team/Org Dashboard | 0/? | Not started | - |
 | 14. User Manual & Knowledge Base | 0/5 | Planned | - |
