@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 14 (User Manual & Knowledge Base)
-Plan: 4 of ? in phase
+Plan: 4 of ? in phase (plans 01-04 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 14 plan 04 complete (Contextual help links on dashboard)
-Last activity: 2026-02-03 - Completed 14-04-PLAN.md (Contextual help links)
+Status: Phase 14 plan 03 complete (Admin, troubleshooting, FAQ, API docs)
+Last activity: 2026-02-03 - Completed 14-03-PLAN.md (Admin, troubleshooting, FAQ, API documentation)
 
-Progress: [██████████████████████████████░░] ~100% (70/70 plans complete)
+Progress: [██████████████████████████████░░] ~100% (71/71 plans complete)
 
 ## Production Deployment
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 14 - User Manual & Knowledge Base | 4 | 18 min | 4.5 min |
+| 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
 
@@ -199,6 +199,9 @@ Recent decisions affecting current work:
 - Phase 14 Plan 02: Steps/Step components for procedural guides (installation, onboarding, refinement)
 - Phase 14 Plan 02: Related links section at bottom of each article for cross-navigation
 - Phase 14 Plan 02: 150-400 word target per article balancing conciseness with completeness
+- Phase 14 Plan 03: Problem/Solution format for troubleshooting articles with horizontal rules between sections
+- Phase 14 Plan 03: FAQ organized by h2 categories (General, Features, Billing, Privacy) with h3 questions
+- Phase 14 Plan 03: Integration docs structured by service (Slack, Google Sheets, Stripe) with scope/event tables
 - Phase 14 Plan 04: HelpLink component with self-contained TooltipProvider for server component compatibility
 - Phase 14 Plan 04: Sidebar Documentation link uses native anchor tag for target="_blank" (not NavItem)
 - Phase 14 Plan 04: Every dashboard page heading has contextual HelpLink to relevant docs section
@@ -235,7 +238,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 14-04-PLAN.md (Contextual help links on dashboard pages)
+Stopped at: Completed 14-03-PLAN.md (Admin, troubleshooting, FAQ, API documentation)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
