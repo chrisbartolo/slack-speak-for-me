@@ -54,13 +54,18 @@ export function registerHelpMeRespondShortcut(app: App): void {
         return;
       }
 
-      // Fetch conversation context
-      const contextMessages = await getContextForMessage(
-        client,
-        channelId,
-        messageTs,
-        threadTs
-      );
+      // Fetch conversation context (gracefully degrade for DMs where bot has no access)
+      let contextMessages: { userId: string; text: string; ts: string }[] = [];
+      try {
+        contextMessages = await getContextForMessage(
+          client,
+          channelId,
+          messageTs,
+          threadTs
+        );
+      } catch (contextError) {
+        logger.warn({ contextError, channelId }, 'Could not fetch conversation context (likely a DM), proceeding with trigger message only');
+      }
 
       // Queue AI response job
       await queueAIResponse({
