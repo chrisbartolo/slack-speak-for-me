@@ -10,6 +10,7 @@ import { StatCard } from '@/components/dashboard/stat-card';
 import { LearningSummary } from '@/components/dashboard/learning-summary';
 import { GettingStarted } from '@/components/dashboard/getting-started';
 import { MessageSquare, Eye, Edit3, Sliders } from 'lucide-react';
+import { HelpLink } from '@/components/help/help-link';
 
 export default async function DashboardPage() {
   // Fetch data in parallel
@@ -32,7 +33,10 @@ export default async function DashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <HelpLink href="/docs/getting-started" label="Getting started guide" />
+        </div>
         <p className="text-muted-foreground">
           Your AI learning progress and activity overview
         </p>

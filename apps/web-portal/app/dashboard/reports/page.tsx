@@ -5,6 +5,7 @@ import { GoogleConnectionCard } from '@/components/dashboard/google-connection-c
 import { GoogleSetupGuide } from '@/components/dashboard/google-setup-guide';
 import { WorkflowConfigForm } from '@/components/workflow-config-form';
 import { SuccessToast } from '@/components/dashboard/success-toast';
+import { HelpLink } from '@/components/help/help-link';
 
 export default async function ReportsPage({
   searchParams,
@@ -30,7 +31,10 @@ export default async function ReportsPage({
       )}
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Weekly Reports</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-gray-900">Weekly Reports</h1>
+          <HelpLink href="/docs/features/reports" label="Learn about weekly reports" />
+        </div>
         <p className="text-gray-600 mt-1">
           Configure automated weekly team report generation from workflow submissions.
         </p>

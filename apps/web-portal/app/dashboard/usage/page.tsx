@@ -4,6 +4,7 @@ import { getPlanById, USAGE_THRESHOLDS, CURRENCY, formatOverageRate } from '@/li
 import { checkUserAccess } from '@/lib/billing/access-check';
 import { UsageMeter } from '@/components/usage/usage-meter';
 import { UsageAlert } from '@/components/usage/usage-alert';
+import { HelpLink } from '@/components/help/help-link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 export const metadata = {
@@ -54,7 +55,10 @@ export default async function UsagePage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Usage</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-gray-900">Usage</h1>
+          <HelpLink href="/docs/admin/billing" label="Learn about usage and billing" />
+        </div>
         <p className="text-gray-600 mt-2">
           Track your AI suggestion usage for the current billing period
         </p>

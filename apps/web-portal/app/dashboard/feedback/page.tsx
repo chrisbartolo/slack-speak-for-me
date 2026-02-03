@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FeedbackList } from '@/components/dashboard/feedback-list';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { StatCard } from '@/components/dashboard/stat-card';
+import { HelpLink } from '@/components/help/help-link';
 import {
   getRefinementFeedback,
   getFeedbackStats,
@@ -45,7 +46,10 @@ export default async function FeedbackPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-3xl font-bold">AI Learning</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold">AI Learning</h1>
+          <HelpLink href="/docs/features/suggestions" label="Learn about AI suggestions" />
+        </div>
         <p className="text-muted-foreground mt-1">
           See how AI has learned from your feedback and message history
         </p>

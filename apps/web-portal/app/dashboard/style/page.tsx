@@ -1,4 +1,5 @@
 import { StylePreferencesForm } from '@/components/forms/style-preferences-form';
+import { HelpLink } from '@/components/help/help-link';
 import { getStylePreferences } from '@/lib/db/queries';
 
 export default async function StylePage() {
@@ -7,7 +8,10 @@ export default async function StylePage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-3xl font-bold">Style Settings</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold">Style Settings</h1>
+          <HelpLink href="/docs/features/style-settings" label="Learn about style settings" />
+        </div>
         <p className="text-muted-foreground mt-1">
           Configure how AI generates response suggestions for you
         </p>

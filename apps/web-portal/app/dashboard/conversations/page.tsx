@@ -2,6 +2,7 @@ import { MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConversationList } from '@/components/dashboard/conversation-list';
 import { EmptyState } from '@/components/dashboard/empty-state';
+import { HelpLink } from '@/components/help/help-link';
 import { getWatchedConversations, getConversationContexts } from '@/lib/db/queries';
 
 export default async function ConversationsPage() {
@@ -13,7 +14,10 @@ export default async function ConversationsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-3xl font-bold">Conversations</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold">Conversations</h1>
+          <HelpLink href="/docs/features/watching" label="Learn about watching conversations" />
+        </div>
         <p className="text-muted-foreground mt-1">
           Channels where you receive AI response suggestions
         </p>
