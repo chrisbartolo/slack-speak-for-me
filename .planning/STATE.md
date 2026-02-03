@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 11 of 11 (Individual Billing)
-Plan: 5 of 6 in phase
+Phase: 11.1 of 11 (Usage Tracking & Enforcement)
+Plan: 1 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-02 - Completed 11-05-PLAN.md (Individual Billing Settings Page)
+Last activity: 2026-02-03 - Completed 11.1-01-PLAN.md (Usage Tracking Infrastructure)
 
-Progress: [██████████████████████████████░░] 99% (63/64 plans complete)
+Progress: [██████████████████████████████░░] 100% (64/64 plans complete)
 
 ## Production Deployment
 
@@ -168,6 +168,12 @@ Recent decisions affecting current work:
 - Phase 11 Plan 05: Overlap warning when user has both individual and org subscription
 - Phase 11 Plan 05: Access source banner indicates individual vs organization
 - Phase 11 Plan 05: Upgrade link routes to individual billing for non-admins
+- Phase 11.1 Plan 01: stripeReportedAt timestamp tracks which usage events sent to Stripe
+- Phase 11.1 Plan 01: stripeMeterId and planId on usageRecords for historical tracking
+- Phase 11.1 Plan 01: Atomic SQL increment prevents race condition in concurrent usage recording
+- Phase 11.1 Plan 01: Warning levels at 80% (warning) and 95% (critical) of usage limit
+- Phase 11.1 Plan 01: FREE_PLAN defined in plans.config.ts as canonical source
+- Phase 11.1 Plan 01: PLAN_LIMITS aligned with plan IDs (free, starter, pro, team, business)
 
 ### Pending Todos
 
@@ -182,6 +188,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 6 added: Production Polish & Admin - Bug fixes, UX improvements, admin management
+- Phase 14 added: User Manual & Knowledge Base - Documentation, help center, and onboarding guides
 
 ### Blockers/Concerns
 
@@ -199,8 +206,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-02
-Stopped at: Completed 11-05-PLAN.md (Individual Billing Settings Page)
+Last session: 2026-02-03
+Stopped at: Completed 11.1-01-PLAN.md (Usage Tracking Infrastructure)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
