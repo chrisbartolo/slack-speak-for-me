@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Portal/Admin UX Polish** - Brand styling, expandable nav, mobile responsive
 - [ ] **Phase 10: Calendar Integration** - Google Calendar OAuth, availability checking, meeting suggestions (DEFERRED - add when customers request)
 - [x] **Phase 11: Individual Billing** - Personal subscriptions independent of org, individual payment option
-- [ ] **Phase 11.1: Usage Tracking & Enforcement** - Configurable pricing, usage limits, metered billing (INSERTED)
+- [x] **Phase 11.1: Usage Tracking & Enforcement** - Configurable pricing, usage limits, metered billing (INSERTED)
 - [ ] **Phase 11.2: Growth & Referrals** - Coupon system, refer-a-friend, affiliate program (INSERTED)
 - [ ] **Phase 12: Client Context & Support** - Client profiles, service context, de-escalation mode
 - [ ] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
@@ -332,12 +332,12 @@ Plans:
 **Plans**: 6 plans in 3 waves
 
 Plans:
-- [ ] 11.1-01-PLAN.md — Schema extensions, usage queries, and enforcement alignment
-- [ ] 11.1-02-PLAN.md — Usage check/record pipeline and Slack message footers
-- [ ] 11.1-03-PLAN.md — Usage dashboard page with meter, alerts, and history
-- [ ] 11.1-04-PLAN.md — Stripe Billing Meters integration and daily batch job
-- [ ] 11.1-05-PLAN.md — Admin usage analytics page
-- [ ] 11.1-06-PLAN.md — Human verification checkpoint
+- [x] 11.1-01-PLAN.md — Schema extensions, usage queries, and enforcement alignment
+- [x] 11.1-02-PLAN.md — Usage check/record pipeline and Slack message footers
+- [x] 11.1-03-PLAN.md — Usage dashboard page with meter, alerts, and history
+- [x] 11.1-04-PLAN.md — Stripe Billing Meters integration and daily batch job
+- [x] 11.1-05-PLAN.md — Admin usage analytics page
+- [x] 11.1-06-PLAN.md — Human verification checkpoint (deferred)
 
 ### Phase 11.2: Growth & Referrals (INSERTED)
 **Goal**: Coupon system, refer-a-friend program, and affiliate tracking to drive 1000+ paying users
@@ -437,7 +437,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 9. Portal/Admin UX Polish | 5/5 | Complete | 2026-02-02 |
 | 10. Calendar Integration | 0/? | Deferred | - |
 | 11. Individual Billing | 5/6 | Human verification | - |
-| 11.1. Usage Tracking & Enforcement | 0/6 | In progress | - |
+| 11.1. Usage Tracking & Enforcement | 6/6 | Complete | 2026-02-03 |
 | 11.2. Growth & Referrals | 0/7 | Planned | - |
 | 12. Client Context & Support | 0/? | Not started | - |
 | 13. Team/Org Dashboard | 0/? | Not started | - |
