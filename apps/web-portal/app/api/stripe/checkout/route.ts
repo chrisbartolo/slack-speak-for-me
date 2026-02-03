@@ -4,6 +4,8 @@ import { verifySession } from '@/lib/auth/dal';
 import { getStripe, createCustomer, createTrialCheckout, createIndividualCheckout } from '@/lib/stripe';
 import { db, schema } from '@/lib/db';
 import { eq } from 'drizzle-orm';
+import { validateCoupon, applyCouponToCheckout } from '@/lib/billing/coupons';
+import { getRefereeDiscount, recordReferralSignup } from '@/lib/billing/referrals';
 
 const { organizations, userSubscriptions } = schema;
 
@@ -16,10 +18,62 @@ const PLAN_PRICE_IDS: Record<string, string | undefined> = {
 };
 
 /**
+ * Resolve discount from coupon code or referral code
+ * Returns Stripe coupon ID and metadata for tracking
+ */
+async function resolveDiscount(
+  email: string,
+  planId: string,
+  couponCode?: string,
+  referralCode?: string
+): Promise<{
+  stripeCouponId?: string;
+  couponId?: string;
+  referralCode?: string;
+}> {
+  // Coupon takes priority over referral discount
+  if (couponCode) {
+    const validation = await validateCoupon(couponCode, email, planId);
+    if (validation.valid && validation.coupon) {
+      const stripeCouponId = await applyCouponToCheckout(validation.coupon.id);
+      if (stripeCouponId) {
+        return { stripeCouponId, couponId: validation.coupon.id };
+      }
+    }
+  }
+
+  // Check referral discount
+  if (referralCode) {
+    // Record the referral signup if not already recorded
+    await recordReferralSignup(referralCode, email);
+
+    const refereeDiscount = await getRefereeDiscount(email);
+    if (refereeDiscount.hasDiscount) {
+      // Create or get a Stripe coupon for the referral discount
+      const stripe = getStripe();
+      const refCouponId = `referral_${refereeDiscount.discountPercent}pct`;
+      try {
+        await stripe.coupons.retrieve(refCouponId);
+      } catch {
+        await stripe.coupons.create({
+          id: refCouponId,
+          percent_off: refereeDiscount.discountPercent,
+          duration: 'once',
+          name: `Referral ${refereeDiscount.discountPercent}% off`,
+        });
+      }
+      return { stripeCouponId: refCouponId, referralCode };
+    }
+  }
+
+  return {};
+}
+
+/**
  * Handle individual user checkout
  * Any authenticated user can start an individual subscription
  */
-async function handleIndividualCheckout(body: { planId?: string }): Promise<Response> {
+async function handleIndividualCheckout(body: { planId?: string; couponCode?: string; referralCode?: string }): Promise<Response> {
   const session = await verifySession();
 
   if (!session.email) {
@@ -60,12 +114,23 @@ async function handleIndividualCheckout(body: { planId?: string }): Promise<Resp
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://speakforme.app';
 
+  // Resolve coupon or referral discount
+  const discount = await resolveDiscount(
+    session.email.toLowerCase(),
+    planId,
+    body.couponCode,
+    body.referralCode
+  );
+
   const checkoutSession = await createIndividualCheckout({
     email: session.email.toLowerCase(),
     priceId,
     planId,
     successUrl: `${baseUrl}/dashboard?success=true&subscription=individual`,
     cancelUrl: `${baseUrl}/dashboard?canceled=true`,
+    stripeCouponId: discount.stripeCouponId,
+    couponId: discount.couponId,
+    referralCode: discount.referralCode,
   });
 
   return NextResponse.json({ url: checkoutSession.url });
@@ -75,7 +140,7 @@ async function handleIndividualCheckout(body: { planId?: string }): Promise<Resp
  * Handle organization checkout
  * Requires admin role in the organization
  */
-async function handleOrganizationCheckout(body: { planId?: string; startTrial?: boolean }): Promise<Response> {
+async function handleOrganizationCheckout(body: { planId?: string; startTrial?: boolean; couponCode?: string; referralCode?: string }): Promise<Response> {
   const stripe = getStripe();
   const session = await requireAdmin();
 
@@ -132,6 +197,20 @@ async function handleOrganizationCheckout(body: { planId?: string; startTrial?: 
     ? `${baseUrl}/admin/billing?success=true&trial_started=true`
     : `${baseUrl}/admin/billing?success=true`;
 
+  // Resolve coupon or referral discount
+  const billingEmail = org.billingEmail || `billing@${org.slug}.example.com`;
+  const discount = await resolveDiscount(
+    billingEmail,
+    planId,
+    body.couponCode,
+    body.referralCode
+  );
+
+  const discountMetadata = {
+    ...(discount.couponId ? { couponId: discount.couponId } : {}),
+    ...(discount.referralCode ? { referralCode: discount.referralCode } : {}),
+  };
+
   let checkoutSession;
 
   if (startTrial) {
@@ -144,6 +223,8 @@ async function handleOrganizationCheckout(body: { planId?: string; startTrial?: 
       planId,
       successUrl,
       cancelUrl: `${baseUrl}/admin/billing?canceled=true`,
+      stripeCouponId: discount.stripeCouponId,
+      extraMetadata: discountMetadata,
     });
   } else {
     // Create immediate checkout for upgrades or users who want to pay now
@@ -151,12 +232,14 @@ async function handleOrganizationCheckout(body: { planId?: string; startTrial?: 
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity }],
+      ...(discount.stripeCouponId ? { discounts: [{ coupon: discount.stripeCouponId }] } : {}),
       success_url: successUrl,
       cancel_url: `${baseUrl}/admin/billing?canceled=true`,
       metadata: {
         organizationId: org.id,
         planId,
         type: 'organization',
+        ...discountMetadata,
       },
       subscription_data: {
         metadata: {

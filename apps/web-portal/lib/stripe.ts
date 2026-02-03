@@ -95,8 +95,16 @@ export async function createTrialCheckout(options: {
   planId: string;
   successUrl: string;
   cancelUrl: string;
+  stripeCouponId?: string;
+  extraMetadata?: Record<string, string>;
 }): Promise<Stripe.Checkout.Session> {
   const trialDays = parseInt(process.env.TRIAL_DAYS || '14');
+  const metadata = {
+    organizationId: options.organizationId,
+    planId: options.planId,
+    type: 'organization' as const,
+    ...options.extraMetadata,
+  };
 
   return getStripe().checkout.sessions.create({
     customer: options.customerId,
@@ -104,15 +112,16 @@ export async function createTrialCheckout(options: {
     success_url: options.successUrl,
     cancel_url: options.cancelUrl,
     line_items: [{ price: options.priceId, quantity: options.quantity }],
+    ...(options.stripeCouponId ? { discounts: [{ coupon: options.stripeCouponId }] } : {}),
     subscription_data: {
       trial_period_days: trialDays,
       trial_settings: {
         end_behavior: { missing_payment_method: 'pause' }
       },
-      metadata: { organizationId: options.organizationId, planId: options.planId, type: 'organization' }
+      metadata,
     },
     payment_method_collection: 'if_required',
-    metadata: { organizationId: options.organizationId, planId: options.planId, type: 'organization' }
+    metadata,
   });
 }
 
@@ -127,8 +136,18 @@ export async function createIndividualCheckout(options: {
   planId: string;
   successUrl: string;
   cancelUrl: string;
+  stripeCouponId?: string;
+  couponId?: string;
+  referralCode?: string;
 }): Promise<Stripe.Checkout.Session> {
   const trialDays = parseInt(process.env.TRIAL_DAYS || '14');
+  const metadata = {
+    email: options.email,
+    planId: options.planId,
+    type: 'individual' as const,
+    ...(options.couponId ? { couponId: options.couponId } : {}),
+    ...(options.referralCode ? { referralCode: options.referralCode } : {}),
+  };
 
   return getStripe().checkout.sessions.create({
     customer_email: options.email,
@@ -136,14 +155,15 @@ export async function createIndividualCheckout(options: {
     success_url: options.successUrl,
     cancel_url: options.cancelUrl,
     line_items: [{ price: options.priceId, quantity: 1 }],
+    ...(options.stripeCouponId ? { discounts: [{ coupon: options.stripeCouponId }] } : {}),
     subscription_data: {
       trial_period_days: trialDays,
       trial_settings: {
         end_behavior: { missing_payment_method: 'pause' }
       },
-      metadata: { email: options.email, planId: options.planId, type: 'individual' }
+      metadata,
     },
     payment_method_collection: 'if_required',
-    metadata: { email: options.email, planId: options.planId, type: 'individual' }
+    metadata,
   });
 }
