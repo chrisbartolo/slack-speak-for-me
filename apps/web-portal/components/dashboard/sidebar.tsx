@@ -53,6 +53,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
                 { href: '/admin/organizations', label: 'Organizations' },
                 { href: '/admin/users', label: 'Users' },
                 { href: '/admin/billing', label: 'Billing' },
+                { href: '/admin/usage', label: 'Usage' },
                 // Coupons only visible to super admins
                 ...(isSuperAdmin ? [{ href: '/admin/coupons', label: 'Coupons' }] : []),
               ]}

@@ -86,6 +86,7 @@ export async function getOrgUsageSummary(organizationId: string): Promise<{
   topUsers: Array<{
     email: string;
     suggestionsUsed: number;
+    suggestionsIncluded: number;
   }>;
 }> {
   const now = new Date();
@@ -136,6 +137,7 @@ export async function getOrgUsageSummary(organizationId: string): Promise<{
     .select({
       email: usageRecords.email,
       suggestionsUsed: usageRecords.suggestionsUsed,
+      suggestionsIncluded: usageRecords.suggestionsIncluded,
     })
     .from(usageRecords)
     .where(
@@ -158,6 +160,7 @@ export async function getOrgUsageSummary(organizationId: string): Promise<{
     topUsers: usageData.map(record => ({
       email: record.email || '',
       suggestionsUsed: record.suggestionsUsed,
+      suggestionsIncluded: record.suggestionsIncluded,
     })),
   };
 }
