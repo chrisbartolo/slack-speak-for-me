@@ -552,3 +552,110 @@ export type ActionableItem = typeof actionableItems.$inferSelect;
 export type NewActionableItem = typeof actionableItems.$inferInsert;
 export type ActionableStatus = 'pending' | 'completed' | 'dismissed' | 'snoozed';
 export type ActionableType = 'action_request' | 'commitment' | 'deadline';
+
+// Client profiles for tracking client relationships
+export const clientProfiles = pgTable('client_profiles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  companyName: text('company_name').notNull(),
+  domain: text('domain'), // nullable, for auto-detection hint like "acme.com"
+  servicesProvided: jsonb('services_provided').$type<string[]>(), // nullable
+  contractDetails: text('contract_details'), // nullable, max 2000 chars enforced at app level
+  accountManager: text('account_manager'), // nullable, Slack user ID
+  relationshipStatus: text('relationship_status').default('active'), // 'active' | 'at_risk' | 'churned'
+  lifetimeValue: integer('lifetime_value'), // nullable, in cents
+  startDate: timestamp('start_date'), // nullable
+  renewalDate: timestamp('renewal_date'), // nullable
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('client_profiles_org_idx').on(table.organizationId),
+  domainIdx: index('client_profiles_domain_idx').on(table.domain),
+}));
+
+// Client contacts linking Slack users to client profiles
+export const clientContacts = pgTable('client_contacts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  clientProfileId: uuid('client_profile_id').notNull().references(() => clientProfiles.id),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  slackUserId: text('slack_user_id').notNull(),
+  slackUserName: text('slack_user_name'), // nullable
+  role: text('role'), // nullable, e.g., "Technical Lead", "Product Owner"
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  uniqueContact: uniqueIndex('client_contacts_unique_idx').on(table.clientProfileId, table.workspaceId, table.slackUserId),
+}));
+
+// Brand voice templates for consistent communication tone
+export const brandVoiceTemplates = pgTable('brand_voice_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(),
+  description: text('description'), // nullable
+  toneGuidelines: text('tone_guidelines').notNull(),
+  approvedPhrases: jsonb('approved_phrases').$type<string[]>(), // nullable
+  forbiddenPhrases: jsonb('forbidden_phrases').$type<string[]>(), // nullable
+  responsePatterns: jsonb('response_patterns').$type<Array<{ situation: string; pattern: string }>>(), // nullable
+  isDefault: boolean('is_default').default(false),
+  applicableTo: text('applicable_to'), // nullable, values: 'all' | 'client_conversations' | 'internal_only'
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('brand_voice_templates_org_idx').on(table.organizationId),
+}));
+
+// Knowledge base documents with embeddings for RAG
+export const knowledgeBaseDocuments = pgTable('knowledge_base_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  category: text('category'), // nullable
+  tags: jsonb('tags').$type<string[]>(), // nullable
+  embedding: text('embedding').notNull(), // stored as vector string, pgvector handles casting
+  sourceUrl: text('source_url'), // nullable
+  lastReviewedAt: timestamp('last_reviewed_at'), // nullable
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('knowledge_base_documents_org_idx').on(table.organizationId),
+  categoryIdx: index('knowledge_base_documents_category_idx').on(table.category),
+}));
+
+// Escalation alerts for tension detection and SLA breaches
+export const escalationAlerts = pgTable('escalation_alerts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  clientProfileId: uuid('client_profile_id').references(() => clientProfiles.id), // nullable
+  channelId: text('channel_id').notNull(),
+  messageTs: text('message_ts').notNull(),
+  alertType: text('alert_type').notNull(), // 'tension_detected' | 'sla_breach' | 'churn_risk'
+  severity: text('severity').notNull(), // 'medium' | 'high' | 'critical'
+  summary: text('summary').notNull(),
+  suggestedAction: text('suggested_action'), // nullable
+  sentiment: jsonb('sentiment'), // nullable, stores SentimentAnalysis object
+  status: text('status').default('open'), // 'open' | 'acknowledged' | 'resolved' | 'false_positive'
+  acknowledgedBy: text('acknowledged_by'), // nullable, Slack user ID
+  acknowledgedAt: timestamp('acknowledged_at'), // nullable
+  resolvedAt: timestamp('resolved_at'), // nullable
+  resolutionNotes: text('resolution_notes'), // nullable
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('escalation_alerts_org_idx').on(table.organizationId),
+  statusIdx: index('escalation_alerts_status_idx').on(table.status),
+  severityIdx: index('escalation_alerts_severity_idx').on(table.severity),
+}));
+
+// Type exports for client context tables
+export type ClientProfile = typeof clientProfiles.$inferSelect;
+export type NewClientProfile = typeof clientProfiles.$inferInsert;
+export type ClientContact = typeof clientContacts.$inferSelect;
+export type NewClientContact = typeof clientContacts.$inferInsert;
+export type BrandVoiceTemplate = typeof brandVoiceTemplates.$inferSelect;
+export type NewBrandVoiceTemplate = typeof brandVoiceTemplates.$inferInsert;
+export type KnowledgeBaseDocument = typeof knowledgeBaseDocuments.$inferSelect;
+export type NewKnowledgeBaseDocument = typeof knowledgeBaseDocuments.$inferInsert;
+export type EscalationAlert = typeof escalationAlerts.$inferSelect;
+export type NewEscalationAlert = typeof escalationAlerts.$inferInsert;
