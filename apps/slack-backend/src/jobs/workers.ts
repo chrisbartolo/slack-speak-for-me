@@ -44,21 +44,36 @@ export async function startWorkers() {
             limit: usageCheck.limit,
           }, 'AI generation blocked by usage limit');
 
-          // Send ephemeral message to user about limit
-          const [inst] = await db
-            .select({ installation: installations, workspace: workspaces })
-            .from(installations)
-            .innerJoin(workspaces, eq(installations.workspaceId, workspaces.id))
-            .where(eq(workspaces.id, workspaceId))
-            .limit(1);
+          // Send limit message to user
+          const limitText = `You've used all ${usageCheck.limit} AI suggestions for this month. Upgrade your plan for more. Your usage resets at the start of next month.`;
 
-          if (inst) {
-            const encKey = getEncryptionKey();
-            const token = decrypt(inst.installation.botToken, encKey);
-            const limitClient = new WebClient(token);
-            await postToUser(limitClient, channelId, userId, {
-              text: `You've used all ${usageCheck.limit} AI suggestions for this month. Upgrade your plan for more. Your usage resets at the start of next month.`,
+          if (responseUrl && channelId.startsWith('D')) {
+            // In DMs, use response_url for in-context delivery
+            await fetch(responseUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: limitText,
+                response_type: 'ephemeral',
+                replace_original: false,
+              }),
             });
+          } else {
+            const [inst] = await db
+              .select({ installation: installations, workspace: workspaces })
+              .from(installations)
+              .innerJoin(workspaces, eq(installations.workspaceId, workspaces.id))
+              .where(eq(workspaces.id, workspaceId))
+              .limit(1);
+
+            if (inst) {
+              const encKey = getEncryptionKey();
+              const token = decrypt(inst.installation.botToken, encKey);
+              const limitClient = new WebClient(token);
+              await postToUser(limitClient, channelId, userId, {
+                text: limitText,
+              });
+            }
           }
 
           return {
