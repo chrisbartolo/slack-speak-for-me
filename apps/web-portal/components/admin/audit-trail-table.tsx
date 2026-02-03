@@ -86,7 +86,7 @@ export function AuditTrailTable({
 }: AuditTrailTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [actionFilter, setActionFilter] = useState<string>('');
+  const [actionFilter, setActionFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
 
@@ -177,14 +177,14 @@ export function AuditTrailTable({
 
   const handleApplyFilters = () => {
     onFilterChange({
-      action: actionFilter || undefined,
+      action: actionFilter === 'all' ? undefined : actionFilter,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
   };
 
   const handleClearFilters = () => {
-    setActionFilter('');
+    setActionFilter('all');
     setStartDate('');
     setEndDate('');
     onFilterChange({});
@@ -201,7 +201,7 @@ export function AuditTrailTable({
               <SelectValue placeholder="All actions" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All actions</SelectItem>
+              <SelectItem value="all">All actions</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="refined">Refined</SelectItem>
               <SelectItem value="dismissed">Dismissed</SelectItem>

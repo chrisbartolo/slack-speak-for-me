@@ -131,12 +131,7 @@ export const getAdoptionTrend = cache(async (
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);
 
-  const results = await db.execute<{
-    month: string;
-    active_users: string;
-    total_suggestions: string;
-    accepted_count: string;
-  }>(sql`
+  const results = await db.execute(sql`
     SELECT
       TO_CHAR(DATE_TRUNC('month', ${suggestionFeedback.createdAt}), 'YYYY-MM') as month,
       COUNT(DISTINCT ${suggestionFeedback.userId}) as active_users,
@@ -145,11 +140,15 @@ export const getAdoptionTrend = cache(async (
     FROM ${suggestionFeedback}
     WHERE ${suggestionFeedback.workspaceId} = ${workspaceId}
       AND ${suggestionFeedback.createdAt} >= ${startDate}
+      AND ${suggestionFeedback.createdAt} IS NOT NULL
     GROUP BY DATE_TRUNC('month', ${suggestionFeedback.createdAt})
     ORDER BY month ASC
   `);
 
-  return (results as unknown as Array<{
+  // db.execute returns array-like result with postgres-js
+  const rows = Array.isArray(results) ? results : (results as unknown as { rows: unknown[] }).rows ?? [];
+
+  return (rows as Array<{
     month: string;
     active_users: string;
     total_suggestions: string;

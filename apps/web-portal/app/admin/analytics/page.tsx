@@ -16,12 +16,25 @@ export default async function AnalyticsPage() {
   }
 
   // Fetch all analytics data
-  const [teamMetrics, adoptionTrend, userMetrics, actionBreakdown] = await Promise.all([
-    getTeamMetrics(session.organizationId, session.workspaceId),
-    getAdoptionTrend(session.organizationId, session.workspaceId, 6),
-    getUserMetrics(session.organizationId, session.workspaceId),
-    getActionBreakdown(session.organizationId, session.workspaceId),
-  ]);
+  let teamMetrics, adoptionTrend, userMetrics, actionBreakdown;
+  try {
+    [teamMetrics, adoptionTrend, userMetrics, actionBreakdown] = await Promise.all([
+      getTeamMetrics(session.organizationId!, session.workspaceId),
+      getAdoptionTrend(session.organizationId!, session.workspaceId, 6),
+      getUserMetrics(session.organizationId!, session.workspaceId),
+      getActionBreakdown(session.organizationId!, session.workspaceId),
+    ]);
+  } catch (error) {
+    console.error('Failed to fetch analytics data:', error);
+    return (
+      <div className="p-6 space-y-6">
+        <h1 className="text-3xl font-bold">Team Analytics</h1>
+        <p className="text-muted-foreground">
+          No analytics data available yet. Analytics will appear once team members start using Speak for Me.
+        </p>
+      </div>
+    );
+  }
 
   // Format time saved
   const hours = Math.floor(teamMetrics.estimatedTimeSavedMinutes / 60);

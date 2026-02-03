@@ -13,11 +13,12 @@ import { format } from 'date-fns';
 const { workspaces, organizations } = schema;
 
 export default async function AuditTrailPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const session = await requireAdmin();
+  const searchParams = await searchParamsPromise;
 
   // Get workspace to retrieve plan ID
   const [workspace] = await db
