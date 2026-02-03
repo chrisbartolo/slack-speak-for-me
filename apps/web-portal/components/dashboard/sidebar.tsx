@@ -65,6 +65,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
                 { href: '/admin/analytics', label: 'Analytics' },
                 { href: '/admin/templates', label: 'Templates' },
                 { href: '/admin/audit-trail', label: 'Audit Trail' },
+                { href: '/admin/guardrails', label: 'Guardrails' },
                 { href: '/admin/settings', label: 'Settings' },
                 { href: '/admin/organizations', label: 'Organizations' },
                 { href: '/admin/users', label: 'Users' },
@@ -72,7 +73,6 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
                 { href: '/admin/usage', label: 'Usage' },
                 // Coupons only visible to super admins
                 ...(isSuperAdmin ? [{ href: '/admin/coupons', label: 'Coupons' }] : []),
-                { href: '/admin/guardrails', label: 'Guardrails' },
               ]}
             />
           </div>
