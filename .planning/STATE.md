@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 12 (Client Context Support)
-Plan: 4 of ? in phase (plans 01, 04 complete)
+Plan: 5 of ? in phase (plans 01, 02, 04 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 12 plan 04 complete (Sentiment detection service)
-Last activity: 2026-02-03 - Completed 12-04-PLAN.md (Sentiment analysis using Claude prompt engineering with conservative risk thresholds)
+Status: Phase 12 plan 02 complete (Client profile CRUD service and admin UI)
+Last activity: 2026-02-03 - Completed 12-02-PLAN.md (Backend CRUD with 9 functions and admin UI for client profiles/contacts)
 
-Progress: [██████████████████████████████░░] ~100% (73/73 plans complete)
+Progress: [██████████████████████████████░░] ~100% (74/74 plans complete)
 
 ## Production Deployment
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 12 - Client Context Support | 2 | 4 min | 2.0 min |
+| 12 - Client Context Support | 3 | 9 min | 3.0 min |
 | 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
@@ -65,6 +65,9 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 12 Plan 02: getClientContactBySlackUserId critical for AI - Quick lookup enables AI to identify client contacts and adjust context
+- Phase 12 Plan 02: Contract details limited to 2000 chars - Balance between detail and performance, validated at service and API layers
+- Phase 12 Plan 02: Cascade delete contacts - Contacts only make sense with their profile, prevents orphaned records
 - Phase 12 Plan 04: Claude prompt engineering for sentiment - Zero incremental cost using existing API, no external sentiment service
 - Phase 12 Plan 04: Conservative risk thresholds - Default to lower risk levels to prevent alert fatigue
 - Phase 12 Plan 04: Separate Claude call for sentiment - Not inline with suggestion generation, allows caching and reuse
@@ -484,6 +487,14 @@ Documentation:
 **Phase 12 Plan 01 (2026-02-03):**
 - `packages/database/src/schema.ts` - Added 5 client context tables (clientProfiles, clientContacts, brandVoiceTemplates, knowledgeBaseDocuments, escalationAlerts)
 - `apps/web-portal/lib/db/index.ts` - Exported all 5 tables and TypeScript types to web-portal schema
+
+**Phase 12 Plan 02 (2026-02-03):**
+- `apps/slack-backend/src/services/client-profiles.ts` - CRUD service with 9 functions for client profiles and contacts
+- `apps/slack-backend/src/services/index.ts` - Exported client profile service functions
+- `apps/web-portal/app/api/admin/clients/route.ts` - GET/POST endpoints for client profiles
+- `apps/web-portal/app/api/admin/clients/[id]/route.ts` - PUT/DELETE endpoints for individual profiles
+- `apps/web-portal/app/api/admin/clients/[id]/contacts/route.ts` - GET/POST/DELETE endpoints for contacts
+- `apps/web-portal/app/admin/clients/page.tsx` - Admin UI for managing client profiles with status badges and expandable contacts
 
 ---
 *Last updated: 2026-02-03*
