@@ -2,6 +2,7 @@ import 'server-only';
 import { db, schema } from '@/lib/db';
 import { eq, and, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getStripe } from '@/lib/stripe';
 
 const { referrals, referralEvents, userSubscriptions } = schema;
 
@@ -196,7 +197,11 @@ export async function recordReferralSubscription(refereeEmail: string) {
  * Process referral rewards (called by cron job)
  * This should be called after minDaysBeforeReward to ensure user doesn't immediately cancel
  */
-export async function processReferralRewards() {
+export async function processReferralRewards(): Promise<{
+  processed: number;
+  skipped: number;
+  credited: number;
+}> {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() - REFERRAL_CONFIG.minDaysBeforeReward);
 
@@ -212,13 +217,20 @@ export async function processReferralRewards() {
       )
     );
 
+  let processed = 0;
+  let skipped = 0;
+  let credited = 0;
+
   for (const { referral_events: event, referrals: referral } of pendingRewards) {
+    processed++;
+
     // Check if referee still has an active subscription
     const subscription = await db.query.userSubscriptions.findFirst({
       where: eq(userSubscriptions.email, event.refereeEmail),
     });
 
     if (!subscription || subscription.subscriptionStatus !== 'active') {
+      skipped++;
       continue; // Don't reward if they've already canceled
     }
 
@@ -232,17 +244,38 @@ export async function processReferralRewards() {
       .where(eq(referralEvents.id, event.id));
 
     // Add reward to referrer's account
+    const rewardAmount = event.referrerReward || REFERRAL_CONFIG.referrerReward;
     await db
       .update(referrals)
       .set({
-        totalRewardsEarned: sql`${referrals.totalRewardsEarned} + ${event.referrerReward || REFERRAL_CONFIG.referrerReward}`,
+        totalRewardsEarned: sql`${referrals.totalRewardsEarned} + ${rewardAmount}`,
         updatedAt: new Date(),
       })
       .where(eq(referrals.id, referral.id));
 
-    // TODO: Apply credit to referrer's Stripe account
-    // This would create a credit balance on their next invoice
+    // Apply credit to referrer's Stripe account
+    const referrerSub = await db.query.userSubscriptions.findFirst({
+      where: eq(userSubscriptions.email, referral.referrerEmail),
+    });
+
+    if (referrerSub?.stripeCustomerId) {
+      try {
+        await getStripe().customers.createBalanceTransaction(
+          referrerSub.stripeCustomerId,
+          {
+            amount: -rewardAmount, // Negative = credit
+            currency: 'eur',
+            description: `Referral reward: ${maskEmail(event.refereeEmail)} subscribed`,
+          }
+        );
+        credited++;
+      } catch (err) {
+        console.error(`Failed to apply Stripe credit for ${referral.referrerEmail}:`, err);
+      }
+    }
   }
+
+  return { processed, skipped, credited };
 }
 
 /**
