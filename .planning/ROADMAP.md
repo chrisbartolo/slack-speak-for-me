@@ -34,6 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 12: Client Context & Support** - Client profiles, service context, de-escalation mode
 - [x] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
 - [ ] **Phase 14: User Manual & Knowledge Base** - Documentation, help center, and onboarding guides
+- [ ] **Phase 15: Slack AI Assistant Experience** - Bolt 4.x upgrade, Assistant panel, streaming responses
 
 ## Phase Details
 
@@ -430,6 +431,47 @@ Plans:
 - [ ] 14-04-PLAN.md — HelpLink component and in-app contextual help links
 - [ ] 14-05-PLAN.md — Human verification checkpoint
 
+### Phase 15: Slack AI Assistant Experience
+**Goal**: Native AI assistant UX with side-panel, streaming responses, and context-aware suggested prompts
+**Depends on**: Phase 14
+**Requirements**: ASSIST-01, ASSIST-02, ASSIST-03, ASSIST-04, ASSIST-05, ASSIST-06, ASSIST-07
+**Success Criteria** (what must be TRUE):
+  1. App upgraded from Bolt 3.x to Bolt 4.x with zero regression in existing handlers
+  2. Users can open assistant panel from top nav or app DM and see suggested prompts
+  3. Assistant detects which channel/DM user is viewing via thread context
+  4. User types in assistant panel and receives streaming AI suggestion for the current conversation
+  5. Suggestion includes "Send as Me", "Refine", and "Dismiss" actions that work from the panel
+  6. Feedback blocks (thumbs up/down) appear on every suggestion for quality tracking
+  7. Existing ephemeral delivery in channels continues to work (backward compatible)
+  8. DM suggestions work natively through the assistant panel (no bot DM fallback needed)
+**Plans**: 7 plans in 4 waves
+
+**Migration context (Bolt 3.22 → 4.x):**
+- `@slack/types` namespace export: `export * as types from '@slack/types'`
+- `@slack/web-api` v6 → v7 (TypeScript type changes)
+- Express v4 → v5 in customRoutes
+- Middleware `ignoreSelf()` / `directMention()` → drop parens
+- Node v18+ required
+- Breaking changes are minor per official migration guide
+
+**New Slack APIs used:**
+- `Assistant` class (threadStarted, threadContextChanged, userMessage)
+- `assistant:write` scope
+- `assistant_thread_started`, `assistant_thread_context_changed` events
+- `chat.startStream` / `chat.appendStream` / `chat.stopStream` for streaming
+- `setSuggestedPrompts()` for context-aware conversation starters
+- `setTitle()` / `setStatus()` for loading states
+- `context_actions` block with `feedback_buttons` element
+
+Plans:
+- [ ] 15-01-PLAN.md — Bolt 3.x → 4.x migration: dependency upgrade, type fixes, regression testing
+- [ ] 15-02-PLAN.md — App manifest and Slack dashboard: enable Agents & AI Apps, add assistant:write scope, subscribe to assistant events
+- [ ] 15-03-PLAN.md — Assistant class setup: threadStarted with suggested prompts, threadContextChanged with context store, userMessage routing
+- [ ] 15-04-PLAN.md — Streaming suggestion delivery: wire AI generation into chat.startStream/appendStream/stopStream pipeline
+- [ ] 15-05-PLAN.md — Assistant actions: Send as Me, Refine, Dismiss buttons in assistant thread, feedback blocks
+- [ ] 15-06-PLAN.md — Dual delivery mode: assistant panel for DMs and opted-in users, ephemeral for channel watchers, user preference toggle
+- [ ] 15-07-PLAN.md — Verification: test all conversation types (channel, private, DM, group DM), regression test existing flows
+
 ## Progress
 
 **Execution Order:**
@@ -454,7 +496,8 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 12. Client Context & Support | 7/7 | Complete | 2026-02-03 |
 | 13. Team/Org Dashboard | 7/7 | Complete | 2026-02-03 |
 | 14. User Manual & Knowledge Base | 0/5 | Planned | - |
+| 15. Slack AI Assistant Experience | 0/7 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-02-03 (Phase 13 complete)*
+*Last updated: 2026-02-03 (Phase 15 scoped)*
