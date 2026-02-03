@@ -2,31 +2,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { Users, User, Shield } from 'lucide-react';
 import { requireAdmin } from '@/lib/auth/admin';
-import { getWorkspaceUsers } from '@/lib/db/admin-queries';
+import { getWorkspaceUsers, getAllUsers } from '@/lib/db/admin-queries';
+import { isSuperAdmin } from '@/lib/auth/super-admin';
 import { Badge } from '@/components/ui/badge';
 
 export default async function UsersPage() {
   const session = await requireAdmin();
-  const users = await getWorkspaceUsers(session.workspaceId);
+  const superAdmin = await isSuperAdmin();
+
+  // Super admins see all users across all workspaces
+  const allUsers = superAdmin ? await getAllUsers() : null;
+  const workspaceUsers = superAdmin ? null : await getWorkspaceUsers(session.workspaceId);
+  const userList = allUsers ?? workspaceUsers ?? [];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Users</h1>
         <p className="text-muted-foreground mt-1">
-          Team members in your workspace
+          {superAdmin ? 'All users across all workspaces' : 'Team members in your workspace'}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Team Members</CardTitle>
+          <CardTitle>{superAdmin ? 'All Users' : 'Team Members'}</CardTitle>
           <CardDescription>
-            {users.length} user(s) in this workspace
+            {userList.length} user(s){superAdmin ? ' across all workspaces' : ' in this workspace'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {users.length === 0 ? (
+          {userList.length === 0 ? (
             <EmptyState
               icon={Users}
               title="No users"
@@ -34,7 +40,7 @@ export default async function UsersPage() {
             />
           ) : (
             <div className="space-y-3">
-              {users.map((user) => (
+              {userList.map((user) => (
                 <div
                   key={user.id}
                   className="flex items-center justify-between p-4 border rounded-lg bg-background hover:bg-accent/50 transition-colors"
@@ -49,9 +55,15 @@ export default async function UsersPage() {
                     </div>
                     <div>
                       <p className="font-medium text-foreground">{user.email || user.slackUserId}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.slackUserId}
-                      </p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{user.slackUserId}</span>
+                        {'workspaceName' in user && user.workspaceName && (
+                          <>
+                            <span>·</span>
+                            <span>{user.workspaceName}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <Badge

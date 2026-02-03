@@ -3,6 +3,7 @@ import { EmptyState } from '@/components/dashboard/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Users } from 'lucide-react';
 import { getOrganizations } from '@/lib/db/admin-queries';
+import { isSuperAdmin } from '@/lib/auth/super-admin';
 
 function StatusBadge({ status }: { status: string | null }) {
   if (!status) return <Badge variant="secondary">No subscription</Badge>;
@@ -32,19 +33,20 @@ function StatusBadge({ status }: { status: string | null }) {
 
 export default async function OrganizationsPage() {
   const organizations = await getOrganizations();
+  const superAdmin = await isSuperAdmin();
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Organizations</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your organizations and workspaces
+          {superAdmin ? 'All organizations across the platform' : 'Manage your organizations and workspaces'}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Organizations</CardTitle>
+          <CardTitle>{superAdmin ? 'All Organizations' : 'Your Organizations'}</CardTitle>
           <CardDescription>
             {organizations.length === 0
               ? 'No organizations found'

@@ -71,8 +71,10 @@ In your Slack app settings (https://api.slack.com/apps):
 2. **Slash Commands** (Features → Slash Commands):
    | Command | Request URL | Description |
    |---------|-------------|-------------|
-   | `/watch` | `http://localhost:3000/slack/events` | Enable AI suggestions for this conversation |
-   | `/unwatch` | `http://localhost:3000/slack/events` | Disable AI suggestions for this conversation |
+   | `/speakforme-watch` | `http://localhost:3000/slack/events` | Enable AI suggestions for this conversation |
+   | `/speakforme-unwatch` | `http://localhost:3000/slack/events` | Disable AI suggestions for this conversation |
+   | `/speakforme-report` | `http://localhost:3000/slack/events` | Generate your weekly standup report |
+   | `/speakforme-tasks` | `http://localhost:3000/slack/events` | View your pending tasks detected from messages |
 
 3. **Interactivity & Shortcuts** (Features → Interactivity & Shortcuts):
    - Enable Interactivity: ON
@@ -85,7 +87,7 @@ In your Slack app settings (https://api.slack.com/apps):
 4. **Event Subscriptions** (Features → Event Subscriptions):
    - Enable Events: ON
    - Request URL: `http://localhost:3000/slack/events`
-   - Subscribe to bot events: `app_mention`, `message.channels`
+   - Subscribe to bot events: `app_home_opened`, `app_mention`, `app_uninstalled`, `message.channels`, `message.groups`, `message.im`, `message.mpim`, `tokens_revoked`
 
 5. **Install the App**
    - Visit `http://localhost:3000/slack/install`

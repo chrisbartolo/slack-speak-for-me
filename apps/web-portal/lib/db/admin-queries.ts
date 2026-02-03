@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { eq, desc, count } from 'drizzle-orm';
 import { db, schema } from './index';
 import { requireAdmin } from '../auth/admin';
+import { isSuperAdmin } from '../auth/super-admin';
 
 const { organizations, workspaces, users } = schema;
 
@@ -12,9 +13,17 @@ const { organizations, workspaces, users } = schema;
  */
 export const getOrganizations = cache(async () => {
   const session = await requireAdmin();
+  const superAdmin = await isSuperAdmin();
 
-  // If user has an organization, show just that one
-  // Otherwise, for now, show nothing (future: super-admin sees all)
+  // Super admins see all organizations
+  if (superAdmin) {
+    return db
+      .select()
+      .from(organizations)
+      .orderBy(desc(organizations.createdAt));
+  }
+
+  // Regular admins see only their own organization
   if (session.organizationId) {
     const [org] = await db
       .select()
@@ -54,6 +63,29 @@ export const getWorkspaceUsers = cache(async (workspaceId: string) => {
     .select()
     .from(users)
     .where(eq(users.workspaceId, workspaceId))
+    .orderBy(desc(users.createdAt));
+
+  return results;
+});
+
+/**
+ * Get all users across all workspaces (super-admin only)
+ */
+export const getAllUsers = cache(async () => {
+  await requireAdmin();
+
+  const results = await db
+    .select({
+      id: users.id,
+      slackUserId: users.slackUserId,
+      workspaceId: users.workspaceId,
+      email: users.email,
+      role: users.role,
+      createdAt: users.createdAt,
+      workspaceName: workspaces.name,
+    })
+    .from(users)
+    .innerJoin(workspaces, eq(users.workspaceId, workspaces.id))
     .orderBy(desc(users.createdAt));
 
   return results;
