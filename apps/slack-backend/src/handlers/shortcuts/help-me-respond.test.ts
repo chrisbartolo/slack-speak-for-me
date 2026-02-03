@@ -426,6 +426,9 @@ describe('Help Me Respond Shortcut', () => {
   });
 
   it('should pass response_url to job data when available', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', mockFetch);
+
     const ack = vi.fn().mockResolvedValue(undefined);
     const shortcut = {
       user: { id: 'U123' },
@@ -448,6 +451,43 @@ describe('Help Me Respond Shortcut', () => {
         responseUrl: 'https://hooks.slack.com/actions/T123/456/abc',
       })
     );
+
+    vi.unstubAllGlobals();
+  });
+
+  it('should use response_url for DM acknowledgment instead of postEphemeral', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const ack = vi.fn().mockResolvedValue(undefined);
+    const shortcut = {
+      user: { id: 'U123' },
+      channel: { id: 'D123_DM' },
+      message: { text: 'DM message', ts: '1234567890.123456' },
+      response_url: 'https://hooks.slack.com/actions/T123/456/abc',
+    };
+    const client = {
+      chat: {
+        postEphemeral: mockPostEphemeral,
+        postMessage: vi.fn().mockResolvedValue({ ok: true }),
+      },
+    };
+    const context = { teamId: 'T123' };
+
+    await shortcutHandler({ shortcut, ack, client, context });
+
+    // Should use fetch with response_url for DM acknowledgment
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://hooks.slack.com/actions/T123/456/abc',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('Generating'),
+      })
+    );
+    // Should NOT use postEphemeral for acknowledgment
+    expect(mockPostEphemeral).not.toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
   });
 
   it('should pass undefined responseUrl when not in payload', async () => {

@@ -93,9 +93,22 @@ export function registerHelpMeRespondShortcut(app: App): void {
       }, 'AI response job queued for message shortcut');
 
       // Send immediate acknowledgment to user
-      await postToUser(client, channelId, userId, {
-        text: 'Got it! Generating a suggested response for you...',
-      });
+      if (responseUrl && channelId.startsWith('D')) {
+        // In DMs, use response_url for ephemeral delivery in the same conversation
+        await fetch(responseUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: 'Got it! Generating a suggested response for you...',
+            response_type: 'ephemeral',
+            replace_original: false,
+          }),
+        });
+      } else {
+        await postToUser(client, channelId, userId, {
+          text: 'Got it! Generating a suggested response for you...',
+        });
+      }
     } catch (error) {
       logger.error({ error, userId, channelId }, 'Error processing help me respond shortcut');
 
