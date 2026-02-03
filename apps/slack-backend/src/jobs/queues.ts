@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData } from './types.js';
+import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData } from './types.js';
 
 export const aiResponseQueue = new Queue<AIResponseJobData>('ai-responses', {
   connection: redis,
@@ -89,3 +89,16 @@ export const kbIndexQueue = new Queue<KBIndexJobData>('kb-indexer', {
 export async function queueKBIndexing(data: KBIndexJobData) {
   return kbIndexQueue.add('index-document', data);
 }
+
+export const escalationScanQueue = new Queue<EscalationScanJobData>('escalation-scanner', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 100 },
+  },
+});

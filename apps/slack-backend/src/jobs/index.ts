@@ -11,6 +11,7 @@ export {
   syncAllReportSchedulers,
   getReportSchedulers,
   setupUsageReporterScheduler,
+  setupEscalationScannerScheduler,
 } from './schedulers.js';
 
 // Re-export types

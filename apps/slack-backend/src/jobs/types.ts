@@ -77,3 +77,12 @@ export interface KBIndexJobResult {
   documentId: string;
   chunksCreated: number;
 }
+
+export interface EscalationScanJobData {
+  triggeredBy: 'scheduler' | 'manual';
+}
+
+export interface EscalationScanJobResult {
+  organizationsScanned: number;
+  alertsCreated: number;
+}

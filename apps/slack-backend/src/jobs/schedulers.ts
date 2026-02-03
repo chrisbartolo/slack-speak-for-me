@@ -1,8 +1,8 @@
 import { db, reportSettings as reportSettingsTable } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
-import { reportQueue, usageReporterQueue } from './queues.js';
+import { reportQueue, usageReporterQueue, escalationScanQueue } from './queues.js';
 import { logger } from '../utils/logger.js';
-import type { ReportGenerationJobData, UsageReporterJobData } from './types.js';
+import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData } from './types.js';
 
 /**
  * Convert day of week (0-6) and time (HH:mm) to cron pattern
@@ -214,6 +214,33 @@ export async function setupUsageReporterScheduler(): Promise<void> {
     logger.info('Usage reporter scheduler configured (daily 2 AM UTC)');
   } catch (error) {
     logger.error({ error }, 'Failed to setup usage reporter scheduler');
+    throw error;
+  }
+}
+
+/**
+ * Setup escalation scanner scheduler
+ * Runs every 15 minutes to detect high-risk client conversations
+ */
+export async function setupEscalationScannerScheduler(): Promise<void> {
+  try {
+    const jobData: EscalationScanJobData = {
+      triggeredBy: 'scheduler',
+    };
+
+    // Upsert the job scheduler (every 15 minutes)
+    await escalationScanQueue.upsertJobScheduler(
+      'escalation-scanner-15min',
+      { pattern: '*/15 * * * *' }, // Every 15 minutes
+      {
+        name: 'escalation-scan',
+        data: jobData,
+      }
+    );
+
+    logger.info('Escalation scanner scheduler configured (every 15 minutes)');
+  } catch (error) {
+    logger.error({ error }, 'Failed to setup escalation scanner scheduler');
     throw error;
   }
 }

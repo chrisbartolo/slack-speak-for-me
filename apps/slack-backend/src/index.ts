@@ -1,6 +1,6 @@
 import { app } from './app.js'; // Importing app triggers side effects: error handler + health endpoints
 import { env } from './env.js';
-import { startWorkers, stopWorkers, syncAllReportSchedulers, setupUsageReporterScheduler } from './jobs/index.js';
+import { startWorkers, stopWorkers, syncAllReportSchedulers, setupUsageReporterScheduler, setupEscalationScannerScheduler } from './jobs/index.js';
 import { logger } from './utils/logger.js';
 
 async function main() {
@@ -27,6 +27,10 @@ async function main() {
     // Setup daily usage reporter scheduler
     await setupUsageReporterScheduler();
     logger.info('Usage reporter scheduler configured');
+
+    // Setup escalation scanner scheduler
+    await setupEscalationScannerScheduler();
+    logger.info('Escalation scanner scheduler configured');
 
     // Log success with OAuth install URL
     logger.info({

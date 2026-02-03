@@ -1,18 +1,20 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult } from './types.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult } from './types.js';
 import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 import { getEncryptionKey } from '../env.js';
 import { WebClient } from '@slack/web-api';
+import { scanForEscalations } from './escalation-scanner.js';
 
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
 let sheetsWorker: Worker<SheetsWriteJobData, SheetsWriteJobResult> | null = null;
 let reportWorker: Worker<ReportGenerationJobData, ReportGenerationJobResult> | null = null;
 let usageReporterWorker: Worker<UsageReporterJobData, UsageReporterJobResult> | null = null;
 let kbIndexWorker: Worker<KBIndexJobData, KBIndexJobResult> | null = null;
+let escalationScanWorker: Worker<EscalationScanJobData, EscalationScanJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -544,6 +546,27 @@ export async function startWorkers() {
   kbIndexWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'KB index job completed'));
 
   logger.info('KB index worker started');
+
+  // Escalation scanner worker
+  escalationScanWorker = new Worker<EscalationScanJobData, EscalationScanJobResult>(
+    'escalation-scanner',
+    async (job) => {
+      logger.info({ jobId: job.id, triggeredBy: job.data.triggeredBy }, 'Processing escalation scan job');
+      const result = await scanForEscalations();
+      logger.info({ jobId: job.id, ...result }, 'Escalation scan completed');
+      return result;
+    },
+    {
+      connection: redis,
+      concurrency: 1, // Only one scan at a time
+    }
+  );
+
+  escalationScanWorker.on('error', (err) => logger.error({ err }, 'Escalation scanner worker error'));
+  escalationScanWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Escalation scanner job failed'));
+  escalationScanWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Escalation scanner job completed'));
+
+  logger.info('Escalation scanner worker started');
 }
 
 export async function stopWorkers() {
@@ -571,5 +594,10 @@ export async function stopWorkers() {
     await kbIndexWorker.close();
     kbIndexWorker = null;
     logger.info('KB index worker stopped');
+  }
+  if (escalationScanWorker) {
+    await escalationScanWorker.close();
+    escalationScanWorker = null;
+    logger.info('Escalation scanner worker stopped');
   }
 }
