@@ -138,3 +138,21 @@ export {
   getEscalationAlerts,
   getAlertStats,
 } from './escalation-monitor.js';
+
+// Guardrails - content filtering and violation logging
+export {
+  checkAndEnforceGuardrails,
+  getGuardrailConfig,
+  checkGuardrails,
+} from './guardrails.js';
+
+// Org style - organization-level style resolution
+export {
+  resolveStyleContext,
+  checkYoloPermission,
+} from './org-style.js';
+
+// Template matcher - relevant template discovery
+export {
+  findRelevantTemplates,
+} from './template-matcher.js';
