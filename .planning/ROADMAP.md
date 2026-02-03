@@ -398,10 +398,16 @@ Plans:
   5. Admin can create and manage shared response templates
   6. Dashboard shows team adoption metrics and usage statistics
   7. Admin can configure content guardrails and prohibited topics
-**Plans**: TBD (run /gsd:plan-phase 13 to break down)
+**Plans**: 7 plans in 3 waves
 
 Plans:
-- [ ] TBD
+- [ ] 13-01-PLAN.md — Schema, dependencies (Tremor, papaparse, TanStack Table), plan-gated features config
+- [ ] 13-02-PLAN.md — Team analytics dashboard with Tremor charts and CSV export
+- [ ] 13-03-PLAN.md — Org-wide style guidelines and YOLO mode admin controls
+- [ ] 13-04-PLAN.md — Shared response templates with submission/approval workflow
+- [ ] 13-05-PLAN.md — Compliance audit trail with TanStack Table and CSV/PDF export
+- [ ] 13-06-PLAN.md — Content guardrails config, violation logging, and violations report
+- [ ] 13-07-PLAN.md — AI integration (guardrails, org style, templates) and data retention job
 
 ### Phase 14: User Manual & Knowledge Base
 **Goal**: Comprehensive user documentation, help center, and knowledge base for Speak For Me
@@ -446,7 +452,7 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 11.1. Usage Tracking & Enforcement | 6/6 | Complete | 2026-02-03 |
 | 11.2. Growth & Referrals | 7/7 | Complete | 2026-02-03 |
 | 12. Client Context & Support | 7/7 | Complete | 2026-02-03 |
-| 13. Team/Org Dashboard | 0/? | Not started | - |
+| 13. Team/Org Dashboard | 0/7 | Planned | - |
 | 14. User Manual & Knowledge Base | 0/5 | Planned | - |
 
 ---
