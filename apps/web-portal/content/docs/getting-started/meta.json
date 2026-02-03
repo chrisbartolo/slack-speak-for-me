@@ -1,0 +1,5 @@
+{
+  "title": "Getting Started",
+  "pages": ["index", "installation", "first-suggestion", "onboarding"],
+  "defaultOpen": true
+}

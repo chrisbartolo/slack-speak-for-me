@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield, CreditCard, Gift, BarChart3 } from 'lucide-react';
+import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield, CreditCard, Gift, BarChart3, BookOpen } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { NavGroup } from './nav-group';
 import { UserMenu } from './user-menu';
@@ -38,6 +38,18 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
         <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
         <NavItem href="/dashboard/usage" icon={BarChart3} label="Usage" />
         <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
+
+        {/* Documentation - opens in new tab */}
+        <a
+          href="/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex items-center gap-3 text-sm font-medium rounded-lg transition-all duration-200 ease-out px-4 py-2.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm active:scale-[0.98]"
+        >
+          <BookOpen className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+          <span>Documentation</span>
+        </a>
+
         <NavItem href="/dashboard/settings" icon={Shield} label="Settings" />
         <NavItem href="/dashboard/billing" icon={CreditCard} label="Billing" />
         <NavItem href="/dashboard/referrals" icon={Gift} label="Referrals" />

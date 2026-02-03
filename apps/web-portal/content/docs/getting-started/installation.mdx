@@ -1,0 +1,54 @@
+---
+title: Installing Speak for Me
+description: Add Speak for Me to your Slack workspace
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adding Speak for Me to your Slack workspace takes less than a minute. Follow the steps below to get started.
+
+<Callout type="info">
+  You may need Slack workspace admin permissions to install new apps. If you don't have admin access, ask your workspace administrator to approve the installation.
+</Callout>
+
+<Steps>
+  <Step>
+    ### Visit the Speak for Me website
+
+    Go to the [Speak for Me homepage](/) and click the **Add to Slack** button. This opens Slack's authorization page.
+  </Step>
+
+  <Step>
+    ### Authorize app permissions
+
+    Slack will ask you to approve the following permissions:
+
+    | Permission | Purpose |
+    |---|---|
+    | View messages in channels | Read conversation context for generating suggestions |
+    | Send messages as bot | Deliver private suggestion messages to you |
+    | Use slash commands | Enable `/watch`, `/unwatch`, and other commands |
+    | View user profiles | Personalize suggestions based on participants |
+
+    Click **Allow** to grant these permissions.
+  </Step>
+
+  <Step>
+    ### Confirm installation
+
+    After authorization, you will be redirected to the onboarding page. The Speak for Me bot now appears in your workspace's app list.
+  </Step>
+</Steps>
+
+## What happens after installation
+
+Once installed, the Speak for Me bot joins your workspace but does not monitor any conversations by default. You are in full control of which channels and DMs are watched.
+
+Your next step is to [start watching a conversation](/docs/getting-started/first-suggestion) so you can receive your first AI suggestion.
+
+## Required Slack permissions
+
+Speak for Me uses Slack's OAuth 2.0 flow and only requests the minimum permissions needed to function. No message content is stored permanently -- it is used only during suggestion generation and then discarded.
+
+For more details on how your data is handled, see our [Privacy Policy](/privacy).
