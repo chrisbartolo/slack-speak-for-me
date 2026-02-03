@@ -659,3 +659,79 @@ export type KnowledgeBaseDocument = typeof knowledgeBaseDocuments.$inferSelect;
 export type NewKnowledgeBaseDocument = typeof knowledgeBaseDocuments.$inferInsert;
 export type EscalationAlert = typeof escalationAlerts.$inferSelect;
 export type NewEscalationAlert = typeof escalationAlerts.$inferInsert;
+
+// Org-wide style guidelines configuration
+export const orgStyleSettings = pgTable('org_style_settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  styleMode: text('style_mode').default('fallback'), // 'override' | 'layer' | 'fallback'
+  tone: text('tone'),
+  formality: text('formality'),
+  preferredPhrases: jsonb('preferred_phrases').$type<string[]>(),
+  avoidPhrases: jsonb('avoid_phrases').$type<string[]>(),
+  customGuidance: text('custom_guidance'),
+  yoloModeGlobal: boolean('yolo_mode_global').default(false),
+  yoloModeUserOverrides: jsonb('yolo_mode_user_overrides').$type<Record<string, boolean>>(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: uniqueIndex('org_style_settings_org_idx').on(table.organizationId),
+}));
+
+// Shared response templates with approval workflow
+export const responseTemplates = pgTable('response_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  templateType: text('template_type').notNull(), // 'canned' | 'starter' | 'playbook'
+  content: text('content').notNull(),
+  submittedBy: text('submitted_by').notNull(), // Slack user ID
+  status: text('status').default('pending'), // 'pending' | 'approved' | 'rejected'
+  reviewedBy: text('reviewed_by'),
+  reviewedAt: timestamp('reviewed_at'),
+  rejectionReason: text('rejection_reason'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('response_templates_org_idx').on(table.organizationId),
+  statusIdx: index('response_templates_status_idx').on(table.status),
+}));
+
+// Content guardrail configuration per org
+export const guardrailConfig = pgTable('guardrail_config', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  enabledCategories: jsonb('enabled_categories').$type<string[]>().default(['legal_advice', 'pricing_commitments', 'competitor_bashing']),
+  blockedKeywords: jsonb('blocked_keywords').$type<string[]>().default([]),
+  triggerMode: text('trigger_mode').default('hard_block'), // 'hard_block' | 'regenerate' | 'soft_warning'
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: uniqueIndex('guardrail_config_org_idx').on(table.organizationId),
+}));
+
+// Log of guardrail triggers
+export const guardrailViolations = pgTable('guardrail_violations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  userId: text('user_id').notNull(), // Slack user ID
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  violationType: text('violation_type').notNull(), // 'category' | 'keyword'
+  violatedRule: text('violated_rule').notNull(),
+  suggestionText: text('suggestion_text'), // Plan-gated visibility
+  action: text('action').notNull(), // 'blocked' | 'regenerated' | 'warned'
+  channelId: text('channel_id'),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('guardrail_violations_org_idx').on(table.organizationId),
+  createdAtIdx: index('guardrail_violations_created_at_idx').on(table.createdAt),
+}));
+
+// Type exports for Phase 13 tables
+export type OrgStyleSettings = typeof orgStyleSettings.$inferSelect;
+export type NewOrgStyleSettings = typeof orgStyleSettings.$inferInsert;
+export type ResponseTemplate = typeof responseTemplates.$inferSelect;
+export type NewResponseTemplate = typeof responseTemplates.$inferInsert;
+export type GuardrailConfig = typeof guardrailConfig.$inferSelect;
+export type NewGuardrailConfig = typeof guardrailConfig.$inferInsert;
+export type GuardrailViolation = typeof guardrailViolations.$inferSelect;
+export type NewGuardrailViolation = typeof guardrailViolations.$inferInsert;
