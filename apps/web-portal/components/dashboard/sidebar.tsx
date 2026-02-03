@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield, CreditCard, Gift } from 'lucide-react';
+import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield, CreditCard, Gift, BarChart3 } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { NavGroup } from './nav-group';
 import { UserMenu } from './user-menu';
@@ -36,6 +36,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
         <NavItem href="/dashboard/conversations" icon={MessageSquare} label="Conversations" />
         <NavItem href="/dashboard/people" icon={Users} label="People" />
         <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
+        <NavItem href="/dashboard/usage" icon={BarChart3} label="Usage" />
         <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
         <NavItem href="/dashboard/settings" icon={Shield} label="Settings" />
         <NavItem href="/dashboard/billing" icon={CreditCard} label="Billing" />
