@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@source '../node_modules/fumadocs-ui/dist/**/*.js';
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

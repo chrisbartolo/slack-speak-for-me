@@ -16,3 +16,7 @@ dist
 *.swp
 *.swo
 app.yaml
+
+# Fumadocs MDX generated files
+.source/
+apps/web-portal/.source/
