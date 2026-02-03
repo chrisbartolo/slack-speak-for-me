@@ -51,8 +51,11 @@ export const app = new App({
     'app_mentions:read',
     'commands',
     'groups:read',      // Read private channel info
+    'groups:history',   // Read private channel message history
     'im:read',          // Read DM info
+    'im:history',       // Read DM message history
     'mpim:read',        // Read group DM info
+    'mpim:history',     // Read group DM message history
   ],
   installerOptions: {
     directInstall: true,

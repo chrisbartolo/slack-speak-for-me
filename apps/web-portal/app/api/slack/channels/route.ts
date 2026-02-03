@@ -96,8 +96,10 @@ export async function GET(request: NextRequest) {
                   );
                   const userData = await userResponse.json();
                   if (userData.ok && userData.user) {
-                    name = userData.user.profile?.display_name ||
-                           userData.user.profile?.real_name ||
+                    // display_name can be empty string, so check for truthy non-empty values
+                    const profile = userData.user.profile;
+                    name = (profile?.display_name && profile.display_name.trim()) ||
+                           (profile?.real_name && profile.real_name.trim()) ||
                            userData.user.name ||
                            channel.user;
                   }

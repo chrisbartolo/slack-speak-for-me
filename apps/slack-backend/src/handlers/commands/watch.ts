@@ -57,8 +57,10 @@ export function registerWatchCommands(app: App): void {
           if (channelType === 'im' && channel.user) {
             try {
               const userInfo = await client.users.info({ user: channel.user });
-              channelName = userInfo.user?.profile?.display_name ||
-                           userInfo.user?.profile?.real_name ||
+              // display_name can be empty string, so check for truthy non-empty values
+              const profile = userInfo.user?.profile;
+              channelName = (profile?.display_name && profile.display_name.trim()) ||
+                           (profile?.real_name && profile.real_name.trim()) ||
                            userInfo.user?.name ||
                            channel.user;
             } catch (userError) {
