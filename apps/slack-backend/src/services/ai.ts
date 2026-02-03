@@ -10,6 +10,7 @@ import { getClientContactBySlackUserId } from './client-profiles.js';
 import { getBrandVoiceContext } from './brand-voice.js';
 import { analyzeSentiment, type SentimentAnalysis } from './sentiment-detector.js';
 import { searchKnowledgeBase } from './knowledge-base.js';
+import { triggerEscalationAlert } from './escalation-monitor.js';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -327,6 +328,20 @@ Relevant product/service documentation:
 ${kbResults.map((doc, idx) => `[${idx + 1}] ${doc.title} (${(doc.similarity * 100).toFixed(0)}% relevant)\n${doc.content.slice(0, 400)}...`).join('\n\n')}
 Reference this information when appropriate to provide accurate, helpful responses.
 </knowledge_base>\n`;
+      }
+
+      // Trigger escalation alert on critical sentiment (fire-and-forget)
+      if (sentimentResult?.riskLevel === 'critical' && organizationId) {
+        triggerEscalationAlert({
+          organizationId,
+          workspaceId: context.workspaceId,
+          clientProfileId: clientContactResult?.clientProfileId,
+          channelId: context.channelId || '',
+          messageTs: context.contextMessages[context.contextMessages.length - 1]?.ts || '',
+          sentiment: sentimentResult,
+        }).catch(err => {
+          logger.warn({ error: err }, 'Failed to trigger escalation alert');
+        });
       }
     }
   }

@@ -128,3 +128,13 @@ export {
   updateDocument,
   deleteDocument,
 } from './knowledge-base.js';
+
+// Escalation monitor - tension detection and admin alerting
+export {
+  triggerEscalationAlert,
+  acknowledgeAlert,
+  resolveAlert,
+  markFalsePositive,
+  getEscalationAlerts,
+  getAlertStats,
+} from './escalation-monitor.js';
