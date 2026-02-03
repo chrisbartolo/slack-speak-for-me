@@ -174,6 +174,16 @@ export function LandingPageContent() {
           <p className="mt-4 text-gray-600">Three simple ways to get AI-powered response suggestions</p>
         </div>
 
+        <div className="mb-12">
+          <Image
+            src="/images/slack-marketplace-features.png"
+            alt="Three steps: Watch conversations, get AI suggestions, review and send"
+            width={1200}
+            height={400}
+            className="rounded-2xl shadow-lg w-full"
+          />
+        </div>
+
         <div className="grid md:grid-cols-3 gap-8">
           <Card className="bg-white border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader>
@@ -194,7 +204,7 @@ export function LandingPageContent() {
               </div>
               <CardTitle>Watch Conversations</CardTitle>
               <CardDescription>
-                Use /watch to monitor channels. Get notified with suggestions when someone replies.
+                Use /speakforme-watch to monitor channels. Get notified with suggestions when someone replies.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -221,6 +231,16 @@ export function LandingPageContent() {
               Why Speak for Me?
               <BrushUnderline className="w-full mt-1 opacity-50" />
             </h2>
+          </div>
+
+          <div className="mb-12">
+            <Image
+              src="/images/slack-marketplace-before-after.png"
+              alt="Before and after: from stressing over messages to responding with confidence"
+              width={1200}
+              height={500}
+              className="rounded-2xl shadow-lg w-full"
+            />
           </div>
 
           <div className="grid md:grid-cols-2 gap-12">
