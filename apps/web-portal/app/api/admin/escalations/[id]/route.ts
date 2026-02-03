@@ -17,9 +17,10 @@ const updateAlertSchema = z.object({
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await requireAdmin();
 
     if (!admin.organizationId) {
@@ -47,7 +48,7 @@ export async function PUT(
       .from(escalationAlerts)
       .where(
         and(
-          eq(escalationAlerts.id, params.id),
+          eq(escalationAlerts.id, id),
           eq(escalationAlerts.organizationId, admin.organizationId)
         )
       )
@@ -83,7 +84,7 @@ export async function PUT(
       .set(updateValues)
       .where(
         and(
-          eq(escalationAlerts.id, params.id),
+          eq(escalationAlerts.id, id),
           eq(escalationAlerts.organizationId, admin.organizationId)
         )
       )

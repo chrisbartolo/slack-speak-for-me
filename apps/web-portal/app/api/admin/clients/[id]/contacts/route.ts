@@ -24,9 +24,10 @@ const removeContactSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await requireAdmin();
 
     if (!admin.organizationId) {
@@ -42,7 +43,7 @@ export async function GET(
       .from(clientProfiles)
       .where(
         and(
-          eq(clientProfiles.id, params.id),
+          eq(clientProfiles.id, id),
           eq(clientProfiles.organizationId, admin.organizationId)
         )
       )
@@ -59,7 +60,7 @@ export async function GET(
     const contacts = await db
       .select()
       .from(clientContacts)
-      .where(eq(clientContacts.clientProfileId, params.id));
+      .where(eq(clientContacts.clientProfileId, id));
 
     return NextResponse.json({ contacts });
   } catch (error) {
@@ -77,9 +78,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await requireAdmin();
 
     if (!admin.organizationId) {
@@ -95,7 +97,7 @@ export async function POST(
       .from(clientProfiles)
       .where(
         and(
-          eq(clientProfiles.id, params.id),
+          eq(clientProfiles.id, id),
           eq(clientProfiles.organizationId, admin.organizationId)
         )
       )
@@ -138,7 +140,7 @@ export async function POST(
     const [contact] = await db
       .insert(clientContacts)
       .values({
-        clientProfileId: params.id,
+        clientProfileId: id,
         workspaceId: workspace.id,
         slackUserId: data.slackUserId,
         slackUserName: data.slackUserName,
@@ -163,9 +165,10 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await requireAdmin();
 
     if (!admin.organizationId) {
@@ -193,7 +196,7 @@ export async function DELETE(
       .from(clientProfiles)
       .where(
         and(
-          eq(clientProfiles.id, params.id),
+          eq(clientProfiles.id, id),
           eq(clientProfiles.organizationId, admin.organizationId)
         )
       )
@@ -212,7 +215,7 @@ export async function DELETE(
       .where(
         and(
           eq(clientContacts.id, contactId),
-          eq(clientContacts.clientProfileId, params.id)
+          eq(clientContacts.clientProfileId, id)
         )
       );
 

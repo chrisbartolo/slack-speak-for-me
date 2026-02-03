@@ -25,9 +25,10 @@ const updateClientSchema = z.object({
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await requireAdmin();
 
     if (!admin.organizationId) {
@@ -68,7 +69,7 @@ export async function PUT(
       .set(updateData)
       .where(
         and(
-          eq(clientProfiles.id, params.id),
+          eq(clientProfiles.id, id),
           eq(clientProfiles.organizationId, admin.organizationId)
         )
       )
@@ -97,9 +98,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const admin = await requireAdmin();
 
     if (!admin.organizationId) {
@@ -115,7 +117,7 @@ export async function DELETE(
       .from(clientProfiles)
       .where(
         and(
-          eq(clientProfiles.id, params.id),
+          eq(clientProfiles.id, id),
           eq(clientProfiles.organizationId, admin.organizationId)
         )
       )
@@ -131,12 +133,12 @@ export async function DELETE(
     // Delete associated contacts first
     await db
       .delete(clientContacts)
-      .where(eq(clientContacts.clientProfileId, params.id));
+      .where(eq(clientContacts.clientProfileId, id));
 
     // Delete the profile
     await db
       .delete(clientProfiles)
-      .where(eq(clientProfiles.id, params.id));
+      .where(eq(clientProfiles.id, id));
 
     return NextResponse.json({ success: true });
   } catch (error) {
