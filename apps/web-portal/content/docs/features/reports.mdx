@@ -1,0 +1,57 @@
+---
+title: Weekly Reports
+description: Automated team report aggregation from Slack workflow submissions
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Speak for Me can aggregate your team's weekly status updates from Slack Workflow Builder submissions and generate formatted reports. This feature is useful for managers and team leads who want a consolidated view of what their team accomplished.
+
+## How it works
+
+Team members submit their weekly updates through a Slack Workflow Builder form. Speak for Me detects these submissions, logs them to a Google Sheet, and can generate a summary report on demand or on a schedule.
+
+## Setting up weekly reports
+
+<Steps>
+  <Step>
+    ### Connect Google Sheets
+
+    From the [web portal dashboard](/dashboard/reports), click **Connect Google Sheets**. Sign in with your Google account and authorize Speak for Me to create and edit spreadsheets on your behalf.
+  </Step>
+
+  <Step>
+    ### Configure a Slack Workflow
+
+    Create a Workflow Builder form in Slack for your team's status updates. Speak for Me will automatically detect submissions from the workflow and log them to your connected spreadsheet.
+
+    <Callout type="info">
+      Speak for Me auto-learns which bot posts workflow submissions. The first time a workflow submission is detected, it registers the bot for future recognition.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Generate a report
+
+    Use the `/generate-report` slash command in Slack to create a report on demand. The AI reads all submissions from the current week, analyzes them, and produces a formatted summary.
+  </Step>
+
+  <Step>
+    ### (Optional) Schedule automatic reports
+
+    From the dashboard, set up a recurring schedule for automatic report generation. Choose your preferred day of the week, time, and timezone. Reports will be generated and delivered automatically.
+  </Step>
+</Steps>
+
+## Report features
+
+- **AI-generated summaries** -- The report highlights key accomplishments, blockers, and themes across all team submissions
+- **Refinement** -- After generating a report, you can refine it with feedback before sharing
+- **Google Sheets storage** -- All raw submissions are stored in a spreadsheet for reference and historical tracking
+- **Scheduled delivery** -- Set a weekly schedule so reports are generated automatically
+
+## Related
+
+- [Complete Setup Guide](/docs/getting-started/onboarding) -- Full setup walkthrough including reports
+- [AI Suggestions](/docs/features/suggestions) -- How the AI generates content

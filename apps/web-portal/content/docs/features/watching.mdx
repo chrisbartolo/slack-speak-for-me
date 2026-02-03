@@ -1,0 +1,53 @@
+---
+title: Watching Conversations
+description: Monitor Slack channels and DMs for AI response suggestions
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Watching is the core mechanism that tells Speak for Me which conversations to monitor. When you watch a conversation, the AI will generate response suggestions whenever relevant messages appear.
+
+## Starting and stopping
+
+Use these slash commands in any Slack channel or DM:
+
+| Command | Effect |
+|---|---|
+| `/watch` | Start monitoring the current conversation |
+| `/unwatch` | Stop monitoring the current conversation |
+
+When you run `/watch`, Speak for Me confirms with a private message that monitoring is active. Only you will know that the conversation is being watched.
+
+## What can be watched
+
+You can watch any conversation you have access to in Slack:
+
+- **Public channels** -- Team channels, project channels, or any channel you belong to
+- **Private channels** -- Channels you have been invited to
+- **Direct messages** -- One-on-one conversations
+- **Group DMs** -- Conversations with multiple people
+
+<Callout type="info">
+  In direct messages, Speak for Me only triggers suggestions from messages sent by the other person. Your own messages are never treated as triggers.
+</Callout>
+
+## What triggers a suggestion
+
+Not every message in a watched conversation generates a suggestion. Speak for Me looks for messages that are relevant to you:
+
+| Trigger type | Description |
+|---|---|
+| @mention | Someone mentions you by name |
+| Reply | Someone replies to a message you sent |
+| Active thread | A new message in a thread you participated in |
+
+## Managing watched conversations
+
+You can view and manage all your watched conversations from the [web portal dashboard](/dashboard/conversations). The dashboard shows each watched conversation with its channel name, type, and when it was added.
+
+To stop watching a conversation, you can either type `/unwatch` in Slack or remove it from the dashboard.
+
+## Related
+
+- [Getting Your First Suggestion](/docs/getting-started/first-suggestion) -- Step-by-step guide to your first `/watch`
+- [AI Suggestions](/docs/features/suggestions) -- How suggestions are generated and delivered

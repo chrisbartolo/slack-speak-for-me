@@ -1,0 +1,64 @@
+---
+title: Refining Suggestions
+description: Adjust AI suggestions through conversational refinement
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Sometimes a suggestion is close but not quite right. The refinement feature lets you adjust suggestions with natural language feedback until they match exactly what you want to say.
+
+## How refinement works
+
+<Steps>
+  <Step>
+    ### Click the Refine button
+
+    When you receive an [AI suggestion](/docs/features/suggestions), click the **Refine** button on the ephemeral message. This opens a refinement dialog.
+  </Step>
+
+  <Step>
+    ### Provide your feedback
+
+    In the dialog, type what you would like to change. Use natural language -- there are no special commands. For example:
+
+    - "Make it shorter and more direct"
+    - "Add a thank you at the beginning"
+    - "Use a more formal tone"
+    - "Remove the part about the deadline"
+  </Step>
+
+  <Step>
+    ### Review the updated suggestion
+
+    The AI generates a revised suggestion based on your feedback. You can see both the original and the updated version.
+  </Step>
+
+  <Step>
+    ### Refine again or copy
+
+    If the updated suggestion still needs adjustment, provide more feedback. You can refine multiple times. When you are happy with the result, click **Copy** to use it.
+  </Step>
+</Steps>
+
+## Tips for effective refinement
+
+| Approach | Example |
+|---|---|
+| Be specific | "Replace the first sentence with a greeting" |
+| Describe the tone | "Make it sound more empathetic" |
+| Add or remove content | "Include a mention of next steps" |
+| Adjust length | "Cut this down to two sentences" |
+
+<Callout type="info">
+  Each refinement round uses a small amount of your monthly suggestion allowance. Multi-round refinements are fine -- just be aware of your [usage limits](/docs/features/reports).
+</Callout>
+
+## How refinement improves future suggestions
+
+The AI tracks your refinement patterns over time. If you frequently ask for shorter responses or more formal language, those preferences gradually influence how future suggestions are generated -- even before you refine them.
+
+## Related
+
+- [AI Suggestions](/docs/features/suggestions) -- How suggestions are generated
+- [Style Settings](/docs/features/style-settings) -- Set baseline preferences so less refinement is needed

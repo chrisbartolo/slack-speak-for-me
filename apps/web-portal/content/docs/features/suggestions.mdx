@@ -1,0 +1,51 @@
+---
+title: AI Suggestions
+description: How Speak for Me generates contextually-aware response suggestions
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+When a relevant message appears in a watched conversation, Speak for Me generates a response suggestion and delivers it privately to you. This page explains how the AI creates those suggestions and what you can do with them.
+
+## How suggestions are triggered
+
+Speak for Me monitors your [watched conversations](/docs/features/watching) and generates a suggestion when it detects a message that is relevant to you -- such as an @mention, a reply to your message, or a new message in an active thread.
+
+The suggestion is processed in the background and typically appears within a few seconds.
+
+## What the AI considers
+
+Each suggestion is crafted using multiple sources of context:
+
+| Context source | Description |
+|---|---|
+| Recent messages | The last several messages in the conversation for full context |
+| Your style settings | Tone, formality, and custom phrases from your [style configuration](/docs/features/style-settings) |
+| Person context | Notes you have saved about specific people or relationships |
+| Conversation history | Previous interactions in the same thread |
+
+This combination helps the AI produce suggestions that are relevant to the conversation and sound like you.
+
+## Ephemeral message delivery
+
+<Callout type="info">
+  Suggestions are delivered as ephemeral messages -- private messages that only you can see. No one else in the channel will ever see your AI suggestions, and they disappear when you reload Slack.
+</Callout>
+
+Each suggestion message includes three action buttons:
+
+- **Copy** -- Copies the suggestion text to your clipboard so you can paste it into the message input and send it as your own reply
+- **Refine** -- Opens a refinement dialog where you can adjust the suggestion with feedback like "make it shorter" or "more casual"
+- **Dismiss** -- Removes the suggestion if you do not need it
+
+## Tips for better suggestions
+
+- **Keep your style settings up to date** -- The AI relies on your configured tone and preferences
+- **Add person context** -- Notes about specific colleagues help the AI tailor its suggestions
+- **Use refinement** -- The more you refine, the better the AI learns your preferences over time
+
+## Related
+
+- [Watching Conversations](/docs/features/watching) -- Control which conversations generate suggestions
+- [Refining Suggestions](/docs/features/refinement) -- Adjust suggestions to get them just right
+- [Style Settings](/docs/features/style-settings) -- Configure how suggestions should sound

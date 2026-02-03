@@ -1,0 +1,63 @@
+---
+title: Message Shortcuts
+description: Quick actions for getting AI help with any Slack message
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Message shortcuts let you get an AI-generated response for any Slack message -- even in conversations you are not watching. This is useful when you encounter a message that needs a thoughtful reply and want a quick starting point.
+
+## How to use shortcuts
+
+<Steps>
+  <Step>
+    ### Find the message
+
+    Navigate to any message in Slack that you want help responding to.
+  </Step>
+
+  <Step>
+    ### Open the shortcut menu
+
+    Hover over the message and click the **three-dot menu** (or right-click on the message). Select **Help me respond** from the shortcuts menu.
+  </Step>
+
+  <Step>
+    ### Receive your suggestion
+
+    Speak for Me generates a response suggestion based on the message and its surrounding context. The suggestion appears as an ephemeral message, just like automatic suggestions.
+  </Step>
+
+  <Step>
+    ### Copy, refine, or dismiss
+
+    Use the same action buttons as with automatic suggestions: **Copy** the text, **Refine** it with feedback, or **Dismiss** it.
+  </Step>
+</Steps>
+
+## Shortcuts vs. watching
+
+| Aspect | Watching | Shortcuts |
+|---|---|---|
+| Trigger | Automatic -- suggestions appear when messages arrive | Manual -- you choose which message to respond to |
+| Setup | Requires `/watch` in the channel | No setup needed |
+| Best for | Channels with frequent incoming messages | One-off messages that need a thoughtful reply |
+| Scope | All relevant messages in the watched conversation | A single specific message |
+
+<Callout type="info">
+  You can use shortcuts in any conversation, including channels you are not watching. Shortcuts work independently of the `/watch` feature.
+</Callout>
+
+## When to use shortcuts
+
+- You receive an unexpected message that needs a diplomatic response
+- A colleague asks a question in a channel you do not regularly monitor
+- You want help responding to a message in a group DM
+- You need to craft a careful reply to sensitive feedback
+
+## Related
+
+- [Watching Conversations](/docs/features/watching) -- Automatic monitoring for ongoing channels
+- [AI Suggestions](/docs/features/suggestions) -- How suggestion generation works
+- [Refining Suggestions](/docs/features/refinement) -- Adjust any suggestion with feedback
