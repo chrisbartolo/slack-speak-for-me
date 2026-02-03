@@ -178,3 +178,6 @@ All deletion actions are logged in the audit trail for compliance verification.
 | **Third party services** | Anthropic (AI response generation), DigitalOcean (infrastructure hosting), Stripe (payment processing), Google (optional Sheets integration) |
 | **Sub-processors URL** | https://speakforme.app/sub-processors |
 | **GDPR commitment URL** | https://speakforme.app/gdpr |
+| **SSO support** | Yes. Users authenticate via Slack OAuth (Sign in with Slack). No separate username/password login. |
+| **SAML support** | No. Authentication is handled entirely through Slack OAuth. The app inherits the workspace's existing identity provider through Slack. |
+| **Third party auths required** | No. Only Slack OAuth is required for core functionality. Google OAuth is optional, used only if a user enables the Google Sheets integration for weekly reports. |
