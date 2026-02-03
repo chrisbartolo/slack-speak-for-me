@@ -1,0 +1,130 @@
+---
+title: Frequently Asked Questions
+description: Quick answers to common questions about Speak for Me
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+Find quick answers to the most common questions about Speak for Me. For more detailed information, follow the links to the relevant documentation pages.
+
+---
+
+## General
+
+### What is Speak for Me?
+
+Speak for Me is an AI-powered Slack integration that helps you craft contextually-aware responses to challenging workplace messages. When someone sends you a message that needs a thoughtful reply, Speak for Me generates a private suggestion that sounds like you, considers the full conversation context, and helps you respond professionally.
+
+### How does the AI generate suggestions?
+
+Speak for Me uses Claude AI (by Anthropic) to analyze the conversation context, your style preferences, and any person or conversation notes you have added. The AI generates a suggestion that matches your tone and communication style. All processing happens server-side, and message content is not stored permanently.
+
+### Can my colleagues see my suggestions?
+
+No. Suggestions are delivered as **ephemeral messages** in Slack, which means they are only visible to you. No one else in the channel can see the suggestions, and they are not saved in the channel history. This is a core privacy feature of the product.
+
+### Is my data secure?
+
+Yes. Speak for Me uses AES-256-GCM encryption for OAuth tokens, HTTPS for all API communication, and follows security best practices. Slack message content is processed in real-time and is not stored in our database. See the [Compliance & Data Privacy](/docs/admin/compliance) page for full details.
+
+### Which Slack plans are supported?
+
+Speak for Me works with all Slack plans: Free, Pro, Business+, and Enterprise Grid. The Slack app uses standard OAuth scopes that are available on all plan tiers.
+
+---
+
+## Features
+
+### How do I start getting suggestions?
+
+After installing the app, type `/watch` in any Slack channel to start monitoring that conversation. When someone sends a message that is directed at you or mentions you, Speak for Me will generate a private suggestion. See the [Getting Started](/docs/getting-started) guide for a full walkthrough.
+
+### Can I use Speak for Me in DMs?
+
+Yes. You can use `/watch` in direct messages and group DMs to receive suggestions there as well. The bot must be added to the DM for it to work. You can also use the **Help me respond** message shortcut on any message.
+
+### How does the AI learn my style?
+
+You can configure your communication style from the [dashboard](/dashboard) under **Style Preferences**. Set your preferred tone (professional, casual, friendly, direct), formality level, and add phrases you like to use or want to avoid. The AI incorporates these preferences into every suggestion.
+
+### Can I undo a copied suggestion?
+
+Speak for Me generates suggestions for you to review and optionally copy. It does not send messages on your behalf (unless you have enabled auto-respond mode). If you copy a suggestion and paste it into Slack, that message is yours to edit or delete through normal Slack controls.
+
+<Callout type="info">
+  If you are using auto-respond (YOLO) mode and want to undo an automatically sent message, use the **Undo** button that appears in the confirmation message within 30 seconds.
+</Callout>
+
+### How many conversations can I watch?
+
+There is no limit on the number of conversations you can watch, regardless of your plan tier. The suggestion limit applies to the number of AI-generated suggestions per month, not the number of watched conversations.
+
+### What are person and conversation contexts?
+
+Person context lets you add notes about specific people you interact with (for example, "Sarah is the project lead, prefers concise updates"). Conversation context lets you add notes about channels or DMs (for example, "This channel is for client communication, keep tone formal"). These notes help the AI generate more relevant suggestions.
+
+---
+
+## Billing
+
+### Is there a free tier?
+
+Yes. The Free plan includes 10 suggestions per month with basic style preferences. It is a good way to try out Speak for Me before committing to a paid plan. See the [Billing & Subscriptions](/docs/admin/billing) page for plan comparisons.
+
+### What happens when my trial expires?
+
+When your 14-day free trial ends, your account reverts to the Free plan with 10 suggestions per month. All your data (style preferences, person context, conversation context) is preserved. You can upgrade to a paid plan at any time to restore full access.
+
+### Can I pay individually without my organization?
+
+Yes. Speak for Me supports both individual and organization billing. If your organization does not have a team plan, you can subscribe individually using your email address. Your subscription works across any Slack workspace where Speak for Me is installed.
+
+### How do I cancel my subscription?
+
+To cancel your subscription:
+
+1. Sign in to the [dashboard](/dashboard)
+2. Go to **Billing** settings
+3. Click **Manage Billing** to open the Stripe Customer Portal
+4. Select **Cancel Subscription**
+
+Your access continues until the end of the current billing period.
+
+### What payment methods are accepted?
+
+Speak for Me accepts all major credit and debit cards through Stripe, including Visa, Mastercard, American Express, and Discover. Some regions may also support Apple Pay and Google Pay through the Stripe checkout.
+
+---
+
+## Privacy and Security
+
+### Does Speak for Me read all my Slack messages?
+
+No. Speak for Me only reads messages in conversations you have explicitly chosen to watch using the `/watch` command. It cannot access channels the bot has not been invited to, and it does not monitor conversations you have not opted into.
+
+<Callout type="info">
+  You are always in control of which conversations are monitored. Use `/watch` to start and `/unwatch` to stop at any time.
+</Callout>
+
+### Can I export my data?
+
+Yes. You can export all your personal data from the [dashboard](/dashboard) under **Settings** then **Privacy & Data**. The export includes your style preferences, person context, conversation context, suggestion history, and usage records in JSON format. See [Compliance & Data Privacy](/docs/admin/compliance) for details.
+
+### How do I delete my account?
+
+You can request account deletion from the [dashboard](/dashboard) under **Settings** then **Privacy & Data**. After confirmation, your account enters a 30-day grace period. You can cancel the deletion by signing back in during that time. After 30 days, all data is permanently deleted. See [Compliance & Data Privacy](/docs/admin/compliance) for the full process.
+
+### Is Speak for Me GDPR compliant?
+
+Yes. Speak for Me complies with GDPR requirements including right to access, right to erasure, data portability, and consent management. We process data based on your explicit consent and do not share personal data with third parties. See the [Compliance & Data Privacy](/docs/admin/compliance) page and our [Privacy Policy](/privacy) for full details.
+
+---
+
+## Still Have Questions?
+
+If your question is not answered here, check these resources:
+
+- [Troubleshooting](/docs/troubleshooting) for problem-solving guides
+- [Administration](/docs/admin) for organization and billing management
+- [API & Integrations](/docs/api) for technical documentation
+- Contact support at [support@speakforme.app](mailto:support@speakforme.app)

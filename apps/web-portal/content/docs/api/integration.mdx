@@ -1,0 +1,180 @@
+---
+title: Integration Guide
+description: Connect Speak for Me with external services
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+
+This guide covers the technical details of each integration, including required scopes, event subscriptions, and configuration options.
+
+## Slack Integration
+
+Slack is the core platform for Speak for Me. The integration uses the Slack Bolt framework for event handling and OAuth for authentication.
+
+### Required Bot Scopes
+
+| Scope | Purpose |
+|-------|---------|
+| `channels:history` | Read messages in public channels the bot is invited to |
+| `channels:read` | View basic channel information |
+| `chat:write` | Send ephemeral suggestion messages to users |
+| `commands` | Handle slash commands |
+| `groups:history` | Read messages in private channels |
+| `groups:read` | View private channel information |
+| `im:history` | Read direct messages |
+| `im:read` | View DM information |
+| `mpim:history` | Read group DMs |
+| `mpim:read` | View group DM information |
+| `users:read` | Look up user profiles and names |
+| `users:read.email` | Access email for billing identity |
+
+### Event Subscriptions
+
+Speak for Me subscribes to the following Slack events:
+
+| Event | When It Fires | What Happens |
+|-------|--------------|--------------|
+| `message.channels` | New message in a public channel | Checks if user is watching; generates suggestion if applicable |
+| `message.groups` | New message in a private channel | Same as above for private channels |
+| `message.im` | New direct message | Same as above for DMs |
+| `message.mpim` | New group DM | Same as above for group DMs |
+| `app_mention` | Someone @mentions the bot | Responds with help information |
+
+### Slash Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/watch` | Start watching the current conversation for suggestions | Type `/watch` in any channel |
+| `/unwatch` | Stop watching the current conversation | Type `/unwatch` in a watched channel |
+| `/generate-report` | Generate a weekly report on demand | Type `/generate-report` in any channel |
+
+### Message Shortcuts
+
+Speak for Me also registers a **message shortcut** called "Help me respond". To use it:
+
+1. Hover over any message in Slack
+2. Click the **...** (more actions) menu
+3. Select **Help me respond**
+4. A suggestion is generated for that specific message
+
+<Callout type="info">
+  Suggestions are delivered as ephemeral messages, meaning only you can see them. They include action buttons to copy, refine, or dismiss the suggestion.
+</Callout>
+
+---
+
+## Google Sheets Integration
+
+The Google Sheets integration allows you to export weekly reports directly to a spreadsheet.
+
+### Setup
+
+<Steps>
+  <Step>
+    ### Connect Your Google Account
+
+    From the [dashboard](/dashboard), navigate to **Reports** settings and click **Connect Google Sheets**. You will be redirected to Google to authorize access.
+  </Step>
+  <Step>
+    ### Select or Create a Spreadsheet
+
+    After authorization, choose an existing Google Sheet or let Speak for Me create a new one for your reports.
+  </Step>
+  <Step>
+    ### Configure Report Schedule
+
+    Set your preferred day and time for weekly report generation. Reports are written to a new sheet tab each week.
+  </Step>
+</Steps>
+
+### Required Google Scopes
+
+| Scope | Purpose |
+|-------|---------|
+| `spreadsheets` | Read and write to Google Sheets |
+| `drive.file` | Access files created by the app |
+
+### Sheet Format
+
+Each weekly report is written to a new tab with the following columns:
+
+| Column | Content |
+|--------|---------|
+| **Date** | The date range for the report |
+| **Section** | Report section (Achievements, Focus, Blockers, Shoutouts) |
+| **Content** | The report content for that section |
+| **Channel** | Source channel for the data |
+
+<Callout type="warn">
+  The Google Sheets integration has a rate limit of **30 writes per minute**. This is more than sufficient for normal report generation but may affect bulk operations.
+</Callout>
+
+### Disconnecting
+
+To disconnect your Google account:
+
+1. Go to the [dashboard](/dashboard) and navigate to **Reports** settings
+2. Click **Disconnect Google Sheets**
+3. The OAuth tokens are immediately revoked and deleted from our database
+4. You can also revoke access from your [Google Account permissions](https://myaccount.google.com/permissions)
+
+---
+
+## Stripe Integration
+
+Stripe handles all payment processing and subscription management for Speak for Me.
+
+### How Billing Connects
+
+When you subscribe to a paid plan:
+
+1. Speak for Me creates a Stripe Customer record linked to your email
+2. You are redirected to Stripe Checkout to enter payment details
+3. After successful payment, your subscription is activated
+4. All future billing is handled by Stripe automatically
+
+### Webhook Events
+
+Speak for Me listens for the following Stripe webhook events to keep subscription status in sync:
+
+| Event | What Happens |
+|-------|--------------|
+| `checkout.session.completed` | Subscription activated after successful checkout |
+| `customer.subscription.updated` | Plan changes, renewals, or status updates |
+| `customer.subscription.deleted` | Subscription canceled |
+| `invoice.payment_succeeded` | Payment confirmed, usage counters reset |
+| `invoice.payment_failed` | Payment failed, user notified |
+
+### Customer Portal
+
+Admins and individual subscribers can access the Stripe Customer Portal to:
+
+- Update payment methods
+- View and download invoices
+- Change subscription plans
+- Cancel subscriptions
+
+Access the portal from the **Billing** section of the [dashboard](/dashboard).
+
+<Callout type="info">
+  Speak for Me never stores credit card numbers or sensitive payment data. All payment processing is handled securely by Stripe. We only store the Stripe Customer ID and Subscription ID for reference.
+</Callout>
+
+---
+
+## Security Notes
+
+All integrations follow security best practices:
+
+- **OAuth tokens** are encrypted at rest using AES-256-GCM
+- **Slack signing secrets** verify that incoming requests are from Slack
+- **Stripe webhooks** are verified using Stripe signature validation
+- **Google tokens** are automatically refreshed and old tokens are revoked on disconnect
+- **All API communication** uses HTTPS/TLS encryption
+
+## Next Steps
+
+- [Getting Started](/docs/getting-started) if you have not installed the app yet
+- [Troubleshooting](/docs/troubleshooting) if you are having integration issues
+- [FAQ](/docs/faq) for common questions about integrations

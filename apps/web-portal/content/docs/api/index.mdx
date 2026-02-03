@@ -1,0 +1,29 @@
+---
+title: API & Integrations
+description: Technical documentation for advanced users and integrations
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card'
+
+Speak for Me integrates with several external services to provide a seamless experience. This section covers the technical details of each integration and how they work together.
+
+## Available Integrations
+
+<Cards>
+  <Card title="Integration Guide" href="/docs/api/integration">
+    Detailed documentation for Slack, Google Sheets, and Stripe integrations including scopes, events, and configuration.
+  </Card>
+</Cards>
+
+## Overview
+
+Speak for Me connects to the following services:
+
+| Service | Purpose | Required |
+|---------|---------|----------|
+| **Slack** | Core platform for message monitoring and suggestion delivery | Yes |
+| **Anthropic (Claude AI)** | AI-powered suggestion generation | Yes (server-side) |
+| **Stripe** | Payment processing and subscription management | For paid plans |
+| **Google Sheets** | Weekly report export to spreadsheets | Optional |
+
+The Slack integration is the foundation of Speak for Me. All other integrations extend the core functionality with billing, AI generation, and data export capabilities.
