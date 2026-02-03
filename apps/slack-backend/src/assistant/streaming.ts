@@ -84,17 +84,12 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
   const suggestionId =
     'sug_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
 
-  // Stop the stream with feedback buttons
+  // Stop the stream with feedback and action buttons inline
+  // Using streamer.stop() keeps everything inside the assistant panel.
+  // A separate chat.postMessage would leak as a DM from the bot.
   await streamer.stop({
-    blocks: [createFeedbackBlock(suggestionId) as any],
-  });
-
-  // Post action buttons as a follow-up message in the thread
-  await client.chat.postMessage({
-    channel: channelId,
-    thread_ts: threadTs,
-    text: 'What would you like to do with this suggestion?',
     blocks: [
+      createFeedbackBlock(suggestionId) as any,
       {
         type: 'actions',
         elements: [
