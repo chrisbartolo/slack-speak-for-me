@@ -86,6 +86,7 @@ export default function PrivacyPage() {
               <li><strong>AI-Powered Response Suggestions:</strong> We process message context through Claude AI to generate relevant response suggestions</li>
               <li><strong>Style Learning:</strong> Your preferences and feedback help personalize suggestions to match your communication style</li>
               <li><strong>Weekly Report Generation:</strong> Workflow data is analyzed to create automated standup reports</li>
+              <li><strong>Tone Detection:</strong> Message tone is analyzed in real-time to tailor suggestions (e.g., de-escalation for frustrated messages). Tone data is not stored.</li>
               <li><strong>Service Improvement:</strong> Aggregated, anonymized usage patterns help us improve the service</li>
               <li><strong>Account Management:</strong> User data enables authentication and feature access</li>
             </ul>

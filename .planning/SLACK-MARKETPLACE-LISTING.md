@@ -2,7 +2,7 @@
 
 ## Short Description (75 char max)
 
-AI response suggestions for difficult Slack messages. Only you see them.
+Private AI suggestions for difficult Slack messages.
 
 ## Long Description
 
@@ -96,6 +96,7 @@ Compressed copies (1600x1000px, <2MB) for Slack upload in `slack-store/` subdire
 | `im:history` | Reads recent DM conversation history to provide context-aware AI response suggestions in direct messages. |
 | `im:read` | Retrieves DM metadata to determine conversation context for generating relevant suggestions. |
 | `mpim:history` | Reads recent group DM conversation history to provide context-aware AI response suggestions. |
+| `mpim:read` | Retrieves group DM metadata to determine conversation participants and context for generating relevant suggestions. |
 | `usergroups:read` | Resolves user group mentions in messages so the AI understands who is being addressed in a conversation. |
 | `users:read` | Retrieves display names and profiles to personalize AI suggestions and address people correctly. |
 
