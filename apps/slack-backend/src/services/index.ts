@@ -83,3 +83,9 @@ export {
   auditSubscriptionCancelled,
   type AuditLogEntry,
 } from './audit-logger.js';
+
+// Stripe meter reporter - usage billing integration
+export {
+  reportUsageToStripe,
+  reportUnreportedUsageBatch,
+} from './stripe-meter-reporter.js';
