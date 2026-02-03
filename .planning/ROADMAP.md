@@ -409,13 +409,13 @@ Plans:
   5. Admin documentation covers organization setup, billing, and team management
   6. API/integration documentation for advanced users
   7. FAQ section addresses common questions and issues
-**Plans**: 5 plans in 4 waves
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 14-01-PLAN.md — MDX infrastructure, docs layout, and custom components
-- [ ] 14-02-PLAN.md — Dynamic route and user documentation (getting-started + features)
-- [ ] 14-03-PLAN.md — Admin, troubleshooting, API, and FAQ documentation
-- [ ] 14-04-PLAN.md — Documentation search and in-app help links
+- [ ] 14-01-PLAN.md — Fumadocs infrastructure, route group, MDX pipeline, and search API
+- [ ] 14-02-PLAN.md — Getting Started and Features documentation (12 MDX articles)
+- [ ] 14-03-PLAN.md — Admin, troubleshooting, API, and FAQ documentation (14 MDX articles)
+- [ ] 14-04-PLAN.md — HelpLink component and in-app contextual help links
 - [ ] 14-05-PLAN.md — Human verification checkpoint
 
 ## Progress
