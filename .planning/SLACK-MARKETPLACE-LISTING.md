@@ -181,3 +181,70 @@ All deletion actions are logged in the audit trail for compliance verification.
 | **SSO support** | Yes. Users authenticate via Slack OAuth (Sign in with Slack). No separate username/password login. |
 | **SAML support** | No. Authentication is handled entirely through Slack OAuth. The app inherits the workspace's existing identity provider through Slack. |
 | **Third party auths required** | No. Only Slack OAuth is required for core functionality. Google OAuth is optional, used only if a user enables the Google Sheets integration for weekly reports. |
+
+---
+
+## Test Account Details
+
+No account or login is required. The app authenticates entirely through Slack OAuth — installing it via "Add to Slack" creates the account automatically.
+
+All features work immediately after installation on the Free plan (5 AI suggestions/month). No paid account or trial activation needed.
+
+If you need to test paid features (higher suggestion limits, refinement), contact support@speakforme.app and we'll apply a test coupon to your workspace for extended access.
+
+---
+
+## How to Test Your App
+
+After installing Speak for Me to your workspace:
+
+### 1. Open the App Home
+- Click "Speak for Me" in your Apps sidebar
+- You should see a welcome message, getting started steps, and available commands
+
+### 2. Watch a Conversation
+- Go to any channel the bot has been invited to
+- Type: `/speakforme-watch`
+- You should see an ephemeral confirmation: "Now watching this conversation"
+
+### 3. Get an AI Suggestion
+- Have another workspace member send a message in that watched channel
+- You should receive a private (ephemeral) AI-suggested response
+- Only you can see the suggestion — it includes "Copy", "Refine", and "Dismiss" buttons
+
+### 4. Use the Message Shortcut (on-demand)
+- Right-click (or hover and click "More actions") on any message
+- Select "Help me respond"
+- You should receive a private AI suggestion for that specific message
+
+### 5. Test Help Text
+- In any channel, type: `/speakforme-watch help`
+- You should see usage instructions
+- Also try: `/speakforme-report help` and `/speakforme-tasks help`
+
+### 6. Unwatch a Conversation
+- Type: `/speakforme-unwatch`
+- Suggestions will stop for that conversation
+
+### 7. Generate a Standup Report
+- Type: `/speakforme-report`
+- The bot generates a weekly summary based on your recent Slack activity
+
+### 8. View Detected Tasks
+- Type: `/speakforme-tasks`
+- Shows action items automatically detected from your messages
+
+### Main Functionality
+- AI response suggestions delivered as ephemeral messages (only visible to the requesting user)
+- Automatic suggestions in watched conversations
+- On-demand suggestions via message shortcut ("Help me respond")
+- Suggestion refinement — click "Refine" to iterate with custom instructions
+- Weekly standup report generation
+- Automatic task/action item detection from messages
+- AI learns user's writing style over time
+
+### Notes for Reviewers
+- The bot must be invited to a channel before it can read messages there
+- Suggestions require at least one other person to send a message (the bot doesn't suggest responses to your own messages)
+- All suggestions are ephemeral — they disappear on reload and are never visible to others
+- The app uses Claude AI by Anthropic for suggestion generation
