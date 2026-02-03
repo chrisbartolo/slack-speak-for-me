@@ -30,10 +30,11 @@ export {
   undoAutoResponse,
 } from './watch.js';
 
-// Suggestion delivery - ephemeral message with Block Kit
+// Suggestion delivery - ephemeral message with Block Kit (DM-aware)
 export {
   sendSuggestionEphemeral,
   buildSuggestionBlocks,
+  postToUser,
 } from './suggestion-delivery.js';
 
 // Personalization - user style preferences management

@@ -1,4 +1,6 @@
 import type { AllMiddlewareArgs } from '@slack/bolt';
+import type { WebClient } from '@slack/web-api';
+import { postToUser } from '../services/suggestion-delivery.js';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -83,7 +85,7 @@ export function withErrorHandling<T extends AllMiddlewareArgs>(
 
       // Try to send user-friendly message if we have client and user context
       const { client, body } = args as unknown as {
-        client?: { chat: { postEphemeral: (opts: unknown) => Promise<unknown> } };
+        client?: WebClient;
         body?: { event?: { channel?: string; user?: string } };
       };
 
@@ -93,9 +95,7 @@ export function withErrorHandling<T extends AllMiddlewareArgs>(
             ? err.code
             : err.code || 'UNKNOWN_ERROR';
 
-          await client.chat.postEphemeral({
-            channel: body.event.channel,
-            user: body.event.user,
+          await postToUser(client, body.event.channel, body.event.user, {
             text: `:warning: ${getUserMessage(errorCode)}`,
           });
         } catch (notifyError) {

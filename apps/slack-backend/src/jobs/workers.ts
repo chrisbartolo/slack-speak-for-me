@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
+import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -56,9 +56,7 @@ export async function startWorkers() {
             const encKey = getEncryptionKey();
             const token = decrypt(inst.installation.botToken, encKey);
             const limitClient = new WebClient(token);
-            await limitClient.chat.postEphemeral({
-              channel: channelId,
-              user: userId,
+            await postToUser(limitClient, channelId, userId, {
               text: `You've used all ${usageCheck.limit} AI suggestions for this month. Upgrade your plan for more. Your usage resets at the start of next month.`,
             });
           }
@@ -176,10 +174,8 @@ export async function startWorkers() {
             responseMessageTs,
           });
 
-          // Send ephemeral undo notification to the user
-          await client.chat.postEphemeral({
-            channel: channelId,
-            user: userId,
+          // Send undo notification to the user (DM-aware)
+          await postToUser(client, channelId, userId, {
             text: `I auto-responded on your behalf. You can undo this if needed.`,
             blocks: [
               {

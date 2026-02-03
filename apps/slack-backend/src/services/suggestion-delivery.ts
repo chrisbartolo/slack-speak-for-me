@@ -138,7 +138,38 @@ export function buildSuggestionBlocks(
 }
 
 /**
- * Send suggestion as ephemeral message to user
+ * Post a message to a user, handling DM channels gracefully.
+ *
+ * In DM channels (IDs starting with 'D'), the bot is not a member of the
+ * conversation between two users, so postEphemeral fails. Instead, we send
+ * a regular message to the bot's own DM with the user.
+ */
+export async function postToUser(
+  client: WebClient,
+  channelId: string,
+  userId: string,
+  options: { text: string; blocks?: (Block | KnownBlock)[] }
+): Promise<void> {
+  const isDM = channelId.startsWith('D');
+
+  if (isDM) {
+    // Bot can't post ephemeral messages in DMs between other users.
+    // Send as a regular message to the bot's own DM with the user.
+    await client.chat.postMessage({
+      channel: userId,
+      ...options,
+    });
+  } else {
+    await client.chat.postEphemeral({
+      channel: channelId,
+      user: userId,
+      ...options,
+    });
+  }
+}
+
+/**
+ * Send suggestion as ephemeral message to user (or DM from bot for DM channels)
  */
 export async function sendSuggestionEphemeral(
   options: SuggestionDeliveryOptions
@@ -147,9 +178,7 @@ export async function sendSuggestionEphemeral(
 
   const blocks = buildSuggestionBlocks(suggestionId, suggestion, triggerContext, usageInfo);
 
-  await client.chat.postEphemeral({
-    channel: channelId,
-    user: userId,
+  await postToUser(client, channelId, userId, {
     text: 'Here\'s a suggested response for you',
     blocks,
   });

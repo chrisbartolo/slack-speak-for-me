@@ -2,6 +2,7 @@ import type { App, MessageShortcut } from '@slack/bolt';
 import { queueAIResponse } from '../../jobs/queues.js';
 import { getContextForMessage } from '../../services/context.js';
 import { getWorkspaceId } from '../../services/watch.js';
+import { postToUser } from '../../services/suggestion-delivery.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -47,9 +48,7 @@ export function registerHelpMeRespondShortcut(app: App): void {
       const workspaceId = await getWorkspaceId(teamId);
       if (!workspaceId) {
         logger.error({ teamId }, 'Workspace not found for team ID');
-        await client.chat.postEphemeral({
-          channel: channelId,
-          user: userId,
+        await postToUser(client, channelId, userId, {
           text: 'Workspace not found. Please reinstall the app.',
         });
         return;
@@ -83,9 +82,7 @@ export function registerHelpMeRespondShortcut(app: App): void {
       }, 'AI response job queued for message shortcut');
 
       // Send immediate acknowledgment to user
-      await client.chat.postEphemeral({
-        channel: channelId,
-        user: userId,
+      await postToUser(client, channelId, userId, {
         text: 'Got it! Generating a suggested response for you...',
       });
     } catch (error) {
@@ -93,13 +90,11 @@ export function registerHelpMeRespondShortcut(app: App): void {
 
       // Send error message to user
       try {
-        await client.chat.postEphemeral({
-          channel: channelId,
-          user: userId,
+        await postToUser(client, channelId, userId, {
           text: 'Sorry, something went wrong. Please try again.',
         });
       } catch {
-        // Ignore ephemeral send failure
+        // Ignore send failure
       }
     }
   });
