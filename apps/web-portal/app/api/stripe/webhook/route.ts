@@ -11,6 +11,8 @@ import {
   paymentFailedEmail,
   subscriptionResumedEmail,
 } from '@/lib/email/templates';
+import { recordCouponRedemption } from '@/lib/billing/coupons';
+import { recordReferralSubscription } from '@/lib/billing/referrals';
 
 const { organizations, userSubscriptions } = schema;
 
@@ -382,6 +384,38 @@ export async function POST(request: NextRequest) {
 
           console.log(`Organization checkout completed for customer ${customerId}`);
         }
+
+        // Track coupon redemption if applicable
+        if (session.metadata?.couponId) {
+          const checkoutEmail = session.metadata?.email || session.customer_email || '';
+          const orgId = session.metadata?.organizationId || null;
+          const discountAmount = session.total_details?.amount_discount || 0;
+          try {
+            await recordCouponRedemption(
+              session.metadata.couponId,
+              checkoutEmail,
+              orgId,
+              discountAmount
+            );
+            console.log(`Coupon ${session.metadata.couponId} redeemed by ${checkoutEmail}`);
+          } catch (err) {
+            console.error('Failed to record coupon redemption:', err);
+          }
+        }
+
+        // Track referral conversion if applicable
+        if (session.metadata?.referralCode) {
+          const refereeEmail = session.metadata?.email || session.customer_email || '';
+          if (refereeEmail) {
+            try {
+              await recordReferralSubscription(refereeEmail);
+              console.log(`Referral conversion recorded for ${refereeEmail}`);
+            } catch (err) {
+              console.error('Failed to record referral subscription:', err);
+            }
+          }
+        }
+
         break;
       }
 
