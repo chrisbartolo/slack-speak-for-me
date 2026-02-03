@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11.1 of 11 (Usage Tracking & Enforcement)
-Plan: 2 of 6 in phase
+Plan: 3 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-03 - Completed 11.1-02-PLAN.md (Usage Pipeline Integration)
+Last activity: 2026-02-03 - Completed 11.1-03-PLAN.md (Usage Dashboard)
 
-Progress: [██████████████████████████████░░] 100% (65/65 plans complete)
+Progress: [██████████████████████████████░░] 100% (66/66 plans complete)
 
 ## Production Deployment
 
@@ -179,6 +179,11 @@ Recent decisions affecting current work:
 - Phase 11.1 Plan 02: All usage operations wrapped in try/catch (fail open for UX)
 - Phase 11.1 Plan 02: Usage info passed to delivery for contextual footer display
 - Phase 11.1 Plan 02: Warning emojis: ⚠️ at 80%, 🚨 at 95%, 📊 for overage
+- Phase 11.1 Plan 03: Progress bar colors: indigo (<80%), yellow (80-95%), red (95%+)
+- Phase 11.1 Plan 03: Tiered alerts: safe (none), warning (80%, blue), critical (95%, yellow), exceeded (100%, red)
+- Phase 11.1 Plan 03: Free tier shows upgrade CTA when limit exceeded
+- Phase 11.1 Plan 03: Progress component extended with indicatorClassName for dynamic colors
+- Phase 11.1 Plan 03: Usage dashboard shows 6-month history with overage highlighting
 
 ### Pending Todos
 
@@ -212,7 +217,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 11.1-02-PLAN.md (Usage Pipeline Integration)
+Stopped at: Completed 11.1-03-PLAN.md (Usage Dashboard)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
