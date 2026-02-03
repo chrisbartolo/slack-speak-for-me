@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 12 (Client Context Support)
-Plan: 1 of ? in phase (plan 01 complete)
+Plan: 4 of ? in phase (plans 01, 04 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 12 plan 01 complete (Database schema for client context)
-Last activity: 2026-02-03 - Completed 12-01-PLAN.md (Added 5 new tables for client profiles, contacts, brand voice, knowledge base, and escalation alerts)
+Status: Phase 12 plan 04 complete (Sentiment detection service)
+Last activity: 2026-02-03 - Completed 12-04-PLAN.md (Sentiment analysis using Claude prompt engineering with conservative risk thresholds)
 
-Progress: [██████████████████████████████░░] ~100% (72/72 plans complete)
+Progress: [██████████████████████████████░░] ~100% (73/73 plans complete)
 
 ## Production Deployment
 
@@ -35,7 +35,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 47
+- Total plans completed: 48
 - Average duration: 3.2 min
 - Total execution time: ~2.5 hours
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 12 - Client Context Support | 1 | 2 min | 2.0 min |
+| 12 - Client Context Support | 2 | 4 min | 2.0 min |
 | 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
@@ -65,6 +65,10 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 12 Plan 04: Claude prompt engineering for sentiment - Zero incremental cost using existing API, no external sentiment service
+- Phase 12 Plan 04: Conservative risk thresholds - Default to lower risk levels to prevent alert fatigue
+- Phase 12 Plan 04: Separate Claude call for sentiment - Not inline with suggestion generation, allows caching and reuse
+- Phase 12 Plan 04: 3-second timeout with neutral fallback - Prevents blocking suggestion generation, always returns valid result
 - Phase 12 Plan 01: Embedding storage format - text type (not pgvector native) allows pgvector to handle casting flexibly
 - Phase 12 Plan 01: JSONB for flexible arrays - TypeScript-typed JSONB for arrays (servicesProvided, tags, etc.) provides flexibility with type safety
 - Phase 12 Plan 01: Multi-tenant isolation on all client tables - All 5 new tables reference organizationId for proper data isolation
