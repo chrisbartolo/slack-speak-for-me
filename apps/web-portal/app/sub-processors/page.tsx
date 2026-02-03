@@ -62,7 +62,7 @@ export default function SubProcessorsPage() {
                     <td className="py-3 pr-4 font-medium text-gray-900">DigitalOcean</td>
                     <td className="py-3 pr-4">Infrastructure and database hosting</td>
                     <td className="py-3 pr-4">All application and database data</td>
-                    <td className="py-3 pr-4">United States (NYC region)</td>
+                    <td className="py-3 pr-4">European Union (Frankfurt, Germany)</td>
                     <td className="py-3">
                       <a href="https://www.digitalocean.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
                         View

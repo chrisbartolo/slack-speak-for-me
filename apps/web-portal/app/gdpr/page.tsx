@@ -138,14 +138,14 @@ export default function GDPRPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">International Data Transfers</h2>
             <p className="text-gray-600 mb-4">
-              All data is hosted on DigitalOcean infrastructure in the United States (NYC region). AI
-              processing is performed via Anthropic&apos;s US-based API. Your data does not leave the
-              United States during processing.
+              All data is hosted on DigitalOcean infrastructure in the European Union (Frankfurt, Germany). AI
+              processing is performed via Anthropic&apos;s API. Data remains within the EU for storage
+              and infrastructure purposes.
             </p>
             <p className="text-gray-600">
-              For users in the European Economic Area (EEA), data transfers to the US are conducted in
-              compliance with applicable data protection frameworks. Please contact us if you require
-              additional transfer mechanism documentation.
+              AI request processing via Anthropic may involve data transfer to the US. This is limited
+              to per-request conversation context that is processed and not stored. For questions about
+              transfer mechanisms, please contact us.
             </p>
           </section>
 

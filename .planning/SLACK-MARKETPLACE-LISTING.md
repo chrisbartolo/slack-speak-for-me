@@ -127,7 +127,7 @@ All data is stored in a PostgreSQL 16 database with Row-Level Security (RLS) pol
 
 ### How do you host your data?
 
-Cloud-hosted on DigitalOcean managed infrastructure in the NYC region (US East). The application runs on DigitalOcean App Platform with a managed PostgreSQL database cluster and managed Redis instance.
+Cloud-hosted on DigitalOcean managed infrastructure in the Frankfurt region (EU). The application runs on DigitalOcean App Platform with a managed PostgreSQL database cluster and managed Redis instance.
 
 ### Data host company
 
@@ -173,7 +173,7 @@ All deletion actions are logged in the audit trail for compliance verification.
 | **LLM exposed** | Yes |
 | **LLM model(s)** | Anthropic Claude Sonnet 4 (claude-sonnet-4-20250514) |
 | **LLM data tenancy** | Single-tenant per workspace. Data isolated via PostgreSQL Row-Level Security. Conversation context sent to Anthropic per-request, not shared across tenants. |
-| **LLM data residency** | US. Database on DigitalOcean NYC region. AI processing via Anthropic US-based API. |
+| **LLM data residency** | EU. Database on DigitalOcean Frankfurt region. AI processing via Anthropic API (US). |
 | **LLM retention settings** | Zero retention. Message content processed in-memory only. Anthropic does not retain API inputs/outputs per their API data policy. |
 | **Third party services** | Anthropic (AI response generation), DigitalOcean (infrastructure hosting), Stripe (payment processing), Google (optional Sheets integration) |
 | **Sub-processors URL** | https://speakforme.app/sub-processors |

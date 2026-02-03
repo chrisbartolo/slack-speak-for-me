@@ -168,7 +168,7 @@ Create `app.yaml` in repository root:
 # app.yaml - DigitalOcean App Platform specification
 name: slack-speak-for-me
 
-region: nyc
+region: fra
 
 # Alerts
 alerts:

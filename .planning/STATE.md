@@ -21,7 +21,7 @@ Progress: [███████████████████████
 
 **URL:** https://slack-speak-for-me-z3w85.ondigitalocean.app
 **App ID:** 5c38593d-ecac-43f7-9c82-bbbf39dc13bb
-**Region:** NYC
+**Region:** FRA (Frankfurt, EU)
 
 **Services:**
 - slack-backend: Handles /slack, /oauth, /health routes

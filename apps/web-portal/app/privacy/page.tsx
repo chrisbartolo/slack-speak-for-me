@@ -100,7 +100,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
               <li><strong>Encryption:</strong> OAuth tokens are encrypted using AES-256-GCM before storage</li>
               <li><strong>Row-Level Security:</strong> PostgreSQL RLS ensures workspace data isolation</li>
-              <li><strong>Secure Infrastructure:</strong> Data is stored on DigitalOcean servers in the NYC region</li>
+              <li><strong>Secure Infrastructure:</strong> Data is stored on DigitalOcean servers in the EU (Frankfurt, Germany)</li>
               <li><strong>Transport Security:</strong> All data in transit is encrypted using TLS 1.3</li>
               <li><strong>Access Controls:</strong> Strict access controls limit data access to essential personnel</li>
             </ul>
