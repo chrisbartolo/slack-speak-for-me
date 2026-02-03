@@ -18,8 +18,9 @@ RUN npm ci
 
 # Merge workspace-specific node_modules into root before build
 # (some packages like @slack/bolt 4.x are not hoisted to root in npm workspaces)
+# Note: Alpine BusyBox cp does not support -n, so use plain -r
 RUN if [ -d "apps/slack-backend/node_modules" ]; then \
-      cp -rn apps/slack-backend/node_modules/* node_modules/ 2>/dev/null || true; \
+      cp -r apps/slack-backend/node_modules/. node_modules/ 2>/dev/null || true; \
     fi
 
 # Build packages in correct order (database first, then others depend on it)
@@ -44,6 +45,8 @@ ENV NODE_ENV=production
 COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/dist ./dist
 COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/package*.json ./
 COPY --from=builder --chown=slackapp:nodejs /app/node_modules ./node_modules
+# Overlay workspace-specific deps not hoisted to root (e.g. @slack/bolt 4.x)
+COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/node_modules/ ./node_modules/
 COPY --from=builder --chown=slackapp:nodejs /app/packages ./packages
 
 USER slackapp
