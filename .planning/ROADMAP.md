@@ -375,10 +375,16 @@ Plans:
   5. AI applies org brand voice guidelines when generating suggestions
   6. Escalation alerts flag messages that may lead to disputes
   7. Knowledge base integration allows AI to reference product/service info
-**Plans**: TBD (run /gsd:plan-phase 12 to break down)
+**Plans**: 7 plans in 4 waves
 
 Plans:
-- [ ] TBD
+- [ ] 12-01-PLAN.md — Database schema for client profiles, brand voice, knowledge base, escalation alerts
+- [ ] 12-02-PLAN.md — Client profiles service and admin management page
+- [ ] 12-03-PLAN.md — Brand voice templates service and admin management page
+- [ ] 12-04-PLAN.md — Sentiment detection service using Claude prompting
+- [ ] 12-05-PLAN.md — Knowledge base service with pgvector RAG and admin page
+- [ ] 12-06-PLAN.md — AI service integration (client context, brand voice, sentiment, KB)
+- [ ] 12-07-PLAN.md — Escalation monitoring, background scanner, and admin alerts page
 
 ### Phase 13: Team/Org Dashboard
 **Goal**: Admin dashboard with team analytics, controls, and compliance features
