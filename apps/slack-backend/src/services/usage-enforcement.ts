@@ -6,14 +6,19 @@ import { logger } from '../utils/logger.js';
 const PLAN_LIMITS: Record<string, { includedSuggestions: number; overageRate: number }> = {
   free: { includedSuggestions: 5, overageRate: 0 }, // Free tier - no overage, hard cap
   starter: { includedSuggestions: 25, overageRate: 35 },
-  individual_starter: { includedSuggestions: 25, overageRate: 35 },
   pro: { includedSuggestions: 75, overageRate: 30 },
-  individual_pro: { includedSuggestions: 75, overageRate: 30 },
-  team_starter: { includedSuggestions: 30, overageRate: 35 },
-  team_pro: { includedSuggestions: 100, overageRate: 30 },
+  team: { includedSuggestions: 50, overageRate: 25 },
+  business: { includedSuggestions: 100, overageRate: 20 },
 };
 
 const DEFAULT_LIMIT = { includedSuggestions: 5, overageRate: 0 }; // Default to free tier
+
+// Usage thresholds for warning levels
+const USAGE_THRESHOLDS = {
+  WARNING: 0.8,    // 80% - show warning
+  CRITICAL: 0.95,  // 95% - show critical warning
+  HARD_CAP: 1.0,   // 100% - block for free tier
+};
 
 interface UsageCheckResult {
   allowed: boolean;
@@ -22,6 +27,7 @@ interface UsageCheckResult {
   limit: number;
   isOverage: boolean;
   overageCount?: number;
+  warningLevel?: 'none' | 'warning' | 'critical';
 }
 
 interface UsageRecordContext {
@@ -202,12 +208,22 @@ export async function checkUsageAllowed(
     // Calculate overage count for billing purposes
     const overageCount = Math.max(0, currentUsage - limit);
 
+    // Calculate warning level
+    const usagePercent = currentUsage / limit;
+    let warningLevel: 'none' | 'warning' | 'critical' = 'none';
+    if (usagePercent >= USAGE_THRESHOLDS.CRITICAL) {
+      warningLevel = 'critical';
+    } else if (usagePercent >= USAGE_THRESHOLDS.WARNING) {
+      warningLevel = 'warning';
+    }
+
     return {
       allowed: true,
       currentUsage,
       limit,
       isOverage,
       overageCount: isOverage ? overageCount + 1 : undefined,
+      warningLevel,
     };
   } catch (error) {
     logger.error({ error, workspaceId, userId }, 'Error checking usage');
@@ -217,6 +233,7 @@ export async function checkUsageAllowed(
       currentUsage: 0,
       limit: DEFAULT_LIMIT.includedSuggestions,
       isOverage: false,
+      warningLevel: 'none',
     };
   }
 }
@@ -250,11 +267,11 @@ export async function recordUsageEvent(
       return;
     }
 
-    // Update usage record
+    // Update usage record with atomic increment (prevents race conditions)
     await db
       .update(usageRecords)
       .set({
-        suggestionsUsed: record.suggestionsUsed + 1,
+        suggestionsUsed: sql`${usageRecords.suggestionsUsed} + 1`,
         updatedAt: new Date(),
       })
       .where(eq(usageRecords.id, record.id));
@@ -300,6 +317,8 @@ export async function getUsageStatus(
   isNearLimit: boolean;
   isAtLimit: boolean;
   planId: string;
+  warningLevel: 'none' | 'warning' | 'critical';
+  overageRate: number;
 }> {
   const { workspaceId, userId } = context;
 
@@ -314,6 +333,8 @@ export async function getUsageStatus(
         isNearLimit: false,
         isAtLimit: false,
         planId: 'free',
+        warningLevel: 'none',
+        overageRate: DEFAULT_LIMIT.overageRate,
       };
     }
 
@@ -327,6 +348,8 @@ export async function getUsageStatus(
         isNearLimit: false,
         isAtLimit: false,
         planId: 'free',
+        warningLevel: 'none',
+        overageRate: DEFAULT_LIMIT.overageRate,
       };
     }
 
@@ -337,7 +360,18 @@ export async function getUsageStatus(
       .where(eq(userSubscriptions.email, email))
       .limit(1);
 
+    const planId = subscription?.planId || 'free';
+    const planConfig = PLAN_LIMITS[planId] || DEFAULT_LIMIT;
     const percentUsed = (record.suggestionsUsed / record.suggestionsIncluded) * 100;
+    const usagePercent = record.suggestionsUsed / record.suggestionsIncluded;
+
+    // Calculate warning level
+    let warningLevel: 'none' | 'warning' | 'critical' = 'none';
+    if (usagePercent >= USAGE_THRESHOLDS.CRITICAL) {
+      warningLevel = 'critical';
+    } else if (usagePercent >= USAGE_THRESHOLDS.WARNING) {
+      warningLevel = 'warning';
+    }
 
     return {
       used: record.suggestionsUsed,
@@ -345,7 +379,9 @@ export async function getUsageStatus(
       percentUsed,
       isNearLimit: percentUsed >= 80 && percentUsed < 100,
       isAtLimit: percentUsed >= 100,
-      planId: subscription?.planId || 'free',
+      planId,
+      warningLevel,
+      overageRate: planConfig.overageRate,
     };
   } catch (error) {
     logger.error({ error, workspaceId, userId }, 'Error getting usage status');
@@ -356,6 +392,8 @@ export async function getUsageStatus(
       isNearLimit: false,
       isAtLimit: false,
       planId: 'free',
+      warningLevel: 'none',
+      overageRate: DEFAULT_LIMIT.overageRate,
     };
   }
 }

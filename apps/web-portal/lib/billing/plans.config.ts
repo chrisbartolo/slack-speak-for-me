@@ -36,6 +36,25 @@ export interface PlanConfig {
   cta: string;
 }
 
+// Free Plan (no Stripe integration)
+export const FREE_PLAN: PlanConfig = {
+  id: 'free',
+  name: 'Free',
+  description: 'Limited free tier for evaluation',
+  type: 'individual',
+  basePrice: 0,
+  includedSuggestions: 5,
+  overageRate: 0, // Hard cap - no overage allowed
+  stripePriceId: '',
+  stripeOveragePriceId: '',
+  features: [
+    'Up to 5 suggestions per month',
+    'AI learns YOUR writing style',
+    'Understands conversation context',
+  ],
+  cta: 'Get Started Free',
+};
+
 // Individual Plans
 export const INDIVIDUAL_PLANS: PlanConfig[] = [
   {
@@ -127,7 +146,7 @@ export const TEAM_PLANS: PlanConfig[] = [
 ];
 
 // All plans
-export const ALL_PLANS = [...INDIVIDUAL_PLANS, ...TEAM_PLANS];
+export const ALL_PLANS = [FREE_PLAN, ...INDIVIDUAL_PLANS, ...TEAM_PLANS];
 
 // Helper to get plan by ID
 export function getPlanById(planId: string): PlanConfig | undefined {
