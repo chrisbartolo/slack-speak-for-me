@@ -163,3 +163,18 @@ Users can self-service data deletion through two methods:
 3. **App uninstall** — When a workspace admin uninstalls the app, the `app_uninstalled` event triggers automatic deletion of all workspace data.
 
 All deletion actions are logged in the audit trail for compliance verification.
+
+---
+
+## LLM & Third-Party Fields
+
+| Field | Value |
+|-------|-------|
+| **LLM exposed** | Yes |
+| **LLM model(s)** | Anthropic Claude Sonnet 4 (claude-sonnet-4-20250514) |
+| **LLM data tenancy** | Single-tenant per workspace. Data isolated via PostgreSQL Row-Level Security. Conversation context sent to Anthropic per-request, not shared across tenants. |
+| **LLM data residency** | US. Database on DigitalOcean NYC region. AI processing via Anthropic US-based API. |
+| **LLM retention settings** | Zero retention. Message content processed in-memory only. Anthropic does not retain API inputs/outputs per their API data policy. |
+| **Third party services** | Anthropic (AI response generation), DigitalOcean (infrastructure hosting), Stripe (payment processing), Google (optional Sheets integration) |
+| **Sub-processors URL** | https://speakforme.app/sub-processors |
+| **GDPR commitment URL** | https://speakforme.app/gdpr |

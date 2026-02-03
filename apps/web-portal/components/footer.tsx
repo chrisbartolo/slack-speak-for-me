@@ -46,6 +46,12 @@ export function Footer() {
             <Link href="/terms" className="hover:text-gray-900 transition-colors">
               Terms of Service
             </Link>
+            <Link href="/gdpr" className="hover:text-gray-900 transition-colors">
+              GDPR
+            </Link>
+            <Link href="/sub-processors" className="hover:text-gray-900 transition-colors">
+              Sub-Processors
+            </Link>
           </div>
 
           {/* Copyright */}
