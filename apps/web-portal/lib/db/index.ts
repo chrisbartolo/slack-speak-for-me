@@ -33,6 +33,10 @@ import {
   brandVoiceTemplates,
   knowledgeBaseDocuments,
   escalationAlerts,
+  orgStyleSettings,
+  responseTemplates,
+  guardrailConfig,
+  guardrailViolations,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -77,6 +81,10 @@ const schema = {
   brandVoiceTemplates,
   knowledgeBaseDocuments,
   escalationAlerts,
+  orgStyleSettings,
+  responseTemplates,
+  guardrailConfig,
+  guardrailViolations,
 };
 
 export const db = drizzle(queryClient, { schema });
@@ -96,4 +104,12 @@ export type {
   NewKnowledgeBaseDocument,
   EscalationAlert,
   NewEscalationAlert,
+  OrgStyleSettings,
+  NewOrgStyleSettings,
+  ResponseTemplate,
+  NewResponseTemplate,
+  GuardrailConfig,
+  NewGuardrailConfig,
+  GuardrailViolation,
+  NewGuardrailViolation,
 } from '@slack-speak/database';
