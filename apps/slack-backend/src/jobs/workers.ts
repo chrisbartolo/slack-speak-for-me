@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse } from '../services/index.js';
+import { generateSuggestion, sendSuggestionEphemeral, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus } from '../services/index.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
@@ -25,6 +25,49 @@ export async function startWorkers() {
         triggeredBy,
       }, 'Processing AI response job');
 
+      // Check usage limits before generating
+      try {
+        const usageCheck = await checkUsageAllowed({ workspaceId, userId });
+        if (!usageCheck.allowed) {
+          logger.info({
+            jobId: job.id,
+            workspaceId,
+            userId,
+            reason: usageCheck.reason,
+            currentUsage: usageCheck.currentUsage,
+            limit: usageCheck.limit,
+          }, 'AI generation blocked by usage limit');
+
+          // Send ephemeral message to user about limit
+          const [inst] = await db
+            .select({ installation: installations, workspace: workspaces })
+            .from(installations)
+            .innerJoin(workspaces, eq(installations.workspaceId, workspaces.id))
+            .where(eq(workspaces.id, workspaceId))
+            .limit(1);
+
+          if (inst) {
+            const encKey = getEncryptionKey();
+            const token = decrypt(inst.installation.botToken, encKey);
+            const limitClient = new WebClient(token);
+            await limitClient.chat.postEphemeral({
+              channel: channelId,
+              user: userId,
+              text: `You've used all ${usageCheck.limit} AI suggestions for this month. Upgrade your plan for more. Your usage resets at the start of next month.`,
+            });
+          }
+
+          return {
+            suggestionId: `blocked_${Date.now()}`,
+            suggestion: '',
+            processingTimeMs: 0,
+          };
+        }
+      } catch (usageError) {
+        // Log but don't block - fail open for UX
+        logger.warn({ error: usageError, jobId: job.id }, 'Usage check failed, allowing generation');
+      }
+
       const result = await generateSuggestion({
         workspaceId,
         userId,
@@ -36,6 +79,34 @@ export async function startWorkers() {
 
       // Generate a unique suggestion ID for tracking
       const suggestionId = `sug_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+      // Record usage event after successful generation
+      try {
+        await recordUsageEvent({
+          workspaceId,
+          userId,
+          eventType: 'suggestion',
+          channelId,
+        });
+      } catch (recordError) {
+        // Non-fatal - log but don't block delivery
+        logger.warn({ error: recordError, jobId: job.id }, 'Failed to record usage event');
+      }
+
+      // Get usage status for display
+      let usageInfo: { used: number; limit: number; warningLevel: 'safe' | 'warning' | 'critical' | 'exceeded'; planId: string } | undefined;
+      try {
+        const usageStatus = await getUsageStatus({ workspaceId, userId });
+        usageInfo = {
+          used: usageStatus.used,
+          limit: usageStatus.limit,
+          warningLevel: usageStatus.warningLevel === 'none' ? 'safe' : usageStatus.warningLevel,
+          planId: usageStatus.planId,
+        };
+      } catch (statusError) {
+        // Non-fatal - log but don't block delivery
+        logger.warn({ error: statusError, jobId: job.id }, 'Failed to get usage status');
+      }
 
       logger.info({
         jobId: job.id,
@@ -161,6 +232,7 @@ export async function startWorkers() {
             suggestionId,
             suggestion: result.suggestion,
             triggerContext: triggeredBy,
+            usageInfo,
           });
 
           logger.info({
