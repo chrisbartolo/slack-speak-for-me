@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
 import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, recordUsageEvent, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
+import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
 import { routeDelivery } from '../services/delivery-router.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, decrypt } from '@slack-speak/database';
@@ -100,18 +100,7 @@ export async function startWorkers() {
       // Generate a unique suggestion ID for tracking
       const suggestionId = `sug_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-      // Record usage event after successful generation
-      try {
-        await recordUsageEvent({
-          workspaceId,
-          userId,
-          eventType: 'suggestion',
-          channelId,
-        });
-      } catch (recordError) {
-        // Non-fatal - log but don't block delivery
-        logger.warn({ error: recordError, jobId: job.id }, 'Failed to record usage event');
-      }
+      // Usage already recorded inside generateSuggestion() — no duplicate here
 
       // Get usage status for display
       let usageInfo: { used: number; limit: number; warningLevel: 'safe' | 'warning' | 'critical' | 'exceeded'; planId: string } | undefined;

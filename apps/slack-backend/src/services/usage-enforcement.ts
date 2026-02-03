@@ -262,6 +262,24 @@ export async function recordUsageEvent(
       return true;
     }
 
+    // Refinements don't count against the suggestion limit —
+    // only log the event for analytics and return early.
+    if (eventType === 'refinement') {
+      await db.insert(usageEvents).values({
+        email,
+        slackUserId: userId,
+        workspaceId,
+        eventType,
+        channelId,
+        inputTokens: tokensUsed ? Math.floor(tokensUsed * 0.3) : null,
+        outputTokens: tokensUsed ? Math.floor(tokensUsed * 0.7) : null,
+        estimatedCost: costEstimate || null,
+      });
+
+      logger.info({ email, userId, eventType }, 'Refinement event recorded (no credit consumed)');
+      return true;
+    }
+
     // Determine plan to decide whether to guard the increment
     const [subscription] = await db
       .select({ planId: userSubscriptions.planId })
