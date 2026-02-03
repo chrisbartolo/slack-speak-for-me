@@ -346,6 +346,8 @@ export const usageRecords = pgTable('usage_records', {
 
   // Stripe metered billing
   stripeSubscriptionItemId: text('stripe_subscription_item_id'), // For reporting overage
+  stripeMeterId: text('stripe_meter_id'), // Stripe billing meter ID for this period
+  planId: text('plan_id'), // Plan during this billing period (for historical reference)
 
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
@@ -374,12 +376,16 @@ export const usageEvents = pgTable('usage_events', {
   outputTokens: integer('output_tokens'),
   estimatedCost: integer('estimated_cost'), // In cents (for internal tracking)
 
+  // Stripe reporting
+  stripeReportedAt: timestamp('stripe_reported_at'), // null means not yet reported to Stripe
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   emailIdx: index('usage_events_email_idx').on(table.email),
   orgIdx: index('usage_events_org_idx').on(table.organizationId),
   createdAtIdx: index('usage_events_created_at_idx').on(table.createdAt),
   eventTypeIdx: index('usage_events_type_idx').on(table.eventType),
+  stripeReportedIdx: index('usage_events_stripe_reported_idx').on(table.stripeReportedAt),
 }));
 
 // Coupons for discounts
