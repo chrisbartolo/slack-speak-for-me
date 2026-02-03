@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 14 (User Manual & Knowledge Base)
-Plan: 4 of ? in phase (plans 01-04 complete)
+Phase: 12 (Client Context Support)
+Plan: 1 of ? in phase (plan 01 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 14 plan 03 complete (Admin, troubleshooting, FAQ, API docs)
-Last activity: 2026-02-03 - Completed 14-03-PLAN.md (Admin, troubleshooting, FAQ, API documentation)
+Status: Phase 12 plan 01 complete (Database schema for client context)
+Last activity: 2026-02-03 - Completed 12-01-PLAN.md (Added 5 new tables for client profiles, contacts, brand voice, knowledge base, and escalation alerts)
 
-Progress: [██████████████████████████████░░] ~100% (71/71 plans complete)
+Progress: [██████████████████████████████░░] ~100% (72/72 plans complete)
 
 ## Production Deployment
 
@@ -35,7 +35,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 46
+- Total plans completed: 47
 - Average duration: 3.2 min
 - Total execution time: ~2.5 hours
 
@@ -55,6 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
+| 12 - Client Context Support | 1 | 2 min | 2.0 min |
 | 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
@@ -63,6 +64,10 @@ Progress: [███████████████████████
 
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
+
+- Phase 12 Plan 01: Embedding storage format - text type (not pgvector native) allows pgvector to handle casting flexibly
+- Phase 12 Plan 01: JSONB for flexible arrays - TypeScript-typed JSONB for arrays (servicesProvided, tags, etc.) provides flexibility with type safety
+- Phase 12 Plan 01: Multi-tenant isolation on all client tables - All 5 new tables reference organizationId for proper data isolation
 
 - Phase 5 Plan 01: googleapis library for Google Sheets API - Official client with OAuth2 and auto-refresh support
 - Phase 5 Plan 01: OAuth state CSRF protection - workspaceId/userId encoded as base64 JSON in state parameter
@@ -472,5 +477,9 @@ Documentation:
 - `apps/web-portal/components/dashboard/sidebar.tsx` - Added Billing nav item visible to all users
 - `apps/web-portal/app/dashboard/layout.tsx` - Integrated checkUserAccess for unified subscription status
 
+**Phase 12 Plan 01 (2026-02-03):**
+- `packages/database/src/schema.ts` - Added 5 client context tables (clientProfiles, clientContacts, brandVoiceTemplates, knowledgeBaseDocuments, escalationAlerts)
+- `apps/web-portal/lib/db/index.ts` - Exported all 5 tables and TypeScript types to web-portal schema
+
 ---
-*Last updated: 2026-02-02*
+*Last updated: 2026-02-03*
