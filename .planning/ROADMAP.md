@@ -444,13 +444,13 @@ Plans:
   6. Feedback blocks (thumbs up/down) appear on every suggestion for quality tracking
   7. Existing ephemeral delivery in channels continues to work (backward compatible)
   8. DM suggestions work natively through the assistant panel (no bot DM fallback needed)
-**Plans**: 7 plans in 4 waves
+**Plans**: 7 plans in 6 waves
 
-**Migration context (Bolt 3.22 → 4.x):**
+**Migration context (Bolt 3.22 -> 4.x):**
 - `@slack/types` namespace export: `export * as types from '@slack/types'`
-- `@slack/web-api` v6 → v7 (TypeScript type changes)
-- Express v4 → v5 in customRoutes
-- Middleware `ignoreSelf()` / `directMention()` → drop parens
+- `@slack/web-api` v6 -> v7 (TypeScript type changes)
+- Express v4 -> v5 in customRoutes
+- Middleware `ignoreSelf()` / `directMention()` -> drop parens
 - Node v18+ required
 - Breaking changes are minor per official migration guide
 
@@ -458,16 +458,16 @@ Plans:
 - `Assistant` class (threadStarted, threadContextChanged, userMessage)
 - `assistant:write` scope
 - `assistant_thread_started`, `assistant_thread_context_changed` events
-- `chat.startStream` / `chat.appendStream` / `chat.stopStream` for streaming
+- `chatStream()` utility for streaming responses
 - `setSuggestedPrompts()` for context-aware conversation starters
 - `setTitle()` / `setStatus()` for loading states
 - `context_actions` block with `feedback_buttons` element
 
 Plans:
-- [ ] 15-01-PLAN.md — Bolt 3.x → 4.x migration: dependency upgrade, type fixes, regression testing
+- [ ] 15-01-PLAN.md — Bolt 3.x -> 4.x migration: dependency upgrade, type fixes, regression testing
 - [ ] 15-02-PLAN.md — App manifest and Slack dashboard: enable Agents & AI Apps, add assistant:write scope, subscribe to assistant events
 - [ ] 15-03-PLAN.md — Assistant class setup: threadStarted with suggested prompts, threadContextChanged with context store, userMessage routing
-- [ ] 15-04-PLAN.md — Streaming suggestion delivery: wire AI generation into chat.startStream/appendStream/stopStream pipeline
+- [ ] 15-04-PLAN.md — Streaming suggestion delivery: wire AI generation into chatStream() streaming pipeline
 - [ ] 15-05-PLAN.md — Assistant actions: Send as Me, Refine, Dismiss buttons in assistant thread, feedback blocks
 - [ ] 15-06-PLAN.md — Dual delivery mode: assistant panel for DMs and opted-in users, ephemeral for channel watchers, user preference toggle
 - [ ] 15-07-PLAN.md — Verification: test all conversation types (channel, private, DM, group DM), regression test existing flows
@@ -500,4 +500,4 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-02-03 (Phase 15 scoped)*
+*Last updated: 2026-02-03 (Phase 15 planned)*
