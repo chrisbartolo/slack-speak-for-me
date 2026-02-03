@@ -102,7 +102,7 @@ export default function InstallSuccessPage() {
               <li className="flex items-start gap-2">
                 <span className="text-green-500">•</span>
                 <span>
-                  <strong>Use /watch</strong> - Monitor a channel to automatically get suggestions when you're mentioned.
+                  <strong>Use /speakforme-watch</strong> - Monitor a channel to automatically get suggestions when you're mentioned.
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -129,7 +129,7 @@ export default function InstallSuccessPage() {
             </Button>
           </Link>
           <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
-            <a href="https://slack.com/app_redirect?app=YOUR_APP_ID" target="_blank" rel="noopener noreferrer">
+            <a href={`https://slack.com/app_redirect?app=${process.env.NEXT_PUBLIC_SLACK_APP_ID || ''}`} target="_blank" rel="noopener noreferrer">
               Open Slack
             </a>
           </Button>
