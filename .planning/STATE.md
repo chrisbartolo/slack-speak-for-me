@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 11.1 of 11 (Usage Tracking & Enforcement)
-Plan: 1 of 6 in phase
+Plan: 2 of 6 in phase
 Deployment: **LIVE** on DigitalOcean App Platform
 Status: In progress
-Last activity: 2026-02-03 - Completed 11.1-01-PLAN.md (Usage Tracking Infrastructure)
+Last activity: 2026-02-03 - Completed 11.1-02-PLAN.md (Usage Pipeline Integration)
 
-Progress: [██████████████████████████████░░] 100% (64/64 plans complete)
+Progress: [██████████████████████████████░░] 100% (65/65 plans complete)
 
 ## Production Deployment
 
@@ -174,6 +174,11 @@ Recent decisions affecting current work:
 - Phase 11.1 Plan 01: Warning levels at 80% (warning) and 95% (critical) of usage limit
 - Phase 11.1 Plan 01: FREE_PLAN defined in plans.config.ts as canonical source
 - Phase 11.1 Plan 01: PLAN_LIMITS aligned with plan IDs (free, starter, pro, team, business)
+- Phase 11.1 Plan 02: Usage checked before AI generation to prevent wasted API calls
+- Phase 11.1 Plan 02: Free-tier users blocked at 100% get informative ephemeral message
+- Phase 11.1 Plan 02: All usage operations wrapped in try/catch (fail open for UX)
+- Phase 11.1 Plan 02: Usage info passed to delivery for contextual footer display
+- Phase 11.1 Plan 02: Warning emojis: ⚠️ at 80%, 🚨 at 95%, 📊 for overage
 
 ### Pending Todos
 
@@ -207,7 +212,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 11.1-01-PLAN.md (Usage Tracking Infrastructure)
+Stopped at: Completed 11.1-02-PLAN.md (Usage Pipeline Integration)
 Resume file: None
 
 **Phase 7 Completion (2026-02-01):**
