@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 12 (Client Context Support)
-Plan: 5 of ? in phase (plans 01, 02, 03, 05 complete)
+Plan: 6 of ? in phase (plans 01, 02, 03, 05, 06 complete)
 Deployment: **LIVE** on DigitalOcean App Platform
-Status: Phase 12 plan 05 complete (Knowledge base with RAG semantic search)
-Last activity: 2026-02-03 - Completed 12-05-PLAN.md (pgvector-based RAG with hash pseudo-embeddings, background indexing, and admin document management)
+Status: Phase 12 plan 06 complete (Client context AI integration)
+Last activity: 2026-02-03 - Completed 12-06-PLAN.md (AI suggestions enriched with client profiles, brand voice, sentiment analysis, and knowledge base documentation)
 
-Progress: [██████████████████████████████░░] ~100% (76/76 plans complete)
+Progress: [██████████████████████████████░░] ~100% (77/77 plans complete)
 
 ## Production Deployment
 
@@ -55,7 +55,7 @@ Progress: [███████████████████████
 
 *Phase 8 complete*
 
-| 12 - Client Context Support | 5 | 23 min | 4.6 min |
+| 12 - Client Context Support | 6 | 25 min | 4.2 min |
 | 14 - User Manual & Knowledge Base | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
@@ -65,6 +65,11 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 12 Plan 06: Client contact detection strategy - Check trigger message sender first (most likely the client), fallback to all participants
+- Phase 12 Plan 06: Graceful fallback design - All external service calls wrapped in .catch() returning null/empty, client context features never break core functionality
+- Phase 12 Plan 06: Knowledge base integration parameters - 500ms timeout, 70% similarity threshold, top 3 results with 400-char preview
+- Phase 12 Plan 06: De-escalation triggering - Only activates for high/critical sentiment risk levels to avoid over-prompting
+- Phase 12 Plan 06: Client context metadata logging - Added hasClientContext, sentimentRisk, kbDocsRetrieved for Plan 07 monitoring
 - Phase 12 Plan 05: Hash-based pseudo-embeddings - Placeholder algorithm allows immediate functionality without API costs, replaceable later
 - Phase 12 Plan 05: 500ms search timeout - Promise.race pattern prevents blocking suggestion generation, returns empty array on timeout
 - Phase 12 Plan 05: Automatic chunking for large docs - Documents >500 words split into 500-word chunks with 50-word overlap
