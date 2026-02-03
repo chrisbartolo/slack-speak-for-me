@@ -1,0 +1,114 @@
+---
+title: Permissions & Access
+description: Troubleshoot permission-related issues
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+This guide explains the permissions Speak for Me requires, what each scope does, and how to resolve common permission-related issues.
+
+## Slack App Permissions
+
+Speak for Me requires the following Slack OAuth scopes to function:
+
+### Bot Scopes
+
+| Scope | Purpose |
+|-------|---------|
+| `channels:history` | Read messages in public channels the bot is invited to |
+| `channels:read` | View basic information about public channels |
+| `chat:write` | Send ephemeral suggestions to users |
+| `commands` | Register and handle slash commands (`/watch`, `/unwatch`, `/generate-report`) |
+| `groups:history` | Read messages in private channels the bot is invited to |
+| `groups:read` | View basic information about private channels |
+| `im:history` | Read direct message conversations |
+| `im:read` | View basic information about DMs |
+| `mpim:history` | Read group direct message conversations |
+| `mpim:read` | View basic information about group DMs |
+| `users:read` | Look up user names and profile information |
+| `users:read.email` | Access user email addresses for billing identity |
+
+### User Scopes
+
+| Scope | Purpose |
+|-------|---------|
+| `identity.basic` | Sign in with Slack (web portal authentication) |
+| `identity.email` | Access your email for account identification |
+| `identity.team` | Identify which workspace you belong to |
+
+<Callout type="info">
+  Speak for Me only reads messages in channels where the bot has been explicitly invited. It cannot access channels it has not been added to.
+</Callout>
+
+---
+
+## Common Permission Issues
+
+### Bot Cannot See Messages in a Channel
+
+**Cause:** The bot has not been invited to the channel.
+
+**Solution:**
+
+1. Open the Slack channel where you want suggestions
+2. Type `/invite @Speak for Me` to add the bot to the channel
+3. Once invited, use `/watch` to start watching the conversation
+4. The bot can now see messages in that channel and generate suggestions
+
+<Callout type="warn">
+  For private channels, a channel member must invite the bot. The bot cannot join private channels on its own.
+</Callout>
+
+### Cannot Install the App
+
+**Cause:** Installing Slack apps typically requires admin-level permissions in the workspace.
+
+**Solution:**
+
+1. Check if your Slack workspace has **app approval** enabled (Settings > Manage Apps)
+2. If app approval is enabled, you may need to request approval from a workspace admin
+3. If you are a workspace admin, visit the [install page](/install) and authorize the app
+4. For Enterprise Grid workspaces, the app may need to be approved at the organization level
+
+### Web Portal Shows "Unauthorized"
+
+**Cause:** Your Slack session may have expired or your workspace membership changed.
+
+**Solution:**
+
+1. Click **Sign Out** on the web portal
+2. Clear browser cookies for the Speak for Me domain
+3. Sign in again using **Sign in with Slack**
+4. Make sure you are signing in with the correct Slack workspace
+
+### Admin Features Not Visible
+
+**Cause:** Your account has the **member** role, not **admin**.
+
+**Solution:**
+
+1. Admin features are only visible to users with the admin role
+2. The first person to install the Slack app is automatically the admin
+3. Ask an existing admin to promote your account from the team management page
+4. You can check your role on the [dashboard](/dashboard)
+
+---
+
+## Verifying Your Permissions
+
+To check what permissions Speak for Me has in your workspace:
+
+1. In Slack, go to **Settings & Administration** > **Manage Apps**
+2. Find **Speak for Me** in the installed apps list
+3. Review the permissions listed under the app details
+4. If scopes are missing, the app may need to be reinstalled
+
+<Callout type="info">
+  If you reinstall the app, your watched conversations and style preferences are preserved. Only the Slack OAuth tokens are refreshed.
+</Callout>
+
+## Next Steps
+
+- [Common Issues](/docs/troubleshooting/common-issues) for non-permission problems
+- [Billing Issues](/docs/troubleshooting/billing-issues) for payment-related help
+- [Organization Setup](/docs/admin/org-setup) for admin configuration

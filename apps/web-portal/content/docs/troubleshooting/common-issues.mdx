@@ -1,0 +1,129 @@
+---
+title: Common Issues
+description: Solutions to frequently encountered problems
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+This page covers the most frequently encountered issues and their solutions. Each problem includes the likely cause and steps to resolve it.
+
+---
+
+## Bot Is Not Responding to Messages
+
+**Cause:** The bot may not be watching the conversation, or it may not be invited to the channel.
+
+**Solution:**
+
+1. In the Slack channel, type `/watch` to start watching that conversation
+2. If you get an error, make sure the Speak for Me bot is invited to the channel by typing `/invite @Speak for Me`
+3. Verify the conversation appears in your [watched conversations list](/dashboard) on the web portal
+4. Check that your subscription is active and you have not exceeded your monthly suggestion limit
+
+<Callout type="warn">
+  The bot only generates suggestions for conversations you have explicitly watched using the `/watch` command. It does not monitor all channels automatically.
+</Callout>
+
+---
+
+## Suggestions Are Not Appearing
+
+**Cause:** Suggestions may not trigger for every message. The bot looks for messages directed at you or mentioning you in watched conversations.
+
+**Solution:**
+
+1. Confirm the conversation is being watched (check the dashboard or use `/watch` again)
+2. Make sure the bot is a member of the channel
+3. Verify you have not reached your monthly suggestion limit
+4. Check that the message was from another person (the bot does not generate suggestions for your own messages)
+5. Wait a few seconds; suggestions are generated asynchronously and may take a moment to appear
+
+---
+
+## Cannot Sign In to the Web Portal
+
+**Cause:** Authentication issues are usually related to cookies or Slack workspace membership.
+
+**Solution:**
+
+1. Clear your browser cookies for the Speak for Me website
+2. Try signing in again using the **Sign in with Slack** button
+3. Make sure you are a member of a Slack workspace where Speak for Me is installed
+4. Try using a different browser or incognito/private window
+5. If you recently changed your Slack account, you may need to re-authorize the app
+
+---
+
+## Style Changes Are Not Taking Effect
+
+**Cause:** Style preference changes apply to the next suggestion generated, not retroactively.
+
+**Solution:**
+
+1. Update your style preferences on the [dashboard](/dashboard)
+2. Save your changes
+3. The next suggestion generated will use your updated preferences
+4. Previous suggestions are not regenerated with new style settings
+
+<Callout type="info">
+  Style changes (tone, formality, preferred phrases) are applied in real-time to new suggestions. There is no delay beyond the next triggering message.
+</Callout>
+
+---
+
+## Weekly Report Not Generating
+
+**Cause:** Weekly reports require proper configuration and an active Pro subscription.
+
+**Solution:**
+
+1. Verify you have an active **Pro** plan (weekly reports are a Pro feature)
+2. Check your report settings on the [dashboard](/dashboard) under **Reports**
+3. Ensure the report schedule is **enabled** and the day/time are configured
+4. If using Google Sheets export, verify your Google account is connected
+5. Check that the recipient channel or DM is configured correctly
+
+---
+
+## Ephemeral Messages Disappeared
+
+**Cause:** This is expected behavior. Ephemeral messages in Slack are temporary by design.
+
+**Solution:**
+
+Ephemeral messages (the way Speak for Me delivers suggestions) are only visible to you and are not stored permanently in the channel. They disappear when you:
+
+- Reload Slack
+- Switch to a different workspace
+- Close and reopen Slack
+
+This is a Slack platform limitation, not a Speak for Me issue. Your suggestion history is preserved on the [web portal dashboard](/dashboard) if you need to reference past suggestions.
+
+<Callout type="info">
+  Ephemeral messages are private by design. No one else in the channel can see your suggestions. This is intentional for privacy.
+</Callout>
+
+---
+
+## Google Sheets Export Not Working
+
+**Cause:** The Google Sheets integration may need re-authorization or the connected spreadsheet may have issues.
+
+**Solution:**
+
+1. Go to the [dashboard](/dashboard) and check your Google Sheets connection status
+2. If disconnected, click **Connect Google Sheets** to re-authorize
+3. Verify the spreadsheet you selected still exists and you have edit access
+4. Check that you have not exceeded the rate limit (30 writes per minute)
+5. Try disconnecting and reconnecting the Google Sheets integration
+
+---
+
+## Still Need Help?
+
+If your issue is not listed above, try these resources:
+
+- Check the [Permissions & Access](/docs/troubleshooting/permissions) guide for permission-related problems
+- Review the [Billing Issues](/docs/troubleshooting/billing-issues) page for payment problems
+- Browse the [FAQ](/docs/faq) for quick answers
+- Contact support at [support@speakforme.app](mailto:support@speakforme.app)

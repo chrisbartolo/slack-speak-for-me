@@ -1,0 +1,76 @@
+---
+title: Organization Setup
+description: Create and configure your organization in Speak for Me
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+Organizations group one or more Slack workspaces together under a single billing account. This makes it easy to manage subscriptions and team access across your company.
+
+## How Organizations Work
+
+When you install Speak for Me to a Slack workspace, an organization is automatically created. Each organization has:
+
+- A **unique name and slug** used in the web portal URL
+- One or more **Slack workspaces** connected to it
+- A single **billing subscription** that covers all workspaces
+- **Admin and member roles** for access control
+
+<Callout type="info">
+  Organizations are created automatically during the first Slack app installation. You do not need to create one manually.
+</Callout>
+
+## Setting Up Your Organization
+
+<Steps>
+  <Step>
+    ### Install the Slack App
+
+    Visit the [installation page](/install) and click **Add to Slack**. Authorize the app with your Slack workspace. This creates your organization automatically.
+  </Step>
+  <Step>
+    ### Sign In to the Web Portal
+
+    Go to the [dashboard](/dashboard) and sign in with your Slack account. As the installer, you are assigned the **admin** role.
+  </Step>
+  <Step>
+    ### Review Organization Settings
+
+    From the dashboard, review your organization name and settings. The organization name defaults to your Slack workspace name but can be updated.
+  </Step>
+  <Step>
+    ### Invite Your Team
+
+    Share the Speak for Me install link with your team. When teammates authorize the app, they are automatically added to your organization as **members**.
+  </Step>
+</Steps>
+
+## Adding Workspaces
+
+If your company uses multiple Slack workspaces (for example, separate workspaces for different departments), you can connect them to the same organization:
+
+1. Sign in to the web portal with an admin account
+2. Navigate to the admin settings
+3. Use the **Add Workspace** option to install the Slack app in additional workspaces
+4. Each new workspace shares the same billing subscription
+
+<Callout type="warn">
+  Only organization admins can add new workspaces. Members can only use Speak for Me within workspaces that are already connected.
+</Callout>
+
+## Organization Preferences
+
+Admins can configure the following organization-wide settings:
+
+| Setting | Description |
+|---------|-------------|
+| **Organization Name** | Display name shown in the web portal |
+| **Billing Email** | Email address for invoices and billing notifications |
+| **Default Plan** | The subscription plan applied to new team members |
+
+## Next Steps
+
+- [Set up billing](/docs/admin/billing) for your organization
+- [Manage team members](/docs/admin/team-management) and roles
+- [Review compliance settings](/docs/admin/compliance) for data privacy

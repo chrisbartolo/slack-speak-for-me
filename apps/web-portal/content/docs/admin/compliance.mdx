@@ -1,0 +1,125 @@
+---
+title: Compliance & Data Privacy
+description: GDPR compliance, data export, and account deletion
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+Speak for Me is designed with privacy and compliance in mind. This page covers data handling, GDPR compliance, data export, and account deletion.
+
+## Data We Collect
+
+Speak for Me processes the following data:
+
+| Data Type | Purpose | Retention |
+|-----------|---------|-----------|
+| **Slack messages** | Used to generate contextual suggestions | Not stored permanently; processed in real-time |
+| **Style preferences** | Tone, formality, preferred/avoided phrases | Stored until you delete them |
+| **Person context** | Notes about people you interact with | Stored until you delete them |
+| **Conversation context** | Notes about specific channels or DMs | Stored until you delete them |
+| **Suggestion feedback** | Whether you accepted, refined, or dismissed a suggestion | Stored for improving quality |
+| **Usage records** | Suggestion counts per billing period | Stored for billing purposes |
+| **Audit logs** | Security events (login, data export, settings changes) | Retained for 90 days |
+
+<Callout type="info">
+  Slack message content is processed in real-time by the AI and is **not** stored in our database. Only metadata (timestamps, channel IDs) is retained for suggestion tracking.
+</Callout>
+
+## GDPR Compliance
+
+Speak for Me complies with the General Data Protection Regulation (GDPR):
+
+- **Consent**: You must explicitly consent to data processing when you first authorize the app
+- **Right to Access**: You can export all your personal data at any time
+- **Right to Erasure**: You can request complete deletion of your account and all associated data
+- **Data Portability**: Exported data is provided in a standard JSON format
+- **Data Minimization**: We only collect data necessary for the service to function
+
+## Exporting Your Data
+
+You can download a complete copy of all your personal data.
+
+<Steps>
+  <Step>
+    ### Open Privacy Settings
+
+    Sign in to the [dashboard](/dashboard) and navigate to **Settings** then **Privacy & Data**.
+  </Step>
+  <Step>
+    ### Request Data Export
+
+    Click the **Export My Data** button. The system will compile all your data including style preferences, person context, conversation context, suggestion history, and usage records.
+  </Step>
+  <Step>
+    ### Download the Export
+
+    Once the export is ready (usually within a few minutes), you will receive a download link. The data is provided as a JSON file.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Data exports include all information associated with your Slack user ID across all connected workspaces. The export is generated as a secure download link valid for 24 hours.
+</Callout>
+
+## Deleting Your Account
+
+You have the right to request complete deletion of your account and all associated data.
+
+<Steps>
+  <Step>
+    ### Open Privacy Settings
+
+    Sign in to the [dashboard](/dashboard) and navigate to **Settings** then **Privacy & Data**.
+  </Step>
+  <Step>
+    ### Request Account Deletion
+
+    Click the **Delete My Account** button. You will be asked to confirm this action.
+  </Step>
+  <Step>
+    ### Confirm Deletion
+
+    After confirmation, your account enters a 30-day grace period. During this time you can cancel the deletion by signing back in. After 30 days, all data is permanently and irreversibly deleted.
+  </Step>
+</Steps>
+
+<Callout type="warn">
+  Account deletion is permanent after the 30-day grace period. This removes all your style preferences, person context, conversation context, suggestion history, and usage data. This action cannot be undone.
+</Callout>
+
+## Cookie Consent
+
+The Speak for Me web portal uses cookies for:
+
+- **Session management**: Keeping you signed in (essential)
+- **Analytics**: Understanding how the product is used (optional)
+
+You can manage cookie preferences through the consent banner that appears on your first visit.
+
+## Audit Logging
+
+Speak for Me maintains audit logs for security-relevant events:
+
+| Event | What is Logged |
+|-------|---------------|
+| **Login / Logout** | Timestamp, IP address, user agent |
+| **Data Export** | When requested and when completed |
+| **Account Deletion** | When requested and when executed |
+| **Subscription Changes** | Plan upgrades, downgrades, cancellations |
+| **Settings Changes** | Style preference updates, context changes |
+| **OAuth Connections** | Google Sheets connected or disconnected |
+| **Admin Actions** | Role changes, organization settings updates |
+
+Audit logs are retained for 90 days and are accessible to organization admins.
+
+## Legal Documents
+
+- [Privacy Policy](/privacy) - Full details on data handling and privacy practices
+- [Terms of Service](/terms) - Terms governing use of Speak for Me
+
+## Next Steps
+
+- [Export your data](#exporting-your-data) if you need a copy
+- [Manage your team](/docs/admin/team-management) and access controls
+- [Contact support](mailto:support@speakforme.app) for compliance questions

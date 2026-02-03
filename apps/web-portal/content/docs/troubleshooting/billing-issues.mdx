@@ -1,0 +1,121 @@
+---
+title: Billing Issues
+description: Resolve payment and subscription problems
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+This page helps you resolve common billing and subscription issues with Speak for Me.
+
+---
+
+## Payment Failed
+
+**Cause:** Your credit card was declined or expired.
+
+**Solution:**
+
+1. Sign in to the [dashboard](/dashboard)
+2. Navigate to **Billing** settings
+3. Click **Manage Billing** to open the Stripe Customer Portal
+4. Update your payment method with a valid credit card
+5. Stripe will automatically retry the failed payment
+
+<Callout type="info">
+  Stripe retries failed payments up to 3 times over several days. Your subscription remains active during the retry period. If all retries fail, your subscription is paused.
+</Callout>
+
+---
+
+## Trial Expired
+
+**Cause:** Your 14-day free trial has ended and no payment method was added.
+
+**Solution:**
+
+1. Sign in to the [dashboard](/dashboard)
+2. Navigate to the **Pricing** page
+3. Select a plan (Starter or Pro) and complete payment
+4. Your subscription activates immediately and all features are restored
+
+Your data (style preferences, person context, conversation context) is preserved when your trial expires. You do not lose any configuration.
+
+---
+
+## Charged Incorrectly
+
+**Cause:** Unexpected charges may be due to seat count changes, plan upgrades, or proration.
+
+**Solution:**
+
+1. Check your invoice in the Stripe Customer Portal (accessible from **Billing** in the dashboard)
+2. Review the line items for proration charges (partial-month adjustments when changing plans)
+3. Verify the seat count matches your expected number of team members
+4. If you believe there is a billing error, contact support at [support@speakforme.app](mailto:support@speakforme.app) with your invoice number
+
+<Callout type="warn">
+  Plan upgrades are prorated, meaning you pay the difference for the remaining days in your billing period. Downgrades take effect at the end of the current billing period.
+</Callout>
+
+---
+
+## Individual vs. Organization Billing Confusion
+
+**Cause:** You may have both an individual subscription and be part of an organization with a team plan.
+
+**Solution:**
+
+If you belong to an organization with an active team plan:
+
+1. The **organization plan takes precedence** over your individual subscription
+2. You do not need a separate individual subscription
+3. To cancel your individual subscription, go to **Billing** in the dashboard and click **Manage Billing**
+4. Cancel the individual subscription through the Stripe Customer Portal
+
+If you are unsure which billing applies to you:
+
+1. Check your [dashboard](/dashboard) for your current plan status
+2. The plan name will indicate whether it is an individual plan or a team plan
+3. Contact your organization admin if you have questions about team billing
+
+---
+
+## Subscription Shows "Past Due"
+
+**Cause:** A payment failed and Stripe is retrying.
+
+**Solution:**
+
+1. Update your payment method as described in the [Payment Failed](#payment-failed) section above
+2. Stripe will automatically retry the charge
+3. Your subscription remains active during the retry period (typically 3-7 days)
+4. If the payment is not resolved, the subscription will be paused
+
+---
+
+## Cannot Access Pro Features
+
+**Cause:** Your subscription may not be active, or you may be on the wrong plan tier.
+
+**Solution:**
+
+1. Check your current plan on the [dashboard](/dashboard)
+2. Verify the subscription status shows **active** or **trialing**
+3. If your status shows **canceled** or **past_due**, follow the steps above to resolve
+4. If you recently upgraded, try signing out and back in to refresh your session
+
+---
+
+## Requesting a Refund
+
+To request a refund:
+
+1. Contact support at [support@speakforme.app](mailto:support@speakforme.app)
+2. Include your email address and the invoice number
+3. Refund requests are reviewed within 2 business days
+
+## Next Steps
+
+- [Billing & Subscriptions](/docs/admin/billing) for plan details and pricing
+- [Common Issues](/docs/troubleshooting/common-issues) for non-billing problems
+- [FAQ](/docs/faq) for quick answers about billing

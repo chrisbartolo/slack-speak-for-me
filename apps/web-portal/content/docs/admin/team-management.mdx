@@ -1,0 +1,70 @@
+---
+title: Team Management
+description: Add and manage team members in your organization
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+Team management lets admins view who is using Speak for Me, assign roles, and understand how seats affect billing.
+
+## Viewing Team Members
+
+From the admin dashboard, you can see all team members in your organization:
+
+1. Sign in to the [web portal](/dashboard)
+2. Navigate to the **Admin** section
+3. View the team members list showing name, email, role, and workspace
+
+The team member list is synchronized with your Slack workspace. When someone joins your Slack workspace and authorizes Speak for Me, they automatically appear in the team list.
+
+<Callout type="info">
+  Team members are synced from Slack. You do not need to manually invite users. Anyone who authorizes the Speak for Me Slack app in a connected workspace is added automatically.
+</Callout>
+
+## User Roles
+
+Speak for Me has two user roles:
+
+| Role | Permissions |
+|------|------------|
+| **Admin** | Full access to organization settings, billing, team management, compliance tools, and all member features |
+| **Member** | Access to personal dashboard, style preferences, watched conversations, and suggestion history |
+
+The person who first installs the Slack app becomes the admin. Additional admins can be promoted from the admin dashboard.
+
+## Seat-Based Billing
+
+For team plans, billing is calculated per seat:
+
+- Each team member who has authorized the Speak for Me app counts as one **seat**
+- Your monthly bill is calculated as: **plan price x number of seats**
+- When a new member joins, the seat count increases and billing is prorated
+- When a member is removed or deactivated, the seat count decreases at the next billing cycle
+
+<Callout type="warn">
+  Seats are counted based on active Slack users who have authorized the app. Deactivated Slack users are automatically removed from the seat count.
+</Callout>
+
+## Managing Team Access
+
+### Promoting a Member to Admin
+
+1. Go to the **Admin** section of the dashboard
+2. Find the team member in the list
+3. Click on their profile
+4. Change their role from **Member** to **Admin**
+
+### Removing a Team Member
+
+If someone leaves your organization:
+
+1. Remove them from your Slack workspace (this is done in Slack, not in Speak for Me)
+2. Their Speak for Me access is automatically revoked
+3. Their seat is freed at the next billing cycle
+4. Their personal data (style preferences, suggestion history) is retained for 30 days before automatic deletion
+
+## Next Steps
+
+- [Configure billing](/docs/admin/billing) for your team plan
+- [Set up your organization](/docs/admin/org-setup) if you have not already
+- [Review compliance settings](/docs/admin/compliance) for data handling
