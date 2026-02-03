@@ -108,3 +108,13 @@ export {
   analyzeSentiment,
   type SentimentAnalysis,
 } from './sentiment-detector.js';
+
+// Brand voice - organization-level tone and style guidelines
+export {
+  getBrandVoiceTemplates,
+  getBrandVoiceTemplateById,
+  createBrandVoiceTemplate,
+  updateBrandVoiceTemplate,
+  deleteBrandVoiceTemplate,
+  getBrandVoiceContext,
+} from './brand-voice.js';

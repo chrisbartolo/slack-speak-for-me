@@ -47,7 +47,7 @@ try {
     console.error('❌ Environment validation failed:');
     console.error('');
 
-    for (const issue of error.errors) {
+    for (const issue of error.issues) {
       const path = issue.path.join('.');
       console.error(`  • ${path}: ${issue.message}`);
     }
