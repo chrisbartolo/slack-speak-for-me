@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, Settings, Shield, CreditCard, Gift, BarChart3, BookOpen } from 'lucide-react';
+import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, Shield, CreditCard, Gift, BarChart3, BookOpen, Building2, UserCircle } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { NavGroup } from './nav-group';
 import { UserMenu } from './user-menu';
@@ -50,29 +50,41 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
           <span>Documentation</span>
         </a>
 
-        <NavItem href="/dashboard/settings" icon={Shield} label="Settings" />
+        <NavItem href="/dashboard/settings" icon={UserCircle} label="Account" />
         <NavItem href="/dashboard/billing" icon={CreditCard} label="Billing" />
         <NavItem href="/dashboard/referrals" icon={Gift} label="Referrals" />
 
-        {/* Admin section - only visible for admins */}
+        {/* Organization admin - visible to all admins */}
         {isAdmin && (
           <div className="border-t border-border pt-4 mt-4">
             <NavGroup
-              label="Admin"
-              icon={Settings}
+              label="Organization"
+              icon={Building2}
               defaultOpen={false}
               items={[
                 { href: '/admin/analytics', label: 'Analytics' },
+                { href: '/admin/settings', label: 'Org Style' },
                 { href: '/admin/templates', label: 'Templates' },
-                { href: '/admin/audit-trail', label: 'Audit Trail' },
                 { href: '/admin/guardrails', label: 'Guardrails' },
-                { href: '/admin/settings', label: 'Settings' },
+                { href: '/admin/audit-trail', label: 'Audit Trail' },
+                { href: '/admin/billing', label: 'Org Billing' },
+                { href: '/admin/usage', label: 'Usage' },
+              ]}
+            />
+          </div>
+        )}
+
+        {/* System admin - visible to super admins only */}
+        {isSuperAdmin && (
+          <div className={isAdmin ? 'mt-1' : 'border-t border-border pt-4 mt-4'}>
+            <NavGroup
+              label="System"
+              icon={Shield}
+              defaultOpen={false}
+              items={[
                 { href: '/admin/organizations', label: 'Organizations' },
                 { href: '/admin/users', label: 'Users' },
-                { href: '/admin/billing', label: 'Billing' },
-                { href: '/admin/usage', label: 'Usage' },
-                // Coupons only visible to super admins
-                ...(isSuperAdmin ? [{ href: '/admin/coupons', label: 'Coupons' }] : []),
+                { href: '/admin/coupons', label: 'Coupons' },
               ]}
             />
           </div>

@@ -28,7 +28,7 @@ export default async function SettingsPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Account</h1>
           <HelpLink href="/docs/admin/compliance" label="Data privacy documentation" />
         </div>
         <p className="text-gray-600 mt-1">

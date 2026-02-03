@@ -18,7 +18,7 @@ export default async function BillingPage({
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
         <div>
-          <h1 className="text-3xl font-bold">Billing</h1>
+          <h1 className="text-3xl font-bold">Organization Billing</h1>
           <p className="text-muted-foreground mt-1">
             Subscription and payment settings
           </p>
@@ -60,7 +60,7 @@ export default async function BillingPage({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-3xl font-bold">Billing</h1>
+        <h1 className="text-3xl font-bold">Organization Billing</h1>
         <p className="text-muted-foreground mt-1">
           Subscription and payment settings for {org?.name}
         </p>
