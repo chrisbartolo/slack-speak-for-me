@@ -28,6 +28,11 @@ import {
   referrals,
   referralEvents,
   actionableItems,
+  clientProfiles,
+  clientContacts,
+  brandVoiceTemplates,
+  knowledgeBaseDocuments,
+  escalationAlerts,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -67,9 +72,28 @@ const schema = {
   referrals,
   referralEvents,
   actionableItems,
+  clientProfiles,
+  clientContacts,
+  brandVoiceTemplates,
+  knowledgeBaseDocuments,
+  escalationAlerts,
 };
 
 export const db = drizzle(queryClient, { schema });
 
 // Re-export schema for consistent type usage
 export { schema };
+
+// Re-export types from database package
+export type {
+  ClientProfile,
+  NewClientProfile,
+  ClientContact,
+  NewClientContact,
+  BrandVoiceTemplate,
+  NewBrandVoiceTemplate,
+  KnowledgeBaseDocument,
+  NewKnowledgeBaseDocument,
+  EscalationAlert,
+  NewEscalationAlert,
+} from '@slack-speak/database';
