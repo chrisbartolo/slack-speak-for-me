@@ -56,7 +56,7 @@ const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   business: { label: 'Business', color: 'bg-amber-100 text-amber-700' },
 };
 
-export function PlanManagementTable({ users, showWorkspace = false }: { users: UserPlanInfo[]; showWorkspace?: boolean }) {
+export function PlanManagementTable({ users, showWorkspace = false, isSuperAdmin = false }: { users: UserPlanInfo[]; showWorkspace?: boolean; isSuperAdmin?: boolean }) {
   const [selectedUser, setSelectedUser] = useState<UserPlanInfo | null>(null);
   const [dialogMode, setDialogMode] = useState<'plan' | 'grant' | 'reset' | null>(null);
   const [loading, setLoading] = useState(false);
@@ -155,13 +155,13 @@ export function PlanManagementTable({ users, showWorkspace = false }: { users: U
               <TableHead>Plan</TableHead>
               <TableHead>Usage</TableHead>
               <TableHead>Bonus</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              {isSuperAdmin && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={showWorkspace ? 6 : 5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={(showWorkspace ? 5 : 4) + (isSuperAdmin ? 1 : 0)} className="text-center text-muted-foreground py-8">
                   No users found
                 </TableCell>
               </TableRow>
@@ -219,34 +219,36 @@ export function PlanManagementTable({ users, showWorkspace = false }: { users: U
                         <span className="text-muted-foreground text-sm">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDialog(user, 'plan')}
-                          title="Change plan"
-                        >
-                          <CreditCard className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDialog(user, 'grant')}
-                          title="Grant bonus suggestions"
-                        >
-                          <Gift className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDialog(user, 'reset')}
-                          title="Reset usage"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {isSuperAdmin && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openDialog(user, 'plan')}
+                            title="Change plan"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openDialog(user, 'grant')}
+                            title="Grant bonus suggestions"
+                          >
+                            <Gift className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openDialog(user, 'reset')}
+                            title="Reset usage"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })

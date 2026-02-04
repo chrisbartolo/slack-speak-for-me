@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { eq, desc, count, isNull, sql } from 'drizzle-orm';
 import { db, schema } from './index';
 import { requireAdmin } from '../auth/admin';
-import { isSuperAdmin } from '../auth/super-admin';
+import { isSuperAdmin, requireSuperAdmin } from '../auth/super-admin';
 
 const { organizations, workspaces, users } = schema;
 
@@ -72,7 +72,7 @@ export const getWorkspaceUsers = cache(async (workspaceId: string) => {
  * Get all users across all workspaces (super-admin only)
  */
 export const getAllUsers = cache(async () => {
-  await requireAdmin();
+  await requireSuperAdmin();
 
   const results = await db
     .select({
@@ -167,9 +167,10 @@ export const getOrganizationsWithCounts = cache(async () => {
 
 /**
  * Get workspaces that are not linked to any organization, with user counts.
+ * Super-admin only — cross-org data.
  */
 export const getUnaffiliatedWorkspaces = cache(async () => {
-  await requireAdmin();
+  await requireSuperAdmin();
 
   const results = await db
     .select({

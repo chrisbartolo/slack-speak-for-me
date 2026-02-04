@@ -111,8 +111,8 @@ export default async function OrganizationDetailPage({
 
       {/* Users with plan management */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Users & Plan Management</h2>
-        <PlanManagementTable users={users} showWorkspace />
+        <h2 className="text-xl font-semibold">{superAdmin ? 'Users & Plan Management' : 'Users'}</h2>
+        <PlanManagementTable users={users} showWorkspace isSuperAdmin={superAdmin} />
       </div>
     </div>
   );

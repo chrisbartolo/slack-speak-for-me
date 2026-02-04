@@ -29,7 +29,7 @@ export default async function UnaffiliatedUsersPage() {
       </div>
 
       {/* Users with plan management */}
-      <PlanManagementTable users={users} showWorkspace />
+      <PlanManagementTable users={users} showWorkspace isSuperAdmin />
     </div>
   );
 }
