@@ -878,3 +878,21 @@ export const kbCandidates = pgTable('kb_candidates', {
 // Type exports for KB candidates
 export type KbCandidate = typeof kbCandidates.$inferSelect;
 export type NewKbCandidate = typeof kbCandidates.$inferInsert;
+
+// KB effectiveness tracking - links KB document usage to suggestion outcomes
+export const kbEffectiveness = pgTable('kb_effectiveness', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  suggestionId: text('suggestion_id').notNull(), // links to suggestion (NOT a foreign key, same pattern as suggestionMetrics)
+  kbDocumentId: uuid('kb_document_id').notNull().references(() => knowledgeBaseDocuments.id),
+  organizationId: uuid('organization_id').notNull(), // denormalized for fast org-wide queries
+  similarity: integer('similarity'), // 0-100, how similar the KB doc was to the query
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  suggestionIdx: index('kb_effectiveness_suggestion_idx').on(table.suggestionId),
+  docIdx: index('kb_effectiveness_doc_idx').on(table.kbDocumentId, table.createdAt),
+  orgIdx: index('kb_effectiveness_org_idx').on(table.organizationId, table.createdAt),
+}));
+
+// Type exports for KB effectiveness
+export type KbEffectiveness = typeof kbEffectiveness.$inferSelect;
+export type NewKbEffectiveness = typeof kbEffectiveness.$inferInsert;
