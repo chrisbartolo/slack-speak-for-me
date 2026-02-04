@@ -44,12 +44,14 @@ import {
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Use postgres.js to match the database package
 const queryClient = postgres(connectionString, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 
 // Create schema object explicitly for proper type inference
