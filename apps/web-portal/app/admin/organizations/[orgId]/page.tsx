@@ -8,6 +8,7 @@ import { isSuperAdmin } from '@/lib/auth/super-admin';
 import { getOrganization } from '@/lib/auth/admin';
 import { getOrganizationUserPlans } from '@/lib/billing/plan-management';
 import { PlanManagementTable } from '../../plan-management/plan-management-table';
+import { OrgPlanForm } from './org-plan-form';
 
 export default async function OrganizationDetailPage({
   params,
@@ -108,6 +109,16 @@ export default async function OrganizationDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Org plan management - super admin only */}
+      {superAdmin && (
+        <OrgPlanForm
+          orgId={orgId}
+          currentPlan={org.planId}
+          currentStatus={org.subscriptionStatus}
+          currentSeats={org.seatCount}
+        />
+      )}
 
       {/* Users with plan management */}
       <div className="space-y-4">
