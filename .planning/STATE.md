@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 18 of 20 (Auto-Learning Knowledge Base)
-Plan: 01 of 05 - COMPLETE (KB Schema Foundation)
+Plan: 03 of 05 - COMPLETE (KB Effectiveness Tracking)
 Status: In progress
-Last activity: 2026-02-04 - Completed 18-01-PLAN.md
+Last activity: 2026-02-04 - Completed 18-03-PLAN.md
 
-Progress: [█████████████████████░] 85% (Phase 18: 1 of 5 plans done)
+Progress: [█████████████████████░] 86% (Phase 18: 3 of 5 plans done)
 
 ## Production Deployment
 
@@ -34,9 +34,9 @@ Progress: [█████████████████████░] 8
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 43 (code complete, pending verification)
+- Total plans completed: 44 (code complete, pending verification)
 - Average duration: 3.1 min
-- Total execution time: ~2.6 hours
+- Total execution time: ~2.7 hours
 
 **By Phase:**
 
@@ -48,7 +48,7 @@ Progress: [█████████████████████░] 8
 | 03 - AI Personalization | 7 | 22 min | 3.1 min |
 | 04 - Web Portal | 5 | 29 min | 5.8 min |
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
-| 18 - Auto-Learning KB | 1 | 1.7 min | 1.7 min |
+| 18 - Auto-Learning KB | 2 | 5.3 min | 2.7 min |
 
 *Updated after each plan completion*
 
@@ -117,6 +117,10 @@ Recent decisions affecting current work:
 - Phase 18 Plan 01: Quality scoring with multiple metrics - acceptance_count, unique_users_count, avg_similarity for admin prioritization
 - Phase 18 Plan 01: Non-FK suggestionId pattern in kbEffectiveness - Same pattern as suggestionMetrics, survives suggestion cleanup
 - Phase 18 Plan 01: Denormalized organizationId in kbEffectiveness - Fast org-wide effectiveness queries without JOIN
+- Phase 18 Plan 04: Raw SQL for effectiveness queries - Complex JOINs with aggregations more readable in raw SQL vs ORM builder
+- Phase 18 Plan 04: Quality score sorting as default - Admins review highest-quality candidates first for maximum impact
+- Phase 18 Plan 04: 12-week growth trend window - Quarter-view shows seasonal patterns without overwhelming chart UI
+- Phase 18 Plan 04: Null coalescing on acceptanceCount merge - Defensive programming prevents NaN from nullable integer fields
 
 ### Pending Todos
 
@@ -145,7 +149,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 18-01-PLAN.md (KB Schema Foundation)
+Stopped at: Completed 18-04-PLAN.md (KB Management API Routes)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
