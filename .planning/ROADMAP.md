@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 14: User Manual & Knowledge Base** - Documentation, help center, and onboarding guides
 - [x] **Phase 15: Slack AI Assistant Experience** - Bolt 4.x upgrade, Assistant panel, streaming responses
 - [x] **Phase 16: Response Time Analytics** - Pipeline timing tracking, SLA compliance, AI ROI metrics
-- [ ] **Phase 17: Communication Pattern Insights** - Topic classification, sentiment trends, hotspot detection
+- [x] **Phase 17: Communication Pattern Insights** - Topic classification, sentiment trends, hotspot detection
 - [ ] **Phase 18: Auto-Learning Knowledge Base** - KB candidates from accepted suggestions, effectiveness tracking
 - [ ] **Phase 19: Satisfaction Measurement** - Surveys, communication health scores, before/after comparison
 - [ ] **Phase 20: Configurable Automation Rules** - If/then rule engine with condition evaluators and action executors
@@ -510,11 +510,11 @@ Plans:
 **Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 17-01-PLAN.md — Schema: topic_classifications and communication_trends tables
-- [ ] 17-02-PLAN.md — Topic classifier service with Claude prompt and fire-and-forget integration
-- [ ] 17-03-PLAN.md — Trend aggregator BullMQ job with daily 3 AM schedule
-- [ ] 17-04-PLAN.md — Web portal communication insights query library (6 cached functions)
-- [ ] 17-05-PLAN.md — Admin insights dashboard with Tremor charts and visualizations
+- [x] 17-01-PLAN.md — Schema: topic_classifications and communication_trends tables
+- [x] 17-02-PLAN.md — Topic classifier service with Claude prompt and fire-and-forget integration
+- [x] 17-03-PLAN.md — Trend aggregator BullMQ job with daily 3 AM schedule
+- [x] 17-04-PLAN.md — Web portal communication insights query library (7 cached functions)
+- [x] 17-05-PLAN.md — Admin insights dashboard with Tremor charts and visualizations
 
 ### Phase 18: Auto-Learning Knowledge Base
 **Goal**: Mine accepted suggestions for reusable knowledge and track KB effectiveness
