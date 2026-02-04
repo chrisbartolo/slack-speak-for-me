@@ -797,3 +797,50 @@ export const suggestionMetrics = pgTable('suggestion_metrics', {
 // Type exports for Phase 16 tables
 export type SuggestionMetric = typeof suggestionMetrics.$inferSelect;
 export type NewSuggestionMetric = typeof suggestionMetrics.$inferInsert;
+
+// Topic classifications for communication pattern analysis
+export const topicClassifications = pgTable('topic_classifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // Slack user ID
+  channelId: text('channel_id'), // nullable
+  suggestionId: text('suggestion_id').notNull(), // links to suggestion (NOT a foreign key, same as suggestionMetrics pattern)
+  topic: text('topic').notNull(), // 'scheduling' | 'complaint' | 'technical' | 'status_update' | 'request' | 'escalation' | 'general'
+  confidence: integer('confidence'), // 0-100 (stored as integer, converted from 0.0-1.0 float at insert time by multiplying by 100)
+  reasoning: text('reasoning'), // brief explanation from classifier
+  sentiment: jsonb('sentiment'), // nullable, stores SentimentAnalysis object (same as escalationAlerts.sentiment)
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  orgTimeIdx: index('topic_classifications_org_time_idx').on(table.organizationId, table.createdAt),
+  topicIdx: index('topic_classifications_topic_idx').on(table.topic, table.createdAt),
+  suggestionIdx: uniqueIndex('topic_classifications_suggestion_idx').on(table.suggestionId),
+  channelIdx: index('topic_classifications_channel_idx').on(table.channelId, table.createdAt),
+  userIdx: index('topic_classifications_user_idx').on(table.userId, table.createdAt),
+}));
+
+// Type exports for topic classifications
+export type TopicClassification = typeof topicClassifications.$inferSelect;
+export type NewTopicClassification = typeof topicClassifications.$inferInsert;
+
+// Communication trends for aggregate pattern analysis
+export const communicationTrends = pgTable('communication_trends', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  trendDate: timestamp('trend_date').notNull(),
+  trendPeriod: text('trend_period').notNull(), // 'daily'
+  topicDistribution: jsonb('topic_distribution'),
+  sentimentDistribution: jsonb('sentiment_distribution'),
+  escalationCounts: jsonb('escalation_counts'),
+  channelHotspots: jsonb('channel_hotspots'),
+  totalClassifications: integer('total_classifications').default(0),
+  avgConfidence: integer('avg_confidence'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  orgDateIdx: uniqueIndex('communication_trends_org_date_idx').on(table.organizationId, table.trendDate, table.trendPeriod),
+  trendDateIdx: index('communication_trends_trend_date_idx').on(table.trendDate),
+}));
+
+// Type exports for communication trends
+export type CommunicationTrend = typeof communicationTrends.$inferSelect;
+export type NewCommunicationTrend = typeof communicationTrends.$inferInsert;
