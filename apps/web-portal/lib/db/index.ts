@@ -43,6 +43,8 @@ import {
   communicationTrends,
   kbCandidates,
   kbEffectiveness,
+  satisfactionSurveys,
+  communicationHealthScores,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -99,6 +101,8 @@ const schema = {
   communicationTrends,
   kbCandidates,
   kbEffectiveness,
+  satisfactionSurveys,
+  communicationHealthScores,
 };
 
 export const db = drizzle(queryClient, { schema });
@@ -132,4 +136,8 @@ export type {
   NewKbCandidate,
   KbEffectiveness,
   NewKbEffectiveness,
+  SatisfactionSurvey,
+  NewSatisfactionSurvey,
+  CommunicationHealthScore,
+  NewCommunicationHealthScore,
 } from '@slack-speak/database';
