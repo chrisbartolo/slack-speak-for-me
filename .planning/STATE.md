@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 16 of 20 (Response Time Analytics) - IN PROGRESS
-Plan: 01 of 04 - COMPLETE (Database Schema)
-Status: Executing Wave 1
-Last activity: 2026-02-04 - Completed 16-01-PLAN.md
+Plan: 02 of 04 - COMPLETE (Metrics Service)
+Status: Executing Wave 2
+Last activity: 2026-02-04 - Completed 16-02-PLAN.md
 
-Progress: [████████████████████░] 95% (Phase 16 Plan 1 complete)
+Progress: [████████████████████░] 95% (Phase 16 Plan 2 complete)
 
 ## Production Deployment
 
@@ -81,6 +81,10 @@ Recent decisions affecting current work:
 - Phase 16 Plan 01: Nullable pipeline timestamps - All stage timestamps nullable, filled incrementally as suggestion progresses
 - Phase 16 Plan 01: Pre-computed duration columns - Stored in milliseconds to avoid recalculating in every query
 - Phase 16 Plan 01: Unique constraint on suggestionId - Enables onConflictDoUpdate upsert pattern
+- Phase 16 Plan 02: Fire-and-forget pattern - All recording functions wrapped in try/catch with logger.warn, never throw
+- Phase 16 Plan 02: Upsert pattern - onConflictDoUpdate on suggestionId allows stages to be recorded independently
+- Phase 16 Plan 02: organizationId caching - 5-minute TTL cache reduces database lookups for workspace→org resolution
+- Phase 16 Plan 02: Placeholder UUID pattern - Insert operations use placeholder UUID since suggestionId is the real unique key
 
 ### Pending Todos
 
@@ -109,7 +113,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 16-01-PLAN.md (Database Schema)
+Stopped at: Completed 16-02-PLAN.md (Metrics Service)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
