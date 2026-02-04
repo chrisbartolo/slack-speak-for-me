@@ -12,6 +12,7 @@ import { analyzeSentiment, type SentimentAnalysis } from './sentiment-detector.j
 import { searchKnowledgeBase } from './knowledge-base.js';
 import { triggerEscalationAlert } from './escalation-monitor.js';
 import { resolveStyleContext, checkAndEnforceGuardrails, findRelevantTemplates } from './index.js';
+import { recordKBUsage } from './kb-effectiveness.js';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -21,6 +22,7 @@ interface SuggestionContext {
   workspaceId: string;
   userId: string;
   channelId?: string;
+  suggestionId: string;
   triggerMessage: string;
   contextMessages: Array<{
     userId: string;
@@ -377,6 +379,16 @@ Avoid: Defensive language, technical jargon, dismissing concerns, promising what
         return [];
       });
 
+      // Track KB document usage (fire-and-forget)
+      if (kbResults.length > 0) {
+        recordKBUsage({
+          suggestionId: context.suggestionId,
+          organizationId,
+          kbDocumentIds: kbResults.map(r => r.id),
+          similarities: kbResults.map(r => r.similarity),
+        }).catch(() => {});
+      }
+
       if (kbResults.length > 0 && kbResults[0].similarity > 0.7) {
         clientContext += `\n<knowledge_base>
 Relevant product/service documentation:
@@ -613,9 +625,10 @@ Please suggest a professional response the user could send. Use the provided con
 /**
  * Generate a streaming AI suggestion for the assistant panel.
  * Returns an async iterable of text deltas that can be piped to chatStream.
+ * Note: Streaming mode does not support KB usage tracking (no organizationId context)
  */
 export async function generateSuggestionStream(
-  context: SuggestionContext
+  context: Omit<SuggestionContext, 'suggestionId'>
 ): Promise<{
   stream: AsyncIterable<{ type: string; delta?: { type: string; text: string } }>;
   usageCheck: { currentUsage: number; limit: number; isOverage: boolean };

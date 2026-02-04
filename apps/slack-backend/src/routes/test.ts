@@ -8,6 +8,7 @@ import {
 import { db, workspaces } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger.js';
+import { generateSuggestionId } from '../services/suggestion-metrics.js';
 
 /**
  * Get or create a workspace by team ID (for testing purposes)
@@ -500,6 +501,7 @@ async function handleTestAI(
     const result = await generateSuggestion({
       workspaceId,
       userId: userId || 'U-TEST',
+      suggestionId: generateSuggestionId(),
       triggerMessage: trigger,
       contextMessages,
       triggeredBy: triggeredBy || 'mention',
