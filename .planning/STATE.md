@@ -34,9 +34,9 @@ Progress: [█████████████████████░] 8
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 44 (code complete, pending verification)
+- Total plans completed: 45 (code complete, pending verification)
 - Average duration: 3.1 min
-- Total execution time: ~2.7 hours
+- Total execution time: ~2.8 hours
 
 **By Phase:**
 
@@ -48,7 +48,7 @@ Progress: [█████████████████████░] 8
 | 03 - AI Personalization | 7 | 22 min | 3.1 min |
 | 04 - Web Portal | 5 | 29 min | 5.8 min |
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
-| 18 - Auto-Learning KB | 2 | 5.3 min | 2.7 min |
+| 18 - Auto-Learning KB | 4 | 16.5 min | 4.1 min |
 
 *Updated after each plan completion*
 
@@ -117,6 +117,15 @@ Recent decisions affecting current work:
 - Phase 18 Plan 01: Quality scoring with multiple metrics - acceptance_count, unique_users_count, avg_similarity for admin prioritization
 - Phase 18 Plan 01: Non-FK suggestionId pattern in kbEffectiveness - Same pattern as suggestionMetrics, survives suggestion cleanup
 - Phase 18 Plan 01: Denormalized organizationId in kbEffectiveness - Fast org-wide effectiveness queries without JOIN
+- Phase 18 Plan 02: Claude Sonnet 4 for pattern evaluation - Same model as topic classification, 500 token limit for structured JSON
+- Phase 18 Plan 02: Vector similarity threshold 0.9 for duplicates - Conservative to avoid false positives, uses pgvector cosine distance
+- Phase 18 Plan 02: Quality score weights - Acceptance 40%, similarity 30%, diversity 20%, recency 10% (acceptance is primary signal)
+- Phase 18 Plan 02: Opt-in KB learning via organizationId - trackAcceptance only queues job when organizationId provided by caller
+- Phase 18 Plan 02: Fire-and-forget with double safety - Both queueKBLearning and worker wrapped in try/catch, never throw
+- Phase 18 Plan 03: Fire-and-forget KB usage tracking - Zero latency impact on suggestion generation, tracking failures don't block UX
+- Phase 18 Plan 03: Track ALL KB results - Even low-similarity matches provide data on why documents weren't helpful
+- Phase 18 Plan 03: Batch insert for KB usage - Single query for multiple documents per suggestion, reduces database round trips
+- Phase 18 Plan 03: 30% acceptance threshold - Low-performing docs below 30% with min 5 uses suggests document frequently unhelpful
 - Phase 18 Plan 04: Raw SQL for effectiveness queries - Complex JOINs with aggregations more readable in raw SQL vs ORM builder
 - Phase 18 Plan 04: Quality score sorting as default - Admins review highest-quality candidates first for maximum impact
 - Phase 18 Plan 04: 12-week growth trend window - Quarter-view shows seasonal patterns without overwhelming chart UI
