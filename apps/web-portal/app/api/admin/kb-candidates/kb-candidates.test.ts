@@ -74,17 +74,26 @@ function createRequest(url: string, options?: RequestInit) {
 }
 
 // Helper to create chainable query builder mock
+// Drizzle queries are thenable at any point in the chain, so we make
+// the builder resolve to finalResult when awaited at ANY chain position.
 function createQueryBuilder(finalResult: unknown) {
-  const builder = {
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    offset: vi.fn().mockResolvedValue(finalResult),
-    values: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockResolvedValue(finalResult),
-    set: vi.fn().mockReturnThis(),
+  const builder: Record<string, any> = {};
+
+  // Make builder thenable (like Drizzle queries)
+  builder.then = (resolve: (v: unknown) => void, reject?: (e: unknown) => void) => {
+    return Promise.resolve(finalResult).then(resolve, reject);
   };
+
+  // Each method returns the builder itself (chainable AND thenable)
+  builder.from = vi.fn().mockReturnValue(builder);
+  builder.where = vi.fn().mockReturnValue(builder);
+  builder.orderBy = vi.fn().mockReturnValue(builder);
+  builder.limit = vi.fn().mockReturnValue(builder);
+  builder.offset = vi.fn().mockReturnValue(builder);
+  builder.values = vi.fn().mockReturnValue(builder);
+  builder.returning = vi.fn().mockReturnValue(builder);
+  builder.set = vi.fn().mockReturnValue(builder);
+
   return builder;
 }
 
