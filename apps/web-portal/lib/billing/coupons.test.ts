@@ -262,7 +262,7 @@ describe('Coupon System', () => {
 
       expect(result.valid).toBe(true);
       expect(result.discount?.type).toBe('fixed');
-      expect(result.discount?.displayValue).toBe('$5.00 off');
+      expect(result.discount?.displayValue).toBe('€5.00 off');
     });
   });
 

@@ -36,7 +36,7 @@ export function CreateCouponForm() {
           discountType,
           discountValue: discountType === 'percent'
             ? parseInt(discountValue)
-            : Math.round(parseFloat(discountValue) * 100), // Convert dollars to cents
+            : Math.round(parseFloat(discountValue) * 100), // Convert euros to cents
           maxRedemptions: maxRedemptions ? parseInt(maxRedemptions) : null,
           validDays: validDays ? parseInt(validDays) : null,
           firstTimeOnly,
@@ -116,7 +116,7 @@ export function CreateCouponForm() {
 
             <div className="space-y-2">
               <Label htmlFor="discountValue">
-                {discountType === 'percent' ? 'Percent Off' : 'Amount ($)'}
+                {discountType === 'percent' ? 'Percent Off' : 'Amount (€)'}
               </Label>
               <Input
                 id="discountValue"

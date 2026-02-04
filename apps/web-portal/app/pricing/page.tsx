@@ -15,7 +15,7 @@ import { Footer } from '@/components/footer';
 export const metadata: Metadata = {
   title: 'Pricing - Speak for Me',
   description:
-    'Simple, transparent pricing for AI-powered Slack response suggestions. Individual plans from $10/month or team plans from $10/seat/month. Start with a 14-day free trial.',
+    'Simple, transparent pricing for AI-powered Slack response suggestions. Individual plans from €9/month or team plans from €12/seat/month. Start with a 14-day free trial.',
   openGraph: {
     title: 'Pricing - Speak for Me',
     description:

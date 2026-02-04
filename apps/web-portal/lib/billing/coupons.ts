@@ -79,7 +79,7 @@ export async function validateCoupon(
     displayValue:
       coupon.discountType === 'percent'
         ? `${coupon.discountValue}% off`
-        : `$${(coupon.discountValue / 100).toFixed(2)} off`,
+        : `€${(coupon.discountValue / 100).toFixed(2)} off`,
   };
 
   return {

@@ -62,9 +62,9 @@ export const INDIVIDUAL_PLANS: PlanConfig[] = [
     name: 'Starter',
     description: 'Perfect for occasional difficult conversations',
     type: 'individual',
-    basePrice: 900, // $9/mo
+    basePrice: 900, // €9/mo
     includedSuggestions: 25,
-    overageRate: 35, // $0.35 per extra suggestion
+    overageRate: 35, // €0.35 per extra suggestion
     stripePriceId: process.env.STRIPE_PRICE_STARTER || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_STARTER || '',
     features: [
@@ -81,9 +81,9 @@ export const INDIVIDUAL_PLANS: PlanConfig[] = [
     name: 'Pro',
     description: 'For professionals who communicate daily',
     type: 'individual',
-    basePrice: 1500, // $15/mo
+    basePrice: 1500, // €15/mo
     includedSuggestions: 75,
-    overageRate: 30, // $0.30 per extra suggestion
+    overageRate: 30, // €0.30 per extra suggestion
     stripePriceId: process.env.STRIPE_PRICE_PRO || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_PRO || '',
     features: [
@@ -107,9 +107,9 @@ export const TEAM_PLANS: PlanConfig[] = [
     description: 'Empower your whole team',
     type: 'team',
     basePrice: 0, // No base fee
-    pricePerSeat: 1200, // $12/seat/mo
+    pricePerSeat: 1200, // €12/seat/mo
     includedSuggestions: 50, // Per seat
-    overageRate: 25, // $0.25 per extra suggestion
+    overageRate: 25, // €0.25 per extra suggestion
     stripePriceId: process.env.STRIPE_PRICE_TEAM || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_TEAM || '',
     features: [
@@ -127,9 +127,9 @@ export const TEAM_PLANS: PlanConfig[] = [
     description: 'For high-volume communication teams',
     type: 'team',
     basePrice: 0,
-    pricePerSeat: 1800, // $18/seat/mo
+    pricePerSeat: 1800, // €18/seat/mo
     includedSuggestions: 100, // Per seat
-    overageRate: 20, // $0.20 per extra suggestion
+    overageRate: 20, // €0.20 per extra suggestion
     stripePriceId: process.env.STRIPE_PRICE_BUSINESS || '',
     stripeOveragePriceId: process.env.STRIPE_OVERAGE_BUSINESS || '',
     features: [
