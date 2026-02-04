@@ -19,6 +19,7 @@ import {
 } from '@/components/admin/satisfaction-charts';
 import { Download } from 'lucide-react';
 import Link from 'next/link';
+import { HelpLink } from '@/components/help/help-link';
 
 export default async function SatisfactionDashboardPage() {
   const session = await requireAdmin();
@@ -60,7 +61,10 @@ export default async function SatisfactionDashboardPage() {
       {/* Header with export link */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Satisfaction & Health Scores</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">Satisfaction & Health Scores</h1>
+            <HelpLink href="/docs/admin/satisfaction" label="Learn about satisfaction tracking" />
+          </div>
           <p className="text-muted-foreground mt-1">
             Track team communication quality, user satisfaction, and feedback trends
           </p>

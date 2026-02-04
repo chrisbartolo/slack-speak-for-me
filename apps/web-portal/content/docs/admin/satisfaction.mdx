@@ -1,0 +1,174 @@
+---
+title: Satisfaction & Health Scores
+description: Measure communication quality with NPS surveys, health scores, and before/after comparisons
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The satisfaction dashboard helps admins track team communication quality over time. It combines NPS surveys, health scores, and feedback trends into a comprehensive view of how well the AI is helping your team communicate.
+
+## How it works
+
+Speak for Me measures satisfaction through multiple signals:
+
+1. **NPS Surveys** -- Periodic Slack DM surveys asking users to rate the product (0-10)
+2. **Health Scores** -- Weekly composite scores combining multiple quality metrics
+3. **Feedback Tracking** -- Thumbs up/down on AI suggestions over time
+4. **Before/After Comparison** -- Baseline period vs current performance
+
+<Callout type="info">
+  Health scores are computed every Sunday at 2 AM UTC. Survey data appears after users respond to NPS surveys delivered on Mondays.
+</Callout>
+
+## Accessing the dashboard
+
+Sign in to the [admin dashboard](/admin/satisfaction) and select **Satisfaction** from the Organization sidebar. This page is available to organization admins.
+
+## Dashboard sections
+
+### Health Score Gauge
+
+The main health score (0-100) represents overall communication quality for your team:
+
+| Score Range | Rating | Color |
+|-------------|--------|-------|
+| 80-100 | Excellent | Green |
+| 60-79 | Good | Blue |
+| 40-59 | Fair | Yellow |
+| 0-39 | Needs Attention | Red |
+
+The gauge also shows the change from the previous period (up or down arrow with percentage).
+
+### NPS Distribution
+
+A donut chart showing how users rated the product:
+
+- **Promoters (9-10)** -- Users who would recommend Speak for Me (green)
+- **Passives (7-8)** -- Neutral users (yellow)
+- **Detractors (0-6)** -- Users who would not recommend (red)
+
+The **NPS Score** is calculated as: `% Promoters - % Detractors` (ranges from -100 to +100).
+
+### Survey Stats
+
+Summary of NPS survey delivery and response:
+
+| Metric | Description |
+|--------|-------------|
+| **Delivered** | Total surveys sent via Slack DM |
+| **Completed** | Surveys where user submitted a rating |
+| **Response Rate** | Percentage of completed surveys |
+| **Avg Rating** | Mean rating from completed surveys |
+| **Expired** | Surveys not responded to within 7 days |
+| **Dismissed** | Surveys explicitly dismissed by users |
+
+### Health Score Trend
+
+A line chart showing health score over the past 12 weeks. This helps identify:
+
+- Improving or declining communication quality
+- Seasonal patterns
+- Impact of training or process changes
+
+### Before/After Comparison
+
+Compares the **baseline period** (first 30 days of data) against **current performance**:
+
+- **Baseline Score** -- Average health score during initial adoption
+- **Current Score** -- Recent health score average
+- **Improvement** -- Percentage change from baseline
+
+<Callout type="info">
+  The baseline period is automatically detected. Users with fewer than 5 weeks of data are still building their baseline.
+</Callout>
+
+### Thumbs Ratio Trend
+
+A chart showing the approval rate over time based on suggestion feedback:
+
+- **Thumbs Up** -- Suggestions that were accepted or sent
+- **Thumbs Down** -- Suggestions that were dismissed
+- **Ratio** -- Percentage of positive feedback (0-100%)
+
+### Individual User Scores
+
+A table showing health scores for each team member:
+
+| Column | Description |
+|--------|-------------|
+| **User ID** | Slack user identifier |
+| **Health Score** | Individual score (0-100) or "Insufficient" |
+| **Acceptance Rate** | Percentage of suggestions accepted |
+| **Engagement** | How often the user interacts with suggestions |
+| **Suggestions** | Total suggestions received |
+| **Status** | "Baseline" if still in initial period, otherwise "Active" |
+
+Users with fewer than 5 suggestions show "Insufficient Data" instead of a score.
+
+## Health score calculation
+
+The health score is a weighted composite of five metrics:
+
+| Component | Weight | Description |
+|-----------|--------|-------------|
+| **Acceptance Rate** | 25% | How often users accept AI suggestions |
+| **Response Time** | 20% | How quickly suggestions are delivered |
+| **Sentiment** | 20% | Tone of conversations (from topic classification) |
+| **Satisfaction** | 20% | NPS survey ratings |
+| **Engagement** | 15% | How actively users interact with the product |
+
+Each component is normalized to 0-100 before weighting. Missing data defaults to 50 (neutral).
+
+## NPS surveys
+
+### How surveys are delivered
+
+1. Surveys are sent as Slack DMs every Monday at 9 AM UTC
+2. Each user receives at most one survey every 30 days
+3. Surveys include a 0-10 rating scale and optional feedback text
+4. Users can submit or dismiss the survey
+
+### Survey Block Kit format
+
+The survey appears as an interactive Slack message with:
+
+- Rating selection (0-10 radio buttons)
+- Optional feedback text input
+- Submit and Dismiss buttons
+
+<Callout type="warn">
+  Surveys expire after 7 days if not responded to. Expired surveys are tracked but do not count toward NPS calculations.
+</Callout>
+
+## CSV export
+
+Export satisfaction data for external analysis:
+
+- **Health Scores** -- Weekly health score trend (default)
+- **User Scores** -- Individual user health scores
+- **Survey Data** -- Survey stats and NPS distribution
+
+Click the **Export CSV** button in the dashboard header or use the API directly:
+
+```
+GET /api/admin/satisfaction?format=csv&type=health-scores
+GET /api/admin/satisfaction?format=csv&type=users
+GET /api/admin/satisfaction?format=csv&type=surveys
+```
+
+## Improving health scores
+
+To improve your team's health scores:
+
+1. **Encourage feedback** -- Remind users to use thumbs up/down on suggestions
+2. **Complete surveys** -- Higher response rates give more accurate NPS data
+3. **Refine style settings** -- Better style preferences lead to more relevant suggestions
+4. **Add context** -- Person and conversation notes improve suggestion quality
+5. **Review learning loop** -- Approve high-quality KB candidates to improve future suggestions
+
+## Related
+
+- [Team Analytics](/docs/admin/analytics) -- Adoption, acceptance rates, and usage trends
+- [Communication Insights](/docs/admin/communication-insights) -- Topic and sentiment analysis
+- [Learning Loop](/docs/admin/learning-loop) -- Auto-learned knowledge and KB effectiveness
+- [Organization Style](/docs/admin/org-style) -- Team-wide style guidelines

@@ -91,6 +91,18 @@ The learning loop automatically evaluates accepted suggestions for reusable know
 
 Every time the AI uses a knowledge base document to generate a suggestion, the system records which documents were used and how the resulting suggestion was received (accepted or dismissed). This data is aggregated into per-document effectiveness metrics, helping admins identify which KB content is most valuable and which may need updating. See [Learning Loop](/docs/admin/learning-loop) for the effectiveness dashboard.
 
+### What are NPS surveys?
+
+NPS (Net Promoter Score) surveys are periodic satisfaction surveys delivered via Slack DM. Users rate the product on a scale of 0-10 and can optionally provide feedback. Surveys are sent every Monday at 9 AM UTC, with a maximum frequency of one survey per user every 30 days. The NPS score is calculated as the percentage of promoters (9-10) minus the percentage of detractors (0-6). See [Satisfaction & Health Scores](/docs/admin/satisfaction) for the full dashboard.
+
+### What is a health score?
+
+The health score is a 0-100 composite metric that measures overall communication quality. It combines five factors: acceptance rate (25%), response time (20%), sentiment (20%), satisfaction (20%), and engagement (15%). Health scores are computed weekly for each user and as a team aggregate. Users with fewer than 5 suggestions show "Insufficient Data" until enough data is collected. See [Satisfaction & Health Scores](/docs/admin/satisfaction) for details.
+
+### How does before/after comparison work?
+
+The satisfaction dashboard automatically tracks a baseline period (first 30 days of data) and compares it against current performance. This shows whether AI assistance is improving communication quality over time. The improvement percentage indicates how much the health score has changed from baseline. See [Satisfaction & Health Scores](/docs/admin/satisfaction) for the comparison dashboard.
+
 ### How does escalation detection work?
 
 Speak for Me monitors conversations with known client contacts for signs of frustration or tension. When detected, it assigns a severity level (medium, high, or critical) and sends a Slack DM alert to the responsible team member. The AI also switches to de-escalation mode, generating more empathetic suggestions. See [Escalation Alerts](/docs/features/escalation-alerts) for more details.
