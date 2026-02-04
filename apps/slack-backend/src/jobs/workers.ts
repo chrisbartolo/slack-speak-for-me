@@ -10,6 +10,7 @@ import { getEncryptionKey } from '../env.js';
 import { WebClient } from '@slack/web-api';
 import { scanForEscalations } from './escalation-scanner.js';
 import { processDataRetention } from './data-retention.js';
+import { recordAIStarted, recordAICompleted, recordDelivered, recordError } from '../services/suggestion-metrics.js';
 
 let aiResponseWorker: Worker<AIResponseJobData, AIResponseJobResult> | null = null;
 let sheetsWorker: Worker<SheetsWriteJobData, SheetsWriteJobResult> | null = null;
@@ -23,7 +24,7 @@ export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
     'ai-responses',
     async (job: Job<AIResponseJobData>) => {
-      const { workspaceId, userId, channelId, messageTs, triggerMessageText, contextMessages, triggeredBy, responseUrl } = job.data;
+      const { workspaceId, suggestionId, userId, channelId, messageTs, triggerMessageText, contextMessages, triggeredBy, responseUrl } = job.data;
 
       logger.info({
         jobId: job.id,
@@ -44,6 +45,9 @@ export async function startWorkers() {
             currentUsage: usageCheck.currentUsage,
             limit: usageCheck.limit,
           }, 'AI generation blocked by usage limit');
+
+          // Record usage limit error
+          recordError({ suggestionId, errorType: 'usage_limit' }).catch(() => {});
 
           // Send limit message to user
           const limitText = `You've used all ${usageCheck.limit} AI suggestions for this month. Upgrade your plan for more. Your usage resets at the start of next month.`;
@@ -78,7 +82,7 @@ export async function startWorkers() {
           }
 
           return {
-            suggestionId: `blocked_${Date.now()}`,
+            suggestionId,
             suggestion: '',
             processingTimeMs: 0,
           };
@@ -87,6 +91,9 @@ export async function startWorkers() {
         // Log but don't block - fail open for UX
         logger.warn({ error: usageError, jobId: job.id }, 'Usage check failed, allowing generation');
       }
+
+      // Record AI processing started
+      recordAIStarted({ suggestionId }).catch(() => {});
 
       const result = await generateSuggestion({
         workspaceId,
@@ -97,8 +104,8 @@ export async function startWorkers() {
         triggeredBy,
       });
 
-      // Generate a unique suggestion ID for tracking
-      const suggestionId = `sug_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      // Record AI processing completed
+      recordAICompleted({ suggestionId, aiProcessingMs: result.processingTimeMs }).catch(() => {});
 
       // Usage already recorded inside generateSuggestion() — no duplicate here
 
@@ -222,6 +229,9 @@ export async function startWorkers() {
             ],
           });
 
+          // Record delivery after auto-response
+          recordDelivered({ suggestionId }).catch(() => {});
+
           logger.info({
             jobId: job.id,
             suggestionId,
@@ -248,6 +258,9 @@ export async function startWorkers() {
             }),
           });
 
+          // Record delivery after response_url delivery
+          recordDelivered({ suggestionId }).catch(() => {});
+
           logger.info({
             jobId: job.id,
             suggestionId,
@@ -268,6 +281,9 @@ export async function startWorkers() {
             threadTs: job.data.threadTs,
             usageInfo,
           });
+
+          // Record delivery after routing
+          recordDelivered({ suggestionId }).catch(() => {});
 
           logger.info({
             jobId: job.id,

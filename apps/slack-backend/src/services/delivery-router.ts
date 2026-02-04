@@ -1,6 +1,7 @@
 import type { WebClient } from '@slack/web-api';
 import { sendSuggestionEphemeral } from './suggestion-delivery.js';
 import { logger } from '../utils/logger.js';
+import { recordDelivered } from './suggestion-metrics.js';
 
 interface UsageInfo {
   used: number;
@@ -42,6 +43,9 @@ export async function routeDelivery(
   // All worker-initiated deliveries use the existing ephemeral path.
   // The assistant panel handles its own delivery through the userMessage handler.
   await sendSuggestionEphemeral(options);
+
+  // Record delivery after successful send
+  recordDelivered({ suggestionId: options.suggestionId }).catch(() => {});
 
   return channelId.startsWith('D') ? 'dm_fallback' : 'ephemeral';
 }

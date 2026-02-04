@@ -1,5 +1,6 @@
 import { db, suggestionFeedback } from '@slack-speak/database';
 import { logger } from '../utils/logger.js';
+import { recordUserAction } from './suggestion-metrics.js';
 
 interface TrackFeedbackParams {
   workspaceId: string;
@@ -33,6 +34,12 @@ export async function trackFeedback(params: TrackFeedbackParams): Promise<void> 
         finalText: params.finalText,
       },
     });
+
+    // Record user action in metrics
+    recordUserAction({
+      suggestionId: params.suggestionId,
+      action: params.action,
+    }).catch(() => {});
 
     logger.info({
       suggestionId: params.suggestionId,
