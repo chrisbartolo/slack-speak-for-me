@@ -1,6 +1,6 @@
 import { app } from './app.js'; // Importing app triggers side effects: error handler + health endpoints
 import { env } from './env.js';
-import { startWorkers, stopWorkers, syncAllReportSchedulers, setupUsageReporterScheduler, setupEscalationScannerScheduler, setupDataRetentionScheduler, setupTrendAggregationScheduler } from './jobs/index.js';
+import { startWorkers, stopWorkers, syncAllReportSchedulers, setupUsageReporterScheduler, setupEscalationScannerScheduler, setupDataRetentionScheduler, setupTrendAggregationScheduler, setupSatisfactionSurveyScheduler, setupHealthScoreScheduler } from './jobs/index.js';
 import { logger } from './utils/logger.js';
 
 async function main() {
@@ -39,6 +39,14 @@ async function main() {
     // Setup trend aggregation scheduler
     await setupTrendAggregationScheduler();
     logger.info('Trend aggregation scheduler configured');
+
+    // Setup satisfaction survey scheduler
+    await setupSatisfactionSurveyScheduler();
+    logger.info('Satisfaction survey scheduler configured');
+
+    // Setup health score scheduler
+    await setupHealthScoreScheduler();
+    logger.info('Health score scheduler configured');
 
     // Log success with OAuth install URL
     logger.info({

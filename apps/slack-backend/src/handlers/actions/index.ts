@@ -6,3 +6,4 @@ export { registerSendSuggestionAction } from './send-suggestion.js';
 export { registerReportActionHandlers } from './report-actions.js';
 export { registerUndoAutoResponseAction } from './undo-auto-response.js';
 export { registerTaskActionHandlers } from './task-actions.js';
+export { registerSatisfactionSurveyActions } from './satisfaction-survey.js';

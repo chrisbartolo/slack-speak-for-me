@@ -20,6 +20,7 @@ import {
   registerReportActionHandlers,
   registerRefinementModalHandler,
   registerReportRefinementViewHandler,
+  registerSatisfactionSurveyActions,
 } from './handlers/index.js';
 import {
   testRoutes,
@@ -90,6 +91,7 @@ registerRefineSuggestionAction(app);
 registerCopyFinalSuggestionAction(app);
 registerSendSuggestionAction(app);
 registerReportActionHandlers(app);
+registerSatisfactionSurveyActions(app);
 
 // Register view handlers
 registerRefinementModalHandler(app);

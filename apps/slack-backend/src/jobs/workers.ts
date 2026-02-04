@@ -1,10 +1,10 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult, TrendAggregationJobData, TrendAggregationJobResult, KBLearningJobData, KBLearningJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument, classifyTopic, analyzeSentiment, aggregateDailyTrends, evaluateForKnowledge, createOrUpdateCandidate } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult, TrendAggregationJobData, TrendAggregationJobResult, KBLearningJobData, KBLearningJobResult, SatisfactionSurveyJobData, SatisfactionSurveyJobResult, HealthScoreJobData, HealthScoreJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument, classifyTopic, analyzeSentiment, aggregateDailyTrends, evaluateForKnowledge, createOrUpdateCandidate, canSurveyUser, deliverSurvey, expireOldSurveys, computeAndStoreHealthScores } from '../services/index.js';
 import { routeDelivery } from '../services/delivery-router.js';
 import { logger } from '../utils/logger.js';
-import { db, workspaces, installations, topicClassifications, decrypt } from '@slack-speak/database';
+import { db, workspaces, installations, topicClassifications, organizations, users, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 import { getEncryptionKey } from '../env.js';
 import { WebClient } from '@slack/web-api';
@@ -21,6 +21,8 @@ let escalationScanWorker: Worker<EscalationScanJobData, EscalationScanJobResult>
 let dataRetentionWorker: Worker<DataRetentionJobData, DataRetentionJobResult> | null = null;
 let trendAggregationWorker: Worker<TrendAggregationJobData, TrendAggregationJobResult> | null = null;
 let kbLearningWorker: Worker<KBLearningJobData, KBLearningJobResult> | null = null;
+let satisfactionSurveyWorker: Worker<SatisfactionSurveyJobData, SatisfactionSurveyJobResult> | null = null;
+let healthScoreWorker: Worker<HealthScoreJobData, HealthScoreJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -796,6 +798,135 @@ export async function startWorkers() {
   kbLearningWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'KB learning job completed'));
 
   logger.info('KB learning worker started');
+
+  // Satisfaction survey worker - delivers weekly NPS surveys to eligible users
+  satisfactionSurveyWorker = new Worker<SatisfactionSurveyJobData, SatisfactionSurveyJobResult>(
+    'satisfaction-survey',
+    async (job: Job<SatisfactionSurveyJobData>) => {
+      logger.info({ jobId: job.id }, 'Processing satisfaction survey job');
+
+      let usersEligible = 0;
+      let surveysSent = 0;
+      let errors = 0;
+
+      try {
+        // Fetch all active organizations
+        const orgs = await db
+          .select({ id: organizations.id })
+          .from(organizations)
+          .where(eq(organizations.subscriptionStatus, 'active'));
+
+        logger.info({ count: orgs.length }, 'Processing surveys for active organizations');
+
+        // For each organization, get workspaces and users
+        for (const org of orgs) {
+          try {
+            // Get all workspaces for this org
+            const workspaceList = await db
+              .select({ id: workspaces.id })
+              .from(workspaces)
+              .where(eq(workspaces.organizationId, org.id));
+
+            for (const workspace of workspaceList) {
+              try {
+                // Get installation for bot token
+                const [installation] = await db
+                  .select({ installation: installations })
+                  .from(installations)
+                  .where(eq(installations.workspaceId, workspace.id))
+                  .limit(1);
+
+                if (!installation) {
+                  logger.warn({ workspaceId: workspace.id }, 'No installation found for workspace');
+                  continue;
+                }
+
+                // Decrypt bot token
+                const encryptionKey = getEncryptionKey();
+                const botToken = decrypt(installation.installation.botToken, encryptionKey);
+                const client = new WebClient(botToken);
+
+                // Get all users in this workspace
+                const userList = await db
+                  .select({ slackUserId: users.slackUserId })
+                  .from(users)
+                  .where(eq(users.workspaceId, workspace.id));
+
+                // Check eligibility and deliver surveys
+                for (const user of userList) {
+                  try {
+                    const eligible = await canSurveyUser(workspace.id, user.slackUserId);
+                    if (eligible) {
+                      usersEligible++;
+                      const surveyId = await deliverSurvey(
+                        client,
+                        workspace.id,
+                        org.id,
+                        user.slackUserId
+                      );
+                      if (surveyId) {
+                        surveysSent++;
+                      } else {
+                        errors++;
+                      }
+                    }
+                  } catch (userError) {
+                    logger.warn({ error: userError, userId: user.slackUserId }, 'Error processing user survey');
+                    errors++;
+                  }
+                }
+              } catch (workspaceError) {
+                logger.warn({ error: workspaceError, workspaceId: workspace.id }, 'Error processing workspace surveys');
+                errors++;
+              }
+            }
+          } catch (orgError) {
+            logger.warn({ error: orgError, organizationId: org.id }, 'Error processing organization surveys');
+            errors++;
+          }
+        }
+
+        // Clean up expired surveys
+        const expiredCount = await expireOldSurveys();
+        logger.info({ expiredCount }, 'Expired old surveys');
+
+        logger.info({ usersEligible, surveysSent, errors }, 'Satisfaction survey job completed');
+        return { usersEligible, surveysSent, errors };
+      } catch (error) {
+        logger.error({ error }, 'Satisfaction survey job failed');
+        throw error;
+      }
+    },
+    {
+      connection: redis,
+      concurrency: 1, // Process one batch at a time
+    }
+  );
+
+  satisfactionSurveyWorker.on('error', (err) => logger.error({ err }, 'Satisfaction survey worker error'));
+  satisfactionSurveyWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Satisfaction survey job failed'));
+  satisfactionSurveyWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Satisfaction survey job completed'));
+
+  logger.info('Satisfaction survey worker started');
+
+  // Health score worker
+  healthScoreWorker = new Worker<HealthScoreJobData, HealthScoreJobResult>(
+    'health-score',
+    async (job) => {
+      logger.info({ jobId: job.id, triggeredBy: job.data.triggeredBy }, 'Processing health score job');
+      const weekStart = job.data.weekStartDate ? new Date(job.data.weekStartDate) : undefined;
+      const result = await computeAndStoreHealthScores(weekStart);
+      logger.info({ jobId: job.id, ...result }, 'Health score computation completed');
+      return result;
+    },
+    { connection: redis, concurrency: 1 }
+  );
+
+  healthScoreWorker.on('error', (err) => logger.error({ err }, 'Health score worker error'));
+  healthScoreWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Health score job failed'));
+  healthScoreWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Health score job completed'));
+
+  logger.info('Health score worker started');
 }
 
 export async function stopWorkers() {
@@ -843,5 +974,15 @@ export async function stopWorkers() {
     await kbLearningWorker.close();
     kbLearningWorker = null;
     logger.info('KB learning worker stopped');
+  }
+  if (satisfactionSurveyWorker) {
+    await satisfactionSurveyWorker.close();
+    satisfactionSurveyWorker = null;
+    logger.info('Satisfaction survey worker stopped');
+  }
+  if (healthScoreWorker) {
+    await healthScoreWorker.close();
+    healthScoreWorker = null;
+    logger.info('Health score worker stopped');
   }
 }

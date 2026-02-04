@@ -11,5 +11,6 @@ export {
   registerReportActionHandlers,
   registerUndoAutoResponseAction,
   registerTaskActionHandlers,
+  registerSatisfactionSurveyActions,
 } from './actions/index.js';
 export { registerRefinementModalHandler, registerReportRefinementViewHandler, registerTaskCompletionModalHandler } from './views/index.js';

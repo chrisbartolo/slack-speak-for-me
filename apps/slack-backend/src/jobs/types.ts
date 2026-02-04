@@ -123,3 +123,24 @@ export interface KBLearningJobResult {
   candidateId?: string;
   action: 'created' | 'merged' | 'skipped';
 }
+
+export interface SatisfactionSurveyJobData {
+  triggeredBy: 'schedule' | 'manual';
+}
+
+export interface SatisfactionSurveyJobResult {
+  usersEligible: number;
+  surveysSent: number;
+  errors: number;
+}
+
+export interface HealthScoreJobData {
+  triggeredBy: 'schedule' | 'manual';
+  weekStartDate?: string; // ISO date, defaults to previous week
+}
+
+export interface HealthScoreJobResult {
+  orgsProcessed: number;
+  scoresCreated: number;
+  errors: number;
+}

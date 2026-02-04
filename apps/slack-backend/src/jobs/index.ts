@@ -14,6 +14,8 @@ export {
   setupEscalationScannerScheduler,
   setupDataRetentionScheduler,
   setupTrendAggregationScheduler,
+  setupSatisfactionSurveyScheduler,
+  setupHealthScoreScheduler,
 } from './schedulers.js';
 
 // Re-export types

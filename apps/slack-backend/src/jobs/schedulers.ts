@@ -1,8 +1,8 @@
 import { db, reportSettings as reportSettingsTable } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
-import { reportQueue, usageReporterQueue, escalationScanQueue, dataRetentionQueue, trendAggregationQueue } from './queues.js';
+import { reportQueue, usageReporterQueue, escalationScanQueue, dataRetentionQueue, trendAggregationQueue, satisfactionSurveyQueue, healthScoreQueue } from './queues.js';
 import { logger } from '../utils/logger.js';
-import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData } from './types.js';
+import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData, SatisfactionSurveyJobData, HealthScoreJobData } from './types.js';
 
 /**
  * Convert day of week (0-6) and time (HH:mm) to cron pattern
@@ -295,6 +295,60 @@ export async function setupTrendAggregationScheduler(): Promise<void> {
     logger.info('Trend aggregation scheduler configured (daily 3 AM UTC)');
   } catch (error) {
     logger.error({ error }, 'Failed to setup trend aggregation scheduler');
+    throw error;
+  }
+}
+
+/**
+ * Setup satisfaction survey scheduler
+ * Runs at 9:00 AM UTC on Mondays to deliver NPS surveys to eligible users
+ */
+export async function setupSatisfactionSurveyScheduler(): Promise<void> {
+  try {
+    const jobData: SatisfactionSurveyJobData = {
+      triggeredBy: 'schedule',
+    };
+
+    // Upsert the job scheduler (Monday 9 AM UTC)
+    await satisfactionSurveyQueue.upsertJobScheduler(
+      'weekly-satisfaction-survey',
+      { pattern: '0 9 * * 1' }, // Monday 9:00 AM UTC
+      {
+        name: 'deliver-satisfaction-surveys',
+        data: jobData,
+      }
+    );
+
+    logger.info('Satisfaction survey scheduler configured (Monday 9 AM UTC)');
+  } catch (error) {
+    logger.error({ error }, 'Failed to setup satisfaction survey scheduler');
+    throw error;
+  }
+}
+
+/**
+ * Setup health score scheduler
+ * Runs at 2:00 AM UTC on Sundays to compute weekly health scores
+ */
+export async function setupHealthScoreScheduler(): Promise<void> {
+  try {
+    const jobData: HealthScoreJobData = {
+      triggeredBy: 'schedule',
+    };
+
+    // Upsert the job scheduler (Sunday 2 AM UTC)
+    await healthScoreQueue.upsertJobScheduler(
+      'weekly-health-score',
+      { pattern: '0 2 * * 0' }, // Sunday 2:00 AM UTC
+      {
+        name: 'calculate-health-scores',
+        data: jobData,
+      }
+    );
+
+    logger.info('Health score scheduler configured (Sunday 2 AM UTC)');
+  } catch (error) {
+    logger.error({ error }, 'Failed to setup health score scheduler');
     throw error;
   }
 }

@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData, KBLearningJobData } from './types.js';
+import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData, KBLearningJobData, SatisfactionSurveyJobData, HealthScoreJobData } from './types.js';
 
 export const aiResponseQueue = new Queue<AIResponseJobData>('ai-responses', {
   connection: redis,
@@ -142,3 +142,23 @@ export const kbLearningQueue = new Queue<KBLearningJobData>('kb-learning', {
 export async function queueKBLearning(data: KBLearningJobData) {
   return kbLearningQueue.add('evaluate-suggestion', data);
 }
+
+export const satisfactionSurveyQueue = new Queue<SatisfactionSurveyJobData>('satisfaction-survey', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: 'exponential', delay: 60000 },
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 100 },
+  },
+});
+
+export const healthScoreQueue = new Queue<HealthScoreJobData>('health-score', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: 'exponential', delay: 60000 },
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 100 },
+  },
+});
