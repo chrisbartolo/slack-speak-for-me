@@ -38,6 +38,7 @@ import {
   guardrailConfig,
   guardrailViolations,
   emailSubscribers,
+  suggestionMetrics,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -87,6 +88,7 @@ const schema = {
   guardrailConfig,
   guardrailViolations,
   emailSubscribers,
+  suggestionMetrics,
 };
 
 export const db = drizzle(queryClient, { schema });
@@ -114,4 +116,6 @@ export type {
   NewGuardrailConfig,
   GuardrailViolation,
   NewGuardrailViolation,
+  SuggestionMetric,
+  NewSuggestionMetric,
 } from '@slack-speak/database';
