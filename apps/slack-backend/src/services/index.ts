@@ -157,3 +157,15 @@ export {
 export {
   findRelevantTemplates,
 } from './template-matcher.js';
+
+// Suggestion metrics - response time tracking for analytics
+export {
+  generateSuggestionId,
+  recordEventReceived,
+  recordJobQueued,
+  recordAIStarted,
+  recordAICompleted,
+  recordDelivered,
+  recordUserAction,
+  recordError,
+} from './suggestion-metrics.js';
