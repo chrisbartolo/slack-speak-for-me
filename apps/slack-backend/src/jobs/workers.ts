@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult, TrendAggregationJobData, TrendAggregationJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument, classifyTopic, analyzeSentiment, aggregateDailyTrends } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult, TrendAggregationJobData, TrendAggregationJobResult, KBLearningJobData, KBLearningJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument, classifyTopic, analyzeSentiment, aggregateDailyTrends, evaluateForKnowledge, createOrUpdateCandidate } from '../services/index.js';
 import { routeDelivery } from '../services/delivery-router.js';
 import { logger } from '../utils/logger.js';
 import { db, workspaces, installations, topicClassifications, decrypt } from '@slack-speak/database';
@@ -20,6 +20,7 @@ let kbIndexWorker: Worker<KBIndexJobData, KBIndexJobResult> | null = null;
 let escalationScanWorker: Worker<EscalationScanJobData, EscalationScanJobResult> | null = null;
 let dataRetentionWorker: Worker<DataRetentionJobData, DataRetentionJobResult> | null = null;
 let trendAggregationWorker: Worker<TrendAggregationJobData, TrendAggregationJobResult> | null = null;
+let kbLearningWorker: Worker<KBLearningJobData, KBLearningJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -100,6 +101,7 @@ export async function startWorkers() {
         workspaceId,
         userId,
         channelId,
+        suggestionId,
         triggerMessage: triggerMessageText,
         contextMessages,
         triggeredBy,
@@ -717,6 +719,83 @@ export async function startWorkers() {
   trendAggregationWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Trend aggregation job completed'));
 
   logger.info('Trend aggregation worker started');
+
+  // KB learning worker
+  kbLearningWorker = new Worker<KBLearningJobData, KBLearningJobResult>(
+    'kb-learning',
+    async (job) => {
+      const { organizationId, suggestionId, suggestionText, triggerContext } = job.data;
+
+      logger.info({
+        jobId: job.id,
+        organizationId,
+        suggestionId,
+      }, 'Processing KB learning job');
+
+      try {
+        // Evaluate whether suggestion contains reusable knowledge
+        const evaluation = await evaluateForKnowledge({
+          suggestionText,
+          triggerContext,
+          organizationId,
+        });
+
+        if (!evaluation.shouldCreate) {
+          logger.info({
+            jobId: job.id,
+            suggestionId,
+            reasoning: evaluation.reasoning,
+          }, 'Suggestion not suitable for KB');
+
+          return {
+            action: 'skipped',
+          };
+        }
+
+        // Create or update candidate
+        const candidateId = await createOrUpdateCandidate({
+          organizationId,
+          title: evaluation.title!,
+          content: evaluation.excerpt!,
+          category: evaluation.category!,
+          reasoning: evaluation.reasoning,
+          sourceSuggestionId: suggestionId,
+        });
+
+        logger.info({
+          jobId: job.id,
+          candidateId,
+          suggestionId,
+        }, 'KB candidate created or updated');
+
+        return {
+          candidateId,
+          action: candidateId ? 'created' : 'merged',
+        };
+      } catch (error) {
+        logger.warn({
+          error,
+          jobId: job.id,
+          suggestionId,
+        }, 'KB learning job failed (non-critical)');
+
+        // Don't throw - fire-and-forget pattern
+        return {
+          action: 'skipped',
+        };
+      }
+    },
+    {
+      connection: redis,
+      concurrency: 2,
+    }
+  );
+
+  kbLearningWorker.on('error', (err) => logger.error({ err }, 'KB learning worker error'));
+  kbLearningWorker.on('failed', (job, err) => logger.warn({ jobId: job?.id, err: err.message }, 'KB learning job failed (non-critical)'));
+  kbLearningWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'KB learning job completed'));
+
+  logger.info('KB learning worker started');
 }
 
 export async function stopWorkers() {
@@ -759,5 +838,10 @@ export async function stopWorkers() {
     await trendAggregationWorker.close();
     trendAggregationWorker = null;
     logger.info('Trend aggregation worker stopped');
+  }
+  if (kbLearningWorker) {
+    await kbLearningWorker.close();
+    kbLearningWorker = null;
+    logger.info('KB learning worker stopped');
   }
 }

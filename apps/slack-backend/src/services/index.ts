@@ -179,3 +179,13 @@ export {
 
 // Trend aggregator - daily communication pattern aggregation
 export { aggregateDailyTrends } from './trend-aggregator.js';
+
+// KB effectiveness - knowledge base document usage and effectiveness tracking
+export { recordKBUsage, getKBEffectiveness, getLowPerformingDocs } from './kb-effectiveness.js';
+
+// KB learner - auto-learning from accepted suggestions
+export {
+  evaluateForKnowledge,
+  createOrUpdateCandidate,
+  calculateQualityScore,
+} from './kb-learner.js';

@@ -60,7 +60,9 @@ export async function trackAcceptance(
   userId: string,
   suggestionId: string,
   suggestionText: string,
-  channelId?: string
+  channelId?: string,
+  organizationId?: string,
+  triggerContext?: string
 ): Promise<void> {
   await trackFeedback({
     workspaceId,
@@ -71,6 +73,21 @@ export async function trackAcceptance(
     finalText: suggestionText, // Same as original - no modification
     channelId,
   });
+
+  // Fire-and-forget KB learning job (only if organizationId provided)
+  if (organizationId && triggerContext) {
+    try {
+      const { queueKBLearning } = await import('../jobs/queues.js');
+      await queueKBLearning({
+        organizationId,
+        suggestionId,
+        suggestionText,
+        triggerContext,
+      }).catch(() => {}); // Don't block on job queueing failure
+    } catch (error) {
+      // Silently fail - KB learning is optional
+    }
+  }
 }
 
 /**

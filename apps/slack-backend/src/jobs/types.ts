@@ -111,3 +111,15 @@ export interface TrendAggregationJobResult {
   trendsCreated: number;
   errors: number;
 }
+
+export interface KBLearningJobData {
+  organizationId: string;
+  suggestionId: string;
+  suggestionText: string;
+  triggerContext: string;
+}
+
+export interface KBLearningJobResult {
+  candidateId?: string;
+  action: 'created' | 'merged' | 'skipped';
+}

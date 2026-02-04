@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData } from './types.js';
+import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData, KBLearningJobData } from './types.js';
 
 export const aiResponseQueue = new Queue<AIResponseJobData>('ai-responses', {
   connection: redis,
@@ -125,3 +125,20 @@ export const trendAggregationQueue = new Queue<TrendAggregationJobData>('trend-a
     removeOnFail: { count: 100 },
   },
 });
+
+export const kbLearningQueue = new Queue<KBLearningJobData>('kb-learning', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 500 },
+  },
+});
+
+export async function queueKBLearning(data: KBLearningJobData) {
+  return kbLearningQueue.add('evaluate-suggestion', data);
+}
