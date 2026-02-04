@@ -37,16 +37,11 @@ RUN adduser --system --uid 1001 nextjs
 # Set production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-# Accept self-signed certs for managed databases
-ENV NODE_TLS_REJECT_UNAUTHORIZED=0
 
 # Copy standalone build output
 COPY --from=builder /app/apps/web-portal/.next/standalone ./
 COPY --from=builder /app/apps/web-portal/.next/static ./apps/web-portal/.next/static
 COPY --from=builder /app/apps/web-portal/public ./apps/web-portal/public
-
-# Create cache directory with correct permissions
-RUN mkdir -p /app/apps/web-portal/.next/cache && chown -R nextjs:nodejs /app/apps/web-portal/.next
 
 USER nextjs
 

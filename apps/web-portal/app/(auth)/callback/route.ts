@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth/session';
-import { exchangeCodeForTokens, fetchUserEmail } from '@/lib/auth/slack-oauth';
-import { db, workspaces, users } from '@slack-speak/database';
-import { eq, and } from 'drizzle-orm';
-import { auditLogin } from '@/lib/audit';
+import { exchangeCodeForTokens } from '@/lib/auth/slack-oauth';
+import { db, workspaces } from '@slack-speak/database';
+import { eq } from 'drizzle-orm';
 
 // Get the base URL for redirects (handles proxy/tunnel scenarios)
 function getBaseUrl(request: NextRequest): string {
@@ -72,37 +71,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch user email from Slack (requires user access token from oauth response)
-    let userEmail = '';
-    if (tokens.authed_user.access_token) {
-      const email = await fetchUserEmail(tokens.authed_user.access_token);
-      userEmail = email || '';
-
-      // Also update user record with email if we got it
-      if (email) {
-        await db
-          .update(users)
-          .set({ email: email })
-          .where(
-            and(
-              eq(users.workspaceId, workspace.id),
-              eq(users.slackUserId, tokens.authed_user.id)
-            )
-          );
-      }
-    }
-
-    // Create session with workspace, user info, and email
+    // Create session with workspace and user info
     await createSession({
       teamId: tokens.team.id,
       userId: tokens.authed_user.id,
       workspaceId: workspace.id,
-      email: userEmail,
     });
-
-    // Log successful login for audit trail
-    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined;
-    auditLogin(tokens.authed_user.id, workspace.id, ipAddress ?? undefined);
 
     // Clear OAuth cookies and redirect
     const response = NextResponse.redirect(new URL(returnUrl, baseUrl));

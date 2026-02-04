@@ -3,9 +3,8 @@ import { decrypt } from '@/lib/auth/session';
 
 const protectedRoutes = [
   '/dashboard',
-  '/admin', // Admin routes require auth; role check happens at page level via requireAdmin()
 ];
-const publicRoutes = ['/', '/login', '/callback', '/install', '/docs'];
+const publicRoutes = ['/', '/login', '/callback', '/install'];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

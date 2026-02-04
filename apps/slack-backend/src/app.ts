@@ -1,4 +1,5 @@
-import { App } from '@slack/bolt';
+import pkg from '@slack/bolt';
+const { App } = pkg;
 import { env } from './env.js';
 import { installationStore } from './oauth/installation-store.js';
 import { errorHandler } from './middleware/error-handler.js';
@@ -7,12 +8,9 @@ import {
   logHealthEndpointsRegistered,
   registerWatchCommands,
   registerGenerateReportCommand,
-  registerTasksCommand,
   registerAppMentionHandler,
   registerMessageReplyHandler,
   registerWorkflowSubmissionHandler,
-  registerAppLifecycleHandlers,
-  registerAppHomeHandler,
   registerHelpMeRespondShortcut,
   registerCopySuggestionAction,
   registerDismissSuggestionAction,
@@ -20,18 +18,13 @@ import {
   registerCopyFinalSuggestionAction,
   registerSendSuggestionAction,
   registerReportActionHandlers,
-  registerUndoAutoResponseAction,
-  registerTaskActionHandlers,
   registerRefinementModalHandler,
   registerReportRefinementViewHandler,
-  registerTaskCompletionModalHandler,
 } from './handlers/index.js';
 import {
   testRoutes,
   logTestEndpointsRegistered,
 } from './routes/test.js';
-import { assistant } from './assistant/assistant.js';
-import { registerAssistantActions } from './assistant/actions/index.js';
 
 /**
  * Slack Bolt app with OAuth configuration and health endpoints.
@@ -47,19 +40,12 @@ export const app = new App({
   stateSecret: env.SLACK_STATE_SECRET,
   installationStore,
   scopes: [
-    'assistant:write',  // AI assistant panel
     'channels:history',
     'channels:read',
     'chat:write',
     'users:read',
     'app_mentions:read',
     'commands',
-    'groups:read',      // Read private channel info
-    'groups:history',   // Read private channel message history
-    'im:read',          // Read DM info
-    'im:history',       // Read DM message history
-    'mpim:read',        // Read group DM info
-    'mpim:history',     // Read group DM message history
   ],
   installerOptions: {
     directInstall: true,
@@ -89,13 +75,10 @@ app.error(errorHandler);
 registerAppMentionHandler(app);
 registerMessageReplyHandler(app);
 registerWorkflowSubmissionHandler(app);
-registerAppLifecycleHandlers(app);
-registerAppHomeHandler(app);
 
 // Register slash commands
 registerWatchCommands(app);
 registerGenerateReportCommand(app);
-registerTasksCommand(app);
 
 // Register message shortcuts
 registerHelpMeRespondShortcut(app);
@@ -107,17 +90,10 @@ registerRefineSuggestionAction(app);
 registerCopyFinalSuggestionAction(app);
 registerSendSuggestionAction(app);
 registerReportActionHandlers(app);
-registerUndoAutoResponseAction(app);
-registerTaskActionHandlers(app);
 
 // Register view handlers
 registerRefinementModalHandler(app);
 registerReportRefinementViewHandler(app);
-registerTaskCompletionModalHandler(app);
-
-// Register AI assistant
-app.assistant(assistant);
-registerAssistantActions(app);
 
 // Log health endpoints registration
 logHealthEndpointsRegistered();

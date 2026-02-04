@@ -38,8 +38,6 @@ ENV NODE_ENV=production
 COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/dist ./dist
 COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/package*.json ./
 COPY --from=builder --chown=slackapp:nodejs /app/node_modules ./node_modules
-# Overlay workspace-specific deps not hoisted to root (e.g. @slack/bolt 4.x)
-COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/node_modules/ ./node_modules/
 COPY --from=builder --chown=slackapp:nodejs /app/packages ./packages
 
 USER slackapp

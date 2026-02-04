@@ -208,7 +208,7 @@ See Critical #2 above.
 | `channels:history` | Read conversation context for AI |
 | `channels:read` | Get channel info for context |
 | `chat:write` | Send ephemeral suggestions |
-| `commands` | /speakforme-watch, /speakforme-unwatch, /speakforme-report, /speakforme-tasks |
+| `commands` | /watch, /unwatch, /generate-report |
 | `users:read` | Get user info for personalization |
 
 ---
