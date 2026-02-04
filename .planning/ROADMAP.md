@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 15: Slack AI Assistant Experience** - Bolt 4.x upgrade, Assistant panel, streaming responses
 - [x] **Phase 16: Response Time Analytics** - Pipeline timing tracking, SLA compliance, AI ROI metrics
 - [x] **Phase 17: Communication Pattern Insights** - Topic classification, sentiment trends, hotspot detection
-- [ ] **Phase 18: Auto-Learning Knowledge Base** - KB candidates from accepted suggestions, effectiveness tracking
+- [x] **Phase 18: Auto-Learning Knowledge Base** - KB candidates from accepted suggestions, effectiveness tracking
 - [ ] **Phase 19: Satisfaction Measurement** - Surveys, communication health scores, before/after comparison
 - [ ] **Phase 20: Configurable Automation Rules** - If/then rule engine with condition evaluators and action executors
 
@@ -530,11 +530,11 @@ Plans:
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 18-01-PLAN.md — Schema migration for kb_candidates and kb_effectiveness
-- [ ] 18-02-PLAN.md — KB auto-learner service and background job
-- [ ] 18-03-PLAN.md — Effectiveness tracker and integration with KB search and feedback
-- [ ] 18-04-PLAN.md — Web portal learning loop query library
-- [ ] 18-05-PLAN.md — Admin learning dashboard with candidate review UI
+- [x] 18-01-PLAN.md — Schema migration for kb_candidates and kb_effectiveness
+- [x] 18-02-PLAN.md — KB auto-learner service and background job
+- [x] 18-03-PLAN.md — Effectiveness tracker and integration with KB search and feedback
+- [x] 18-04-PLAN.md — Web portal learning loop query library
+- [x] 18-05-PLAN.md — Admin learning dashboard with candidate review UI
 
 ### Phase 19: Satisfaction Measurement
 **Goal**: Measure communication quality via surveys, health scores, and before/after comparisons
@@ -603,11 +603,11 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 14. User Manual & Knowledge Base | 4/5 | Complete (verification skipped) | 2026-02-03 |
 | 15. Slack AI Assistant Experience | 7/7 | Complete | 2026-02-03 |
 | 16. Response Time Analytics | 4/4 | Complete | 2026-02-04 |
-| 17. Communication Pattern Insights | 0/5 | Planned | - |
-| 18. Auto-Learning Knowledge Base | 0/5 | Planned | - |
+| 17. Communication Pattern Insights | 5/5 | Complete | 2026-02-04 |
+| 18. Auto-Learning Knowledge Base | 5/5 | Complete | 2026-02-04 |
 | 19. Satisfaction Measurement | 0/5 | Planned | - |
 | 20. Configurable Automation Rules | 0/6 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-02-04 (Phase 16 complete — Response Time Analytics)*
+*Last updated: 2026-02-04 (Phase 18 complete — Auto-Learning Knowledge Base)*
