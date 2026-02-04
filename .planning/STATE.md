@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 17 of 20 (Communication Pattern Insights) - IN PROGRESS
-Plan: 02 of 04 - COMPLETE (Topic Classifier Service)
+Plan: 04 of 04 - COMPLETE (Communication Insights Query Library)
 Status: In progress
-Last activity: 2026-02-04 - Completed 17-02-PLAN.md
+Last activity: 2026-02-04 - Completed 17-04-PLAN.md
 
-Progress: [█████████████████████░] 96% (Phase 17: 2 of 4 plans complete)
+Progress: [█████████████████████░] 97% (Phase 17: 4 of 4 plans complete)
 
 ## Production Deployment
 
@@ -106,6 +106,12 @@ Recent decisions affecting current work:
 - Phase 17 Plan 03: Error isolation per org - One org failure doesn't block aggregation for others, incremental progress tracking
 - Phase 17 Plan 03: SQL aggregation queries - GROUP BY with JSONB access more readable in raw SQL, better performance
 - Phase 17 Plan 03: Channel hotspot threshold - Min 10 messages and 30% complaint/escalation ratio filters noise
+- Phase 17 Plan 04: 7 cached query functions - Follows response-time-analytics pattern, one function per chart/table
+- Phase 17 Plan 04: Pivot transformation for trends - Convert topic/sentiment rows into date-keyed objects with all fields present
+- Phase 17 Plan 04: Default 0 for missing topics - Ensures all 7 topics present in TopicTrendPoint even if no data
+- Phase 17 Plan 04: Risk score formula - (complaintRate * 0.7) + (escalationCount * 3) balances percentage and severity
+- Phase 17 Plan 04: Week-over-week Monday-based - Aligns with business convention from Phase 5 report generation
+- Phase 17 Plan 04: Client insights profile count check - Returns empty array if org has no clients, avoids expensive JOIN
 
 ### Pending Todos
 
@@ -134,7 +140,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 17-02-PLAN.md (Topic Classifier Service)
+Stopped at: Completed 17-04-PLAN.md (Communication Insights Query Library)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
