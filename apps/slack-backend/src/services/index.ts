@@ -199,3 +199,10 @@ export {
   expireOldSurveys,
   categorizeNPS,
 } from './satisfaction-survey.js';
+
+// Health score - communication health scoring and weekly computation
+export {
+  calculateHealthScore,
+  fetchWeeklyMetrics,
+  computeAndStoreHealthScores,
+} from './health-score.js';
