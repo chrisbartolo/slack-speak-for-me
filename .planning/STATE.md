@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 17 of 20 (Communication Pattern Insights) - COMPLETE
-Plan: 05 of 05 - COMPLETE (Admin Communication Insights Dashboard)
-Status: Phase complete
-Last activity: 2026-02-04 - Completed 17-05-PLAN.md
+Phase: 18 of 20 (Auto-Learning Knowledge Base)
+Plan: 01 of 05 - COMPLETE (KB Schema Foundation)
+Status: In progress
+Last activity: 2026-02-04 - Completed 18-01-PLAN.md
 
-Progress: [█████████████████████] 100% (Phase 17 complete - all 5 plans done)
+Progress: [█████████████████████░] 85% (Phase 18: 1 of 5 plans done)
 
 ## Production Deployment
 
@@ -34,9 +34,9 @@ Progress: [█████████████████████] 100%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 42 (code complete, pending verification)
-- Average duration: 3.2 min
-- Total execution time: ~2.5 hours
+- Total plans completed: 43 (code complete, pending verification)
+- Average duration: 3.1 min
+- Total execution time: ~2.6 hours
 
 **By Phase:**
 
@@ -48,6 +48,7 @@ Progress: [█████████████████████] 100%
 | 03 - AI Personalization | 7 | 22 min | 3.1 min |
 | 04 - Web Portal | 5 | 29 min | 5.8 min |
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
+| 18 - Auto-Learning KB | 1 | 1.7 min | 1.7 min |
 
 *Updated after each plan completion*
 
@@ -112,6 +113,10 @@ Recent decisions affecting current work:
 - Phase 17 Plan 04: Risk score formula - (complaintRate * 0.7) + (escalationCount * 3) balances percentage and severity
 - Phase 17 Plan 04: Week-over-week Monday-based - Aligns with business convention from Phase 5 report generation
 - Phase 17 Plan 04: Client insights profile count check - Returns empty array if org has no clients, avoids expensive JOIN
+- Phase 18 Plan 01: kbCandidates status workflow - pending/approved/rejected/merged states for admin review lifecycle
+- Phase 18 Plan 01: Quality scoring with multiple metrics - acceptance_count, unique_users_count, avg_similarity for admin prioritization
+- Phase 18 Plan 01: Non-FK suggestionId pattern in kbEffectiveness - Same pattern as suggestionMetrics, survives suggestion cleanup
+- Phase 18 Plan 01: Denormalized organizationId in kbEffectiveness - Fast org-wide effectiveness queries without JOIN
 
 ### Pending Todos
 
@@ -140,7 +145,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 17-05-PLAN.md (Admin Communication Insights Dashboard) - Phase 17 COMPLETE
+Stopped at: Completed 18-01-PLAN.md (KB Schema Foundation)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -235,6 +240,15 @@ Dashboard components:
 
 Planning artifacts:
 - `.planning/phases/17-communication-pattern-insights/17-05-SUMMARY.md` - Plan summary
+- `.planning/STATE.md` - Updated current position and decisions
+
+**Phase 18 Plan 01 (2026-02-04):**
+
+Database schema:
+- `packages/database/src/schema.ts` - Added kbCandidates and kbEffectiveness tables
+
+Planning artifacts:
+- `.planning/phases/18-auto-learning-knowledge-base/18-01-SUMMARY.md` - Plan summary
 - `.planning/STATE.md` - Updated current position and decisions
 
 ---
