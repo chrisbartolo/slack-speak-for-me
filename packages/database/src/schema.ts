@@ -754,3 +754,46 @@ export type GuardrailConfig = typeof guardrailConfig.$inferSelect;
 export type NewGuardrailConfig = typeof guardrailConfig.$inferInsert;
 export type GuardrailViolation = typeof guardrailViolations.$inferSelect;
 export type NewGuardrailViolation = typeof guardrailViolations.$inferInsert;
+
+// Response time analytics for tracking suggestion pipeline performance
+export const suggestionMetrics = pgTable('suggestion_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  suggestionId: text('suggestion_id').notNull().unique(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  organizationId: uuid('organization_id'), // Denormalized for fast org-wide queries
+  userId: text('user_id').notNull(),
+  channelId: text('channel_id'),
+  triggerType: text('trigger_type'), // 'mention' | 'reply' | 'thread' | 'message_action' | 'dm'
+
+  // Pipeline stage timestamps (nullable — filled incrementally via upsert)
+  eventReceivedAt: timestamp('event_received_at'),
+  jobQueuedAt: timestamp('job_queued_at'),
+  aiStartedAt: timestamp('ai_started_at'),
+  aiCompletedAt: timestamp('ai_completed_at'),
+  deliveredAt: timestamp('delivered_at'),
+  userActionAt: timestamp('user_action_at'),
+
+  // Computed durations (milliseconds) for easier querying
+  totalDurationMs: integer('total_duration_ms'),        // deliveredAt - eventReceivedAt
+  aiProcessingMs: integer('ai_processing_ms'),          // aiCompletedAt - aiStartedAt
+  queueDelayMs: integer('queue_delay_ms'),              // aiStartedAt - jobQueuedAt
+
+  // Outcome tracking
+  userAction: text('user_action'), // 'accepted' | 'refined' | 'dismissed' | 'sent' | null
+  errorType: text('error_type'),   // 'usage_limit' | 'guardrail' | 'ai_error' | 'delivery_error' | null
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  workspaceTimeIdx: index('suggestion_metrics_workspace_time_idx')
+    .on(table.workspaceId, table.createdAt),
+  orgTimeIdx: index('suggestion_metrics_org_time_idx')
+    .on(table.organizationId, table.createdAt),
+  userIdx: index('suggestion_metrics_user_idx')
+    .on(table.userId, table.createdAt),
+  channelIdx: index('suggestion_metrics_channel_idx')
+    .on(table.channelId, table.createdAt),
+}));
+
+// Type exports for Phase 16 tables
+export type SuggestionMetric = typeof suggestionMetrics.$inferSelect;
+export type NewSuggestionMetric = typeof suggestionMetrics.$inferInsert;
