@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 19 of 20 (Satisfaction Measurement) - IN PROGRESS
-Plan: 04 of 04 - COMPLETE (Web Portal Satisfaction Analytics)
+Plan: 02 of 04 - COMPLETE (Survey Service + Slack Delivery + BullMQ Job)
 Status: In progress
-Last activity: 2026-02-04 - Completed 19-04-PLAN.md (Web Portal Satisfaction Analytics)
+Last activity: 2026-02-04 - Completed 19-02-PLAN.md (Survey Service + Slack Delivery + BullMQ Job)
 
-Progress: [███████████████████████] 92% (Plan 19-04 complete, 0 plans remaining in phase)
+Progress: [███████████████████████] 92% (Plan 19-02 complete, 2 plans remaining in phase)
 
 ## Production Deployment
 
@@ -34,9 +34,9 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 52
+- Total plans completed: 53
 - Average duration: 3.5 min
-- Total execution time: ~3.3 hours
+- Total execution time: ~3.4 hours
 
 **By Phase:**
 
@@ -50,7 +50,7 @@ Progress: [███████████████████████
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
 | 17 - Communication Insights | 5 | 18 min | 3.6 min |
 | 18 - Auto-Learning KB | 5 | 20 min | 4.0 min |
-| 19 - Satisfaction Measurement | 2 | 26 min | 13.0 min |
+| 19 - Satisfaction Measurement | 3 | 32 min | 10.7 min |
 
 *Updated after each plan completion*
 
@@ -138,6 +138,12 @@ Recent decisions affecting current work:
 - Phase 19 Plan 01: 7-day survey expiration window - expiredAt timestamp set after 7 days if no user response
 - Phase 19 Plan 01: Baseline tracking with isBaseline flag - Identifies first 30-day scores for before/after comparisons
 - Phase 19 Plan 01: Component metrics nullable for data sparsity - All health score components nullable to handle insufficient data scenarios
+- Phase 19 Plan 02: Block Kit radio_buttons for 0-10 NPS rating - 11 options with block_id including surveyId for state extraction
+- Phase 19 Plan 02: 30-day frequency cap prevents survey fatigue - canSurveyUser checks 30+ days elapsed since last survey
+- Phase 19 Plan 02: Weekly Monday 9 AM UTC delivery schedule - BullMQ cron pattern '0 9 * * 1' for automated survey delivery
+- Phase 19 Plan 02: Fire-and-forget survey delivery pattern - Errors logged but don't throw, job completes successfully
+- Phase 19 Plan 02: NPS categorization formula - 9-10 promoter, 7-8 passive, 0-6 detractor
+- Phase 19 Plan 02: Survey expiration cleanup in delivery job - expireOldSurveys() called at end of weekly job
 - Phase 19 Plan 04: React cache() wrapping - All 7 query functions wrapped with cache() for automatic deduplication and memoization
 - Phase 19 Plan 04: DISTINCT ON pattern - getUserHealthScores uses DISTINCT ON (userId) ORDER BY scoreDate DESC to get latest score per user
 - Phase 19 Plan 04: Parallel CSV exports - API route supports 3 types (health-scores, users, surveys) via ?type= query param
@@ -174,7 +180,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 19-04-PLAN.md (Web Portal Satisfaction Analytics)
+Stopped at: Completed 19-02-PLAN.md (Survey Service + Slack Delivery + BullMQ Job)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
