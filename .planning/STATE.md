@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 17 of 20 (Communication Pattern Insights) - IN PROGRESS
-Plan: 01 of 04 - COMPLETE (Database Schema)
+Plan: 02 of 04 - COMPLETE (Topic Classifier Service)
 Status: In progress
-Last activity: 2026-02-04 - Completed 17-01-PLAN.md
+Last activity: 2026-02-04 - Completed 17-02-PLAN.md
 
-Progress: [█████████████████████░] 95% (Phase 17: 1 of 4 plans complete)
+Progress: [█████████████████████░] 96% (Phase 17: 2 of 4 plans complete)
 
 ## Production Deployment
 
@@ -98,6 +98,14 @@ Recent decisions affecting current work:
 - Phase 17 Plan 01: Confidence stored as integer 0-100 - Matches actionableItems pattern, multiply float by 100 before insert
 - Phase 17 Plan 01: JSONB for sentiment and aggregates - Flexible schema for SentimentAnalysis objects and trend distributions
 - Phase 17 Plan 01: Unique constraint on trend records - (organizationId, trendDate, trendPeriod) ensures one daily record per org
+- Phase 17 Plan 02: 7 topic categories - scheduling, complaint, technical, status_update, request, escalation, general
+- Phase 17 Plan 02: 2-second timeout for topic classification - Shorter than sentiment's 3s, simpler classification task
+- Phase 17 Plan 02: Fire-and-forget with nested sentiment - Topic insert first, then sentiment UPDATE on same row
+- Phase 17 Plan 02: Reuse organizationId resolution pattern - Same caching approach as suggestion-metrics for consistency
+- Phase 17 Plan 03: Daily 3 AM UTC schedule - Same time as data retention, runs after usage reporting (2 AM), aggregates yesterday's data
+- Phase 17 Plan 03: Error isolation per org - One org failure doesn't block aggregation for others, incremental progress tracking
+- Phase 17 Plan 03: SQL aggregation queries - GROUP BY with JSONB access more readable in raw SQL, better performance
+- Phase 17 Plan 03: Channel hotspot threshold - Min 10 messages and 30% complaint/escalation ratio filters noise
 
 ### Pending Todos
 
@@ -126,7 +134,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 17-01-PLAN.md (Database Schema for Pattern Insights)
+Stopped at: Completed 17-02-PLAN.md (Topic Classifier Service)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -193,6 +201,24 @@ Database schema:
 
 Planning artifacts:
 - `.planning/phases/17-communication-pattern-insights/17-01-SUMMARY.md` - Plan summary
+- `.planning/STATE.md` - Updated current position and decisions
+
+**Phase 17 Plan 03 (2026-02-04):**
+
+Trend aggregator service:
+- `apps/slack-backend/src/services/trend-aggregator.ts` - Daily trend aggregation logic
+- `apps/slack-backend/src/services/index.ts` - Export aggregateDailyTrends
+
+BullMQ job system:
+- `apps/slack-backend/src/jobs/types.ts` - TrendAggregationJobData/Result types
+- `apps/slack-backend/src/jobs/queues.ts` - trendAggregationQueue
+- `apps/slack-backend/src/jobs/workers.ts` - Trend aggregation worker
+- `apps/slack-backend/src/jobs/schedulers.ts` - setupTrendAggregationScheduler
+- `apps/slack-backend/src/jobs/index.ts` - Export scheduler setup
+- `apps/slack-backend/src/index.ts` - Call scheduler on startup
+
+Planning artifacts:
+- `.planning/phases/17-communication-pattern-insights/17-03-SUMMARY.md` - Plan summary
 - `.planning/STATE.md` - Updated current position and decisions
 
 ---
