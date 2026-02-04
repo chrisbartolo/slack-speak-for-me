@@ -66,6 +66,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
                 { href: '/admin/response-times', label: 'Response Times' },
                 { href: '/admin/communication-insights', label: 'Communication Insights' },
                 { href: '/admin/learning-loop', label: 'Learning Loop' },
+                { href: '/admin/satisfaction', label: 'Satisfaction' },
                 { href: '/admin/settings', label: 'Org Style' },
                 { href: '/admin/templates', label: 'Templates' },
                 { href: '/admin/guardrails', label: 'Guardrails' },
