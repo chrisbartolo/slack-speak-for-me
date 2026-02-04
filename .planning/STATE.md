@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 16 of 20 (Response Time Analytics) - COMPLETE
-Plan: 04 of 04 - COMPLETE (Response Times Dashboard)
-Status: Phase complete
-Last activity: 2026-02-04 - Completed 16-04-PLAN.md
+Phase: 17 of 20 (Communication Pattern Insights) - IN PROGRESS
+Plan: 01 of 04 - COMPLETE (Database Schema)
+Status: In progress
+Last activity: 2026-02-04 - Completed 17-01-PLAN.md
 
-Progress: [█████████████████████] 100% (Phase 16 complete - all 4 plans done)
+Progress: [█████████████████████░] 95% (Phase 17: 1 of 4 plans complete)
 
 ## Production Deployment
 
@@ -34,9 +34,9 @@ Progress: [█████████████████████] 100%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 40 (code complete, pending verification)
+- Total plans completed: 41 (code complete, pending verification)
 - Average duration: 3.2 min
-- Total execution time: ~2.3 hours
+- Total execution time: ~2.4 hours
 
 **By Phase:**
 
@@ -94,6 +94,10 @@ Recent decisions affecting current work:
 - Phase 16 Plan 04: Top 20 channels and users by volume - Focused analysis without overwhelming UI
 - Phase 16 Plan 04: CSV export limited to 10,000 rows - Performance safeguard while covering 90+ days typical data
 - Phase 16 Plan 04: Stage breakdown shows queue/AI/delivery separately - Three-stage isolation for targeted performance optimization
+- Phase 17 Plan 01: suggestionId as unique key (not foreign key) - Follows suggestionMetrics pattern for flexible suggestion tracking
+- Phase 17 Plan 01: Confidence stored as integer 0-100 - Matches actionableItems pattern, multiply float by 100 before insert
+- Phase 17 Plan 01: JSONB for sentiment and aggregates - Flexible schema for SentimentAnalysis objects and trend distributions
+- Phase 17 Plan 01: Unique constraint on trend records - (organizationId, trendDate, trendPeriod) ensures one daily record per org
 
 ### Pending Todos
 
@@ -122,7 +126,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 16-04-PLAN.md (Response Times Dashboard) - Phase 16 complete
+Stopped at: Completed 17-01-PLAN.md (Database Schema for Pattern Insights)
 Resume file: None
 
 **Deployment Issues Resolved (2026-01-31):**
@@ -182,5 +186,14 @@ Documentation:
 - `.planning/PRODUCTION-READINESS.md` - Updated with security fix status
 - `.planning/STATE.md` - Updated current state
 
+**Phase 17 Plan 01 (2026-02-04):**
+
+Database schema:
+- `packages/database/src/schema.ts` - Added topicClassifications and communicationTrends tables
+
+Planning artifacts:
+- `.planning/phases/17-communication-pattern-insights/17-01-SUMMARY.md` - Plan summary
+- `.planning/STATE.md` - Updated current position and decisions
+
 ---
-*Last updated: 2026-01-31*
+*Last updated: 2026-02-04*
