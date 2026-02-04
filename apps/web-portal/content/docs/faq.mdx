@@ -83,6 +83,14 @@ Response templates are pre-approved responses that the AI can reference when gen
 
 Communication insights give admins visibility into conversation patterns across the organization. Every suggestion is automatically classified by topic (scheduling, complaint, technical, etc.) and sentiment (positive, neutral, frustrated, angry). The admin dashboard shows topic trends over time, channel hotspots with high complaint rates, week-over-week comparisons, and per-client breakdowns. See [Communication Insights](/docs/admin/communication-insights) for details.
 
+### What is the learning loop?
+
+The learning loop automatically evaluates accepted suggestions for reusable knowledge patterns. When the AI detects a pattern that could help in future conversations (such as a de-escalation technique or a well-crafted phrasing), it creates a KB candidate for admin review. Admins can approve candidates to add them to the knowledge base, or reject them with a reason. See [Learning Loop](/docs/admin/learning-loop) for details.
+
+### How does KB effectiveness tracking work?
+
+Every time the AI uses a knowledge base document to generate a suggestion, the system records which documents were used and how the resulting suggestion was received (accepted or dismissed). This data is aggregated into per-document effectiveness metrics, helping admins identify which KB content is most valuable and which may need updating. See [Learning Loop](/docs/admin/learning-loop) for the effectiveness dashboard.
+
 ### How does escalation detection work?
 
 Speak for Me monitors conversations with known client contacts for signs of frustration or tension. When detected, it assigns a severity level (medium, high, or critical) and sends a Slack DM alert to the responsible team member. The AI also switches to de-escalation mode, generating more empathetic suggestions. See [Escalation Alerts](/docs/features/escalation-alerts) for more details.

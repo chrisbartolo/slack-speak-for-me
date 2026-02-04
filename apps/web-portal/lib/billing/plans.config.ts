@@ -117,6 +117,7 @@ export const TEAM_PLANS: PlanConfig[] = [
       'All Pro features for everyone',
       'See team usage & engagement',
       'Communication insights dashboard',
+      'Auto-learning knowledge base',
       'Consistent team voice',
     ],
     cta: 'Start 14-Day Free Trial',
@@ -135,6 +136,7 @@ export const TEAM_PLANS: PlanConfig[] = [
     features: [
       '~4+ messages/day per person',
       'Advanced communication analytics',
+      'Advanced KB effectiveness analytics',
       'Enterprise SSO/SAML',
       'Custom API integrations',
       'Dedicated account manager',

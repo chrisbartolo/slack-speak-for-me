@@ -1,0 +1,109 @@
+---
+title: Learning Loop
+description: Auto-learn knowledge from accepted suggestions and track KB effectiveness
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The learning loop dashboard helps admins manage auto-learned knowledge patterns. When users accept AI suggestions, the system evaluates them for reusable knowledge and proposes KB candidates for admin review.
+
+## How it works
+
+When a user accepts a suggestion (copies it to use):
+
+1. **Evaluation** -- The system evaluates whether the suggestion contains reusable knowledge
+2. **Candidate creation** -- Reusable patterns become KB candidates with quality scores
+3. **Deduplication** -- Near-duplicate candidates are automatically merged
+4. **Admin review** -- Admins approve, reject, or merge candidates from the dashboard
+5. **Publication** -- Approved candidates are added to the knowledge base for future suggestions
+
+<Callout type="info">
+  KB candidates are never published automatically. An admin must review and approve each candidate before it enters the knowledge base.
+</Callout>
+
+## Accessing the learning loop
+
+Sign in to the [admin dashboard](/admin/learning-loop) and select **Learning Loop** from the organization sidebar. This page is available to organization admins.
+
+## Dashboard sections
+
+### Status summary cards
+
+Four cards at the top show candidate counts by status:
+
+- **Pending** -- Candidates awaiting admin review
+- **Approved** -- Candidates published to the knowledge base
+- **Rejected** -- Candidates reviewed and declined
+- **Merged** -- Candidates consolidated with similar entries
+
+### KB growth trend
+
+An area chart showing candidates created, approved, and rejected per week over the past 12 weeks. Use this to track how the auto-learning system is performing and whether the approval rate is healthy.
+
+### Document effectiveness
+
+A table showing how each knowledge base document impacts suggestion quality:
+
+| Metric | Description |
+|---|---|
+| **Times Used** | How many suggestions referenced this document |
+| **Accepted** | Suggestions that were accepted by users |
+| **Dismissed** | Suggestions that were dismissed |
+| **Acceptance Rate** | Percentage of accepted suggestions (color-coded) |
+| **Avg Similarity** | How closely the document matched query context |
+
+Acceptance rates are color-coded:
+- **Green** (above 70%) -- High-performing document
+- **Yellow** (30-70%) -- Average performance
+- **Red** (below 30%) -- Consider reviewing or removing
+
+### Candidate review queue
+
+A table of pending candidates sorted by quality score. Each candidate shows:
+
+- **Title** -- Descriptive title of the knowledge pattern
+- **Category** -- de-escalation, phrasing patterns, domain knowledge, or best practices
+- **Quality Score** -- Composite score (0-100) based on acceptance count, user diversity, and recency
+- **Acceptance Count** -- How many times similar patterns have been accepted
+- **Users** -- Number of distinct users who accepted similar patterns
+
+**Available actions:**
+- **Approve** -- Publishes the candidate to the knowledge base
+- **Reject** -- Declines the candidate (requires a reason)
+
+## Quality scoring
+
+Candidates are ranked using a composite quality score (0-100):
+
+| Component | Weight | Description |
+|---|---|---|
+| **Acceptance count** | 40% | How many times users accepted similar suggestions (normalized by 10) |
+| **Similarity** | 30% | Average similarity to existing KB documents (0-100) |
+| **User diversity** | 20% | How many distinct users accepted the pattern (normalized by 5) |
+| **Recency** | 10% | How recently the pattern was last seen (decays over 30 days) |
+
+Higher scores indicate candidates that are widely adopted across multiple users and closely related to existing knowledge.
+
+## Candidate categories
+
+| Category | Description | Examples |
+|---|---|---|
+| **De-escalation** | Techniques for calming tense situations | "I understand your frustration..." |
+| **Phrasing patterns** | Effective ways to phrase responses | "Let me clarify...", "Here's what I can do..." |
+| **Domain knowledge** | Industry or company-specific information | Product details, policy references |
+| **Best practices** | General communication best practices | Professional closings, follow-up patterns |
+
+## KB effectiveness tracking
+
+Every time the AI uses a knowledge base document to generate a suggestion, the system records which document was used and how similar it was to the query context. This data is joined with suggestion feedback (accepted/dismissed) to calculate per-document effectiveness.
+
+<Callout type="warn">
+  Documents with an acceptance rate below 30% after at least 5 uses may be reducing suggestion quality. Consider reviewing or removing them.
+</Callout>
+
+## Related
+
+- [Team Analytics](/docs/admin/analytics) -- Adoption, acceptance rates, and usage trends
+- [Communication Insights](/docs/admin/communication-insights) -- Topic and sentiment analysis
+- [Client Management](/docs/admin/client-management) -- Client profiles and knowledge base management
+- [Compliance & Data Privacy](/docs/admin/compliance) -- Data handling policies
