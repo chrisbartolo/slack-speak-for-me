@@ -4,6 +4,7 @@ import { getContextForMessage } from '../../services/context.js';
 import { getWorkspaceId } from '../../services/watch.js';
 import { postToUser } from '../../services/suggestion-delivery.js';
 import { logger } from '../../utils/logger.js';
+import { generateSuggestionId, recordEventReceived, recordJobQueued } from '../../services/suggestion-metrics.js';
 
 /**
  * Register "Help me respond" message shortcut.
@@ -72,9 +73,20 @@ export function registerHelpMeRespondShortcut(app: App): void {
         ? (messageShortcut as { response_url?: string }).response_url
         : undefined;
 
+      // Generate suggestion ID and record event
+      const suggestionId = generateSuggestionId();
+      recordEventReceived({
+        suggestionId,
+        workspaceId,
+        userId,
+        channelId,
+        triggerType: 'message_action',
+      }).catch(() => {});
+
       // Queue AI response job
       await queueAIResponse({
         workspaceId,
+        suggestionId,
         userId,
         channelId,
         messageTs,
@@ -85,10 +97,13 @@ export function registerHelpMeRespondShortcut(app: App): void {
         responseUrl,
       });
 
+      recordJobQueued({ suggestionId }).catch(() => {});
+
       logger.info({
         channel: channelId,
         user: userId,
         messageTs,
+        suggestionId,
         jobQueued: true,
       }, 'AI response job queued for message shortcut');
 

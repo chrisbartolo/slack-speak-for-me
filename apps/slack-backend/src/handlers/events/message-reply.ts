@@ -4,6 +4,7 @@ import { getContextForMessage, getThreadContext } from '../../services/context.j
 import { queueAIResponse } from '../../jobs/queues.js';
 import { logger } from '../../utils/logger.js';
 import { processMessageForActionables } from '../../services/actionables.js';
+import { generateSuggestionId, recordEventReceived, recordJobQueued } from '../../services/suggestion-metrics.js';
 
 /**
  * Register message event handler for reply detection
@@ -104,9 +105,20 @@ export function registerMessageReplyHandler(app: App) {
           // Get context messages for the DM
           const contextMessages = await getContextForMessage(client, channelId, messageTs);
 
+          // Generate suggestion ID and record event
+          const suggestionId = generateSuggestionId();
+          recordEventReceived({
+            suggestionId,
+            workspaceId,
+            userId: watcherUserId,
+            channelId,
+            triggerType: 'dm',
+          }).catch(() => {});
+
           // Queue AI suggestion for the watcher
           const job = await queueAIResponse({
             workspaceId,
+            suggestionId,
             userId: watcherUserId,
             channelId,
             messageTs,
@@ -116,8 +128,11 @@ export function registerMessageReplyHandler(app: App) {
             triggeredBy: 'dm',
           });
 
+          recordJobQueued({ suggestionId }).catch(() => {});
+
           logger.info({
             jobId: job.id,
+            suggestionId,
             watchingUser: watcherUserId,
             channelId,
           }, 'AI response job queued for DM message');
@@ -180,9 +195,20 @@ export function registerMessageReplyHandler(app: App) {
               threadTs,
             }, 'Detected reply in watched thread');
 
+            // Generate suggestion ID and record event
+            const suggestionId = generateSuggestionId();
+            recordEventReceived({
+              suggestionId,
+              workspaceId,
+              userId: participantUserId,
+              channelId,
+              triggerType: 'thread',
+            }).catch(() => {});
+
             // Queue AI response for the watching user
             const job = await queueAIResponse({
               workspaceId,
+              suggestionId,
               userId: participantUserId,
               channelId,
               messageTs: threadTs, // Use thread root as message context
@@ -192,8 +218,11 @@ export function registerMessageReplyHandler(app: App) {
               triggeredBy: 'thread',
             });
 
+            recordJobQueued({ suggestionId }).catch(() => {});
+
             logger.info({
               jobId: job.id,
+              suggestionId,
               watchingUser: participantUserId,
               channelId,
               threadTs,

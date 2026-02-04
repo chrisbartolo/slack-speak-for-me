@@ -4,6 +4,7 @@ import { createFeedbackBlock } from './feedback.js';
 import { getContextForMessage } from '../services/context.js';
 import { recordUsageEvent } from '../services/usage-enforcement.js';
 import { logger } from '../utils/logger.js';
+import { recordAIStarted, recordAICompleted, recordDelivered } from '../services/suggestion-metrics.js';
 
 interface StreamOptions {
   client: WebClient;
@@ -14,6 +15,7 @@ interface StreamOptions {
   viewingThreadTs?: string;
   workspaceId: string;
   userId: string;
+  suggestionId?: string;
 }
 
 /**
@@ -30,6 +32,7 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
     viewingThreadTs,
     workspaceId,
     userId,
+    suggestionId,
   } = options;
 
   const startTime = Date.now();
@@ -50,6 +53,11 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
         'Could not fetch context from viewing channel, proceeding without',
       );
     }
+  }
+
+  // Record AI started
+  if (suggestionId) {
+    recordAIStarted({ suggestionId }).catch(() => {});
   }
 
   // Get the streaming response from the AI service
@@ -80,8 +88,8 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
     }
   }
 
-  // Generate suggestion ID for feedback tracking
-  const suggestionId =
+  // Use suggestionId from options, or generate one if not provided (backward compatibility)
+  const finalSuggestionId = suggestionId ||
     'sug_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
 
   // Stop the stream with feedback and action buttons inline
@@ -89,7 +97,7 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
   // A separate chat.postMessage would leak as a DM from the bot.
   await streamer.stop({
     blocks: [
-      createFeedbackBlock(suggestionId) as any,
+      createFeedbackBlock(finalSuggestionId) as any,
       {
         type: 'actions',
         elements: [
@@ -98,7 +106,7 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
             text: { type: 'plain_text', text: 'Send as Me', emoji: true },
             action_id: 'assistant_send_suggestion',
             value: JSON.stringify({
-              suggestionId,
+              suggestionId: finalSuggestionId,
               suggestion: fullText,
               channelId: viewingChannelId,
               threadTs: viewingThreadTs,
@@ -109,13 +117,13 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
             type: 'button',
             text: { type: 'plain_text', text: 'Refine', emoji: true },
             action_id: 'assistant_refine_suggestion',
-            value: JSON.stringify({ suggestionId, suggestion: fullText }),
+            value: JSON.stringify({ suggestionId: finalSuggestionId, suggestion: fullText }),
           },
           {
             type: 'button',
             text: { type: 'plain_text', text: 'Dismiss', emoji: true },
             action_id: 'assistant_dismiss_suggestion',
-            value: JSON.stringify({ suggestionId }),
+            value: JSON.stringify({ suggestionId: finalSuggestionId }),
           },
         ],
       },
@@ -123,6 +131,12 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
   });
 
   const processingTimeMs = Date.now() - startTime;
+
+  // Record AI completion and delivery
+  if (suggestionId) {
+    recordAICompleted({ suggestionId, aiProcessingMs: processingTimeMs }).catch(() => {});
+    recordDelivered({ suggestionId }).catch(() => {});
+  }
 
   // Record usage event (fire-and-forget)
   recordUsageEvent({
@@ -136,7 +150,7 @@ export async function streamSuggestionToAssistant(options: StreamOptions): Promi
   });
 
   logger.info(
-    { processingTimeMs, suggestionId, channelId, viewingChannelId },
+    { processingTimeMs, suggestionId: finalSuggestionId, channelId, viewingChannelId },
     'Streamed AI suggestion to assistant panel',
   );
 }

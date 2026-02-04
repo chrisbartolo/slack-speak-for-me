@@ -2,6 +2,7 @@ import type { AssistantUserMessageMiddleware } from '@slack/bolt';
 import { streamSuggestionToAssistant } from '../streaming.js';
 import { getWorkspaceId } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
+import { generateSuggestionId, recordEventReceived } from '../../services/suggestion-metrics.js';
 
 /**
  * Handle user messages in the assistant panel.
@@ -49,6 +50,16 @@ export const handleUserMessage: AssistantUserMessageMiddleware = async ({
     const threadTs = (event as { thread_ts: string }).thread_ts;
     const userId = (event as { user: string }).user;
 
+    // Generate suggestion ID and record event
+    const suggestionId = generateSuggestionId();
+    recordEventReceived({
+      suggestionId,
+      workspaceId,
+      userId,
+      channelId: viewingChannelId || channelId,
+      triggerType: viewingChannelId?.startsWith('D') ? 'dm' : 'message_action',
+    }).catch(() => {});
+
     await streamSuggestionToAssistant({
       client,
       channelId,
@@ -58,6 +69,7 @@ export const handleUserMessage: AssistantUserMessageMiddleware = async ({
       viewingThreadTs,
       workspaceId,
       userId,
+      suggestionId,
     });
 
     await setStatus('');

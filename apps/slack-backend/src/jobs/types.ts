@@ -1,5 +1,6 @@
 export interface AIResponseJobData {
   workspaceId: string;
+  suggestionId: string;
   userId: string;
   channelId: string;
   messageTs: string;

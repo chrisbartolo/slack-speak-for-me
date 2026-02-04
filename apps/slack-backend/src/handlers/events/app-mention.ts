@@ -3,6 +3,7 @@ import { getContextForMessage } from '../../services/context.js';
 import { queueAIResponse } from '../../jobs/queues.js';
 import { getWorkspaceId, isWatching } from '../../services/watch.js';
 import { logger } from '../../utils/logger.js';
+import { generateSuggestionId, recordEventReceived, recordJobQueued } from '../../services/suggestion-metrics.js';
 
 /**
  * Register app_mention event handler
@@ -66,9 +67,20 @@ export function registerAppMentionHandler(app: App) {
         contextMessageCount: contextMessages.length,
       }, 'Context retrieved for app mention');
 
+      // Generate suggestion ID and record event
+      const suggestionId = generateSuggestionId();
+      recordEventReceived({
+        suggestionId,
+        workspaceId,
+        userId: event.user as string,
+        channelId: event.channel,
+        triggerType: 'mention',
+      }).catch(() => {});
+
       // Queue AI response job
       const job = await queueAIResponse({
         workspaceId,
+        suggestionId,
         userId: event.user as string,
         channelId: event.channel,
         messageTs: event.ts,
@@ -78,8 +90,11 @@ export function registerAppMentionHandler(app: App) {
         triggeredBy: 'mention',
       });
 
+      recordJobQueued({ suggestionId }).catch(() => {});
+
       logger.info({
         jobId: job.id,
+        suggestionId,
         channel: event.channel,
         user: event.user,
       }, 'AI response job queued for app mention');
