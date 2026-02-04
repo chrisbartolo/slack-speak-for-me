@@ -1,0 +1,111 @@
+---
+title: Communication Insights
+description: View topic trends, sentiment patterns, channel hotspots, and escalation analytics
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The communication insights dashboard helps admins understand how their team communicates in Slack. Every AI-generated suggestion is automatically classified by topic and sentiment, giving you visibility into conversation patterns across your organization.
+
+## Accessing communication insights
+
+Sign in to the [admin dashboard](/admin/communication-insights) and select **Communication Insights** from the admin sidebar. This page is available to organization admins.
+
+## How it works
+
+When Speak for Me generates a suggestion, the message is automatically classified in the background:
+
+1. **Topic classification** -- AI categorizes each message into one of seven topics
+2. **Sentiment analysis** -- The tone of the conversation is detected
+3. **Trend aggregation** -- Daily totals are computed overnight for fast dashboard loading
+
+<Callout type="info">
+  Classification runs in the background and never delays suggestion delivery. Results typically appear within a few seconds of a suggestion being generated.
+</Callout>
+
+## Topic categories
+
+Each message is classified into one of these categories:
+
+| Topic | Description | Examples |
+|---|---|---|
+| **Scheduling** | Meeting requests, calendar coordination | "Can we meet Tuesday?", "What's your availability?" |
+| **Complaint** | Issues, problems, dissatisfaction | "This isn't working", "I'm frustrated with..." |
+| **Technical** | Tech support, how-to, troubleshooting | "How do I...?", "Error when I try to..." |
+| **Status update** | Project progress, reports | "Here's where we stand", "Quick update on..." |
+| **Request** | Feature requests, asks | "Could you please...", "We need..." |
+| **Escalation** | Needs management attention, urgent | "I need to speak to your manager" |
+| **General** | Casual, unclear primary topic | "Thanks!", "Sounds good" |
+
+## Dashboard sections
+
+### Week-over-week comparison
+
+Comparison cards at the top show how this week compares to last week:
+
+- **Total suggestions** generated with percent change
+- **Escalation count** with percent change
+- **Top topic changes** showing which topics are trending up or down
+
+<Callout type="warn">
+  If the current week has fewer than 3 days of data, a warning banner appears indicating the comparison may not be meaningful.
+</Callout>
+
+### Topic distribution chart
+
+A stacked area chart showing the daily count of messages by topic category over the past 30 days. Topics are ordered by severity, with complaints and escalations shown prominently. Use this to spot spikes in difficult conversations.
+
+### Sentiment trend chart
+
+A line chart tracking the five sentiment tones over time:
+
+- **Angry** -- Strong negative emotion
+- **Frustrated** -- Moderate dissatisfaction
+- **Tense** -- Mild concern or stress
+- **Neutral** -- Normal professional tone
+- **Positive** -- Encouraging or upbeat
+
+Watch for upward trends in angry or frustrated sentiments, which may indicate emerging team or client issues.
+
+### Channel hotspots
+
+A table identifying channels with elevated rates of complaints and escalations. Only channels with at least 10 classified messages are included to avoid false positives.
+
+Each channel shows:
+
+- **Total messages** classified
+- **Complaint and escalation counts**
+- **Complaint rate** as a percentage
+- **Risk score** combining complaint and escalation rates, color-coded by severity
+
+### Escalation summary
+
+A summary card showing:
+
+- Total escalation alerts in the past 30 days
+- Breakdown by severity level (critical, high, medium)
+- Open versus resolved counts
+- Average resolution time (when available)
+
+### Client insights
+
+If your organization has [client profiles](/docs/admin/client-management) configured, an additional table appears showing per-client communication patterns:
+
+- **Top topic** for each client
+- **Complaint rate** with color coding
+- **Escalation count**
+
+This helps identify which clients may need extra attention.
+
+## Data freshness
+
+- **Topic and sentiment classification** happens in real time as suggestions are generated
+- **Trend aggregation** runs daily at 3 AM UTC, computing summary statistics for the previous day
+- **Dashboard queries** pull directly from raw classification data for the most current view
+
+## Related
+
+- [Team Analytics](/docs/admin/analytics) -- Adoption, acceptance rates, and usage trends
+- [Client Management](/docs/admin/client-management) -- Configure client profiles for per-client insights
+- [Escalation Alerts](/docs/features/escalation-alerts) -- How escalation detection works
+- [Compliance & Data Privacy](/docs/admin/compliance) -- Data handling and privacy policies

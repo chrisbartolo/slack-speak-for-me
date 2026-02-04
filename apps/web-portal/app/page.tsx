@@ -228,8 +228,8 @@ export default function LandingPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold">Secure & Private</h3>
-                  <p className="text-gray-600">Enterprise-grade encryption. Your data stays private.</p>
+                  <h3 className="font-semibold">Communication Insights</h3>
+                  <p className="text-gray-600">Spot topic trends, sentiment shifts, and channel hotspots before they escalate.</p>
                 </div>
               </div>
             </div>

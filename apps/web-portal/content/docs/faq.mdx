@@ -79,6 +79,10 @@ YOLO mode (auto-send) allows suggestions to be sent automatically without requir
 
 Response templates are pre-approved responses that the AI can reference when generating suggestions. Any team member can submit a template, and an admin reviews and approves it before it becomes active. The AI matches templates to conversations by keyword overlap and uses them as additional context -- not as verbatim responses. See [Response Templates](/docs/admin/templates) for the full workflow.
 
+### What are communication insights?
+
+Communication insights give admins visibility into conversation patterns across the organization. Every suggestion is automatically classified by topic (scheduling, complaint, technical, etc.) and sentiment (positive, neutral, frustrated, angry). The admin dashboard shows topic trends over time, channel hotspots with high complaint rates, week-over-week comparisons, and per-client breakdowns. See [Communication Insights](/docs/admin/communication-insights) for details.
+
 ### How does escalation detection work?
 
 Speak for Me monitors conversations with known client contacts for signs of frustration or tension. When detected, it assigns a severity level (medium, high, or critical) and sends a Slack DM alert to the responsible team member. The AI also switches to de-escalation mode, generating more empathetic suggestions. See [Escalation Alerts](/docs/features/escalation-alerts) for more details.

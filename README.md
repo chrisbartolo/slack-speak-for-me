@@ -9,6 +9,7 @@ AI-powered Slack integration that helps professionals craft contextually-aware r
 - **Refinement Modal**: Iterate on suggestions through back-and-forth with AI
 - **Style Learning**: AI learns from your message history, explicit guidance, and feedback
 - **Weekly Reports**: Automate team report aggregation from Slack workflow submissions
+- **Communication Insights**: Topic classification, sentiment trends, channel hotspot detection, and escalation analytics
 
 ## Quick Start
 
