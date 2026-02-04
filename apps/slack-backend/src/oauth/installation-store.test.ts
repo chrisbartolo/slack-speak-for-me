@@ -65,6 +65,7 @@ const createTablesSQL = `
     enterprise_id TEXT,
     name TEXT,
     organization_id UUID REFERENCES organizations(id),
+    is_active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -88,6 +89,7 @@ const createTablesSQL = `
     slack_user_id TEXT NOT NULL,
     email TEXT,
     role TEXT DEFAULT 'member',
+    assistant_delivery BOOLEAN DEFAULT false NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
   );
   CREATE INDEX users_workspace_id_idx ON users(workspace_id);

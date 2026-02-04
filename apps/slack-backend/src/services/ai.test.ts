@@ -5,6 +5,23 @@ const { mockCreate } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
 }));
 
+// Mock database to avoid real connections
+vi.mock('@slack-speak/database', async () => {
+  const actual = await vi.importActual('@slack-speak/database');
+  return {
+    ...actual,
+    db: {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([]),
+          }),
+        }),
+      }),
+    },
+  };
+});
+
 // Mock Anthropic SDK
 vi.mock('@anthropic-ai/sdk', () => {
   return {
@@ -293,16 +310,16 @@ describe('AI Service', () => {
         usage: { input_tokens: 100, output_tokens: 50 },
       });
 
-      const result = await generateSuggestion({
-        workspaceId: TEST_WORKSPACE_ID,
-        userId: TEST_USER_ID,
-        triggerMessage: 'Help me',
-        contextMessages: [],
-        triggeredBy: 'mention',
-      });
-
-      // Should return empty string for non-text content
-      expect(result.suggestion).toBe('');
+      // Should throw when no text content is returned (after guardrail regeneration fails)
+      await expect(
+        generateSuggestion({
+          workspaceId: TEST_WORKSPACE_ID,
+          userId: TEST_USER_ID,
+          triggerMessage: 'Help me',
+          contextMessages: [],
+          triggeredBy: 'mention',
+        })
+      ).rejects.toThrow('Failed to generate suggestion');
     });
 
     it('should track processing time accurately', async () => {

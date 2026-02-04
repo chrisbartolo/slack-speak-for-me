@@ -32,15 +32,14 @@ const createTablesSQL = `
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
-  CREATE UNIQUE INDEX organizations_slug_idx ON organizations(slug);
-  CREATE INDEX organizations_stripe_customer_idx ON organizations(stripe_customer_id);
 
   CREATE TABLE workspaces (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id TEXT NOT NULL UNIQUE,
     enterprise_id TEXT,
     name TEXT,
-    organization_id UUID REFERENCES organizations(id),
+    organization_id UUID,
+    is_active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -64,11 +63,11 @@ const createTablesSQL = `
     slack_user_id TEXT NOT NULL,
     email TEXT,
     role TEXT DEFAULT 'member',
+    assistant_delivery BOOLEAN DEFAULT false NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
   );
   CREATE INDEX users_workspace_id_idx ON users(workspace_id);
   CREATE INDEX users_slack_user_id_idx ON users(slack_user_id);
-  CREATE INDEX users_role_idx ON users(role);
 
   CREATE TABLE watched_conversations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -82,24 +81,6 @@ const createTablesSQL = `
   );
   CREATE INDEX watched_conversations_workspace_user_idx ON watched_conversations(workspace_id, user_id);
   CREATE UNIQUE INDEX watched_conversations_unique_watch_idx ON watched_conversations(workspace_id, user_id, channel_id);
-
-  CREATE TABLE auto_respond_log (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workspace_id UUID NOT NULL REFERENCES workspaces(id),
-    user_id TEXT NOT NULL,
-    channel_id TEXT NOT NULL,
-    thread_ts TEXT,
-    trigger_message_ts TEXT NOT NULL,
-    trigger_message_text TEXT,
-    response_text TEXT NOT NULL,
-    response_message_ts TEXT,
-    status TEXT DEFAULT 'sent',
-    sent_at TIMESTAMP DEFAULT NOW(),
-    undone_at TIMESTAMP
-  );
-  CREATE INDEX auto_respond_log_workspace_user_idx ON auto_respond_log(workspace_id, user_id);
-  CREATE INDEX auto_respond_log_channel_idx ON auto_respond_log(channel_id);
-  CREATE INDEX auto_respond_log_sent_at_idx ON auto_respond_log(sent_at);
 
   CREATE TABLE thread_participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -174,20 +155,6 @@ const createTablesSQL = `
   CREATE INDEX person_context_workspace_user_idx ON person_context(workspace_id, user_id);
   CREATE UNIQUE INDEX person_context_unique_idx ON person_context(workspace_id, user_id, target_slack_user_id);
 
-  CREATE TABLE conversation_context (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workspace_id UUID NOT NULL REFERENCES workspaces(id),
-    user_id TEXT NOT NULL,
-    channel_id TEXT NOT NULL,
-    channel_name TEXT,
-    channel_type TEXT,
-    context_text TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE INDEX conversation_context_workspace_user_idx ON conversation_context(workspace_id, user_id);
-  CREATE UNIQUE INDEX conversation_context_unique_idx ON conversation_context(workspace_id, user_id, channel_id);
-
   CREATE TABLE report_settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
@@ -234,6 +201,20 @@ const createTablesSQL = `
   CREATE UNIQUE INDEX workflow_config_unique_idx ON workflow_config(workspace_id, user_id, channel_id);
   CREATE INDEX workflow_config_channel_idx ON workflow_config(workspace_id, channel_id);
 
+  CREATE TABLE conversation_context (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
+    user_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    channel_name TEXT,
+    channel_type TEXT,
+    context_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+  );
+  CREATE INDEX conversation_context_workspace_user_idx ON conversation_context(workspace_id, user_id);
+  CREATE UNIQUE INDEX conversation_context_unique_idx ON conversation_context(workspace_id, user_id, channel_id);
+
   CREATE TABLE suggestion_feedback (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id),
@@ -251,134 +232,20 @@ const createTablesSQL = `
   CREATE INDEX suggestion_feedback_action_idx ON suggestion_feedback(action);
   CREATE UNIQUE INDEX suggestion_feedback_suggestion_idx ON suggestion_feedback(suggestion_id, action);
 
-  CREATE TABLE audit_logs (
+  CREATE TABLE auto_respond_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id TEXT,
-    workspace_id UUID REFERENCES workspaces(id),
-    ip_address TEXT,
-    user_agent TEXT,
-    action TEXT NOT NULL,
-    resource TEXT,
-    resource_id TEXT,
-    details JSONB,
-    previous_value JSONB,
-    new_value JSONB,
-    created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
+    user_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    thread_ts TEXT,
+    trigger_message_ts TEXT NOT NULL,
+    trigger_message_text TEXT,
+    response_text TEXT NOT NULL,
+    response_message_ts TEXT,
+    status TEXT DEFAULT 'sent',
+    sent_at TIMESTAMP DEFAULT NOW(),
+    undone_at TIMESTAMP
   );
-  CREATE INDEX audit_logs_workspace_idx ON audit_logs(workspace_id);
-  CREATE INDEX audit_logs_user_idx ON audit_logs(user_id);
-  CREATE INDEX audit_logs_action_idx ON audit_logs(action);
-  CREATE INDEX audit_logs_created_at_idx ON audit_logs(created_at);
-
-  CREATE TABLE user_subscriptions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT NOT NULL,
-    stripe_customer_id TEXT,
-    stripe_subscription_id TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    trial_ends_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE UNIQUE INDEX user_subscriptions_email_idx ON user_subscriptions(email);
-  CREATE INDEX user_subscriptions_stripe_customer_idx ON user_subscriptions(stripe_customer_id);
-
-  CREATE TABLE usage_records (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT,
-    organization_id UUID REFERENCES organizations(id),
-    billing_period_start TIMESTAMP NOT NULL,
-    billing_period_end TIMESTAMP NOT NULL,
-    suggestions_used INTEGER DEFAULT 0 NOT NULL,
-    suggestions_included INTEGER NOT NULL,
-    overage_reported BOOLEAN DEFAULT false,
-    stripe_subscription_item_id TEXT,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE UNIQUE INDEX usage_records_email_period_idx ON usage_records(email, billing_period_start);
-  CREATE UNIQUE INDEX usage_records_org_period_idx ON usage_records(organization_id, billing_period_start);
-  CREATE INDEX usage_records_period_end_idx ON usage_records(billing_period_end);
-
-  CREATE TABLE usage_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT,
-    organization_id UUID REFERENCES organizations(id),
-    slack_user_id TEXT NOT NULL,
-    workspace_id UUID REFERENCES workspaces(id),
-    event_type TEXT NOT NULL,
-    channel_id TEXT,
-    input_tokens INTEGER,
-    output_tokens INTEGER,
-    estimated_cost INTEGER,
-    created_at TIMESTAMP DEFAULT NOW() NOT NULL
-  );
-  CREATE INDEX usage_events_email_idx ON usage_events(email);
-  CREATE INDEX usage_events_org_idx ON usage_events(organization_id);
-  CREATE INDEX usage_events_created_at_idx ON usage_events(created_at);
-  CREATE INDEX usage_events_type_idx ON usage_events(event_type);
-
-  CREATE TABLE coupons (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code TEXT NOT NULL,
-    description TEXT,
-    discount_type TEXT NOT NULL,
-    discount_value INTEGER NOT NULL,
-    valid_from TIMESTAMP DEFAULT NOW(),
-    valid_until TIMESTAMP,
-    max_redemptions INTEGER,
-    current_redemptions INTEGER DEFAULT 0,
-    applicable_plans JSONB,
-    first_time_only BOOLEAN DEFAULT true,
-    min_seats INTEGER,
-    stripe_coupon_id TEXT,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE UNIQUE INDEX coupons_code_idx ON coupons(code);
-  CREATE INDEX coupons_active_idx ON coupons(is_active);
-
-  CREATE TABLE coupon_redemptions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    coupon_id UUID NOT NULL REFERENCES coupons(id),
-    email TEXT NOT NULL,
-    organization_id UUID REFERENCES organizations(id),
-    discount_applied INTEGER NOT NULL,
-    redeemed_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE INDEX coupon_redemptions_coupon_idx ON coupon_redemptions(coupon_id);
-  CREATE INDEX coupon_redemptions_email_idx ON coupon_redemptions(email);
-
-  CREATE TABLE referrals (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    referrer_email TEXT NOT NULL,
-    referral_code TEXT NOT NULL,
-    total_referrals INTEGER DEFAULT 0,
-    successful_referrals INTEGER DEFAULT 0,
-    total_rewards_earned INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE UNIQUE INDEX referrals_referrer_idx ON referrals(referrer_email);
-  CREATE UNIQUE INDEX referrals_code_idx ON referrals(referral_code);
-
-  CREATE TABLE referral_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    referral_id UUID NOT NULL REFERENCES referrals(id),
-    referee_email TEXT NOT NULL,
-    status TEXT NOT NULL,
-    referrer_reward INTEGER,
-    referee_discount INTEGER,
-    signed_up_at TIMESTAMP,
-    subscribed_at TIMESTAMP,
-    rewarded_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW()
-  );
-  CREATE INDEX referral_events_referral_idx ON referral_events(referral_id);
-  CREATE UNIQUE INDEX referral_events_referee_idx ON referral_events(referee_email);
-  CREATE INDEX referral_events_status_idx ON referral_events(status);
 `;
 
 /**
@@ -444,26 +311,18 @@ export async function clearAllTables() {
   }
 
   await pgLite.exec(`
-    TRUNCATE TABLE referral_events CASCADE;
-    TRUNCATE TABLE referrals CASCADE;
-    TRUNCATE TABLE coupon_redemptions CASCADE;
-    TRUNCATE TABLE coupons CASCADE;
-    TRUNCATE TABLE usage_events CASCADE;
-    TRUNCATE TABLE usage_records CASCADE;
-    TRUNCATE TABLE user_subscriptions CASCADE;
-    TRUNCATE TABLE audit_logs CASCADE;
+    TRUNCATE TABLE auto_respond_log CASCADE;
     TRUNCATE TABLE suggestion_feedback CASCADE;
+    TRUNCATE TABLE conversation_context CASCADE;
     TRUNCATE TABLE workflow_config CASCADE;
     TRUNCATE TABLE google_integrations CASCADE;
     TRUNCATE TABLE report_settings CASCADE;
-    TRUNCATE TABLE conversation_context CASCADE;
     TRUNCATE TABLE person_context CASCADE;
     TRUNCATE TABLE gdpr_consent CASCADE;
     TRUNCATE TABLE refinement_feedback CASCADE;
     TRUNCATE TABLE message_embeddings CASCADE;
     TRUNCATE TABLE user_style_preferences CASCADE;
     TRUNCATE TABLE thread_participants CASCADE;
-    TRUNCATE TABLE auto_respond_log CASCADE;
     TRUNCATE TABLE watched_conversations CASCADE;
     TRUNCATE TABLE users CASCADE;
     TRUNCATE TABLE installations CASCADE;
@@ -502,53 +361,6 @@ export async function seedWorkspace(options: {
     FROM new_workspace
     RETURNING workspace_id as id
   `, [teamId, name, botToken, botUserId]);
-
-  return result.rows[0].id;
-}
-
-/**
- * Seed a user subscription for testing billing
- */
-export async function seedUserSubscription(options: {
-  email: string;
-  planId?: string;
-  status?: string;
-  stripeCustomerId?: string;
-}) {
-  if (!pgLite) {
-    throw new Error('PGlite not initialized. Call setupTestDb() first.');
-  }
-
-  const result = await pgLite.query<{ id: string }>(`
-    INSERT INTO user_subscriptions (email, plan_id, subscription_status, stripe_customer_id)
-    VALUES ($1, $2, $3, $4)
-    RETURNING id
-  `, [
-    options.email,
-    options.planId ?? 'starter',
-    options.status ?? 'active',
-    options.stripeCustomerId ?? null,
-  ]);
-
-  return result.rows[0].id;
-}
-
-/**
- * Seed a referral for testing
- */
-export async function seedReferral(options: {
-  referrerEmail: string;
-  referralCode: string;
-}) {
-  if (!pgLite) {
-    throw new Error('PGlite not initialized. Call setupTestDb() first.');
-  }
-
-  const result = await pgLite.query<{ id: string }>(`
-    INSERT INTO referrals (referrer_email, referral_code)
-    VALUES ($1, $2)
-    RETURNING id
-  `, [options.referrerEmail, options.referralCode]);
 
   return result.rows[0].id;
 }

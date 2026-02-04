@@ -81,6 +81,15 @@ vi.mock('@/lib/db', async () => {
 // Mock server-only (it throws in non-server contexts)
 vi.mock('server-only', () => ({}));
 
+// Mock stripe to avoid import resolution issues
+vi.mock('@/lib/stripe', () => ({
+  getStripe: vi.fn().mockReturnValue({
+    customers: {
+      createBalanceTransaction: vi.fn().mockResolvedValue({}),
+    },
+  }),
+}));
+
 // Mock nanoid to return predictable IDs
 vi.mock('nanoid', () => ({
   nanoid: vi.fn().mockReturnValue('ABCD'),

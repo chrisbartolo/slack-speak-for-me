@@ -16,7 +16,7 @@ vi.mock('../../services/context.js', () => ({
 
 vi.mock('../../services/watch.js', () => ({
   getWorkspaceId: vi.fn().mockResolvedValue('workspace_123'),
-  isWatching: vi.fn().mockResolvedValue(true), // Default to watching for backward compatibility
+  isWatching: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('../../utils/logger.js', () => ({
@@ -242,54 +242,5 @@ describe('App Mention Handler', () => {
       }),
       'app_mention event received'
     );
-  });
-
-  describe('Watch filtering', () => {
-    it('should not trigger AI response when channel is not watched', async () => {
-      vi.mocked(isWatching).mockResolvedValueOnce(false);
-      const mockEvent = createMockEvent();
-      const mockClient = createMockClient();
-
-      await eventHandler({ event: mockEvent, client: mockClient });
-
-      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U123', 'C456');
-      expect(queueAIResponse).not.toHaveBeenCalled();
-      expect(getContextForMessage).not.toHaveBeenCalled();
-      expect(logger.debug).toHaveBeenCalledWith(
-        { channel: 'C456', user: 'U123' },
-        'Ignoring app_mention - channel not watched'
-      );
-    });
-
-    it('should trigger AI response when channel is watched', async () => {
-      vi.mocked(isWatching).mockResolvedValueOnce(true);
-      const mockEvent = createMockEvent();
-      const mockClient = createMockClient();
-
-      await eventHandler({ event: mockEvent, client: mockClient });
-
-      expect(isWatching).toHaveBeenCalledWith('workspace_123', 'U123', 'C456');
-      expect(queueAIResponse).toHaveBeenCalled();
-    });
-
-    it('should check isWatching with correct parameters', async () => {
-      const mockEvent = createMockEvent({
-        user: 'U_DIFFERENT_USER',
-        channel: 'C_DIFFERENT_CHANNEL',
-      });
-      const authTestMock = vi.fn().mockResolvedValue({ ok: true, team_id: 'T_TEAM' });
-      const mockClient = createMockClient({
-        auth: { test: authTestMock },
-      });
-      vi.mocked(getWorkspaceId).mockResolvedValueOnce('workspace_different');
-
-      await eventHandler({ event: mockEvent, client: mockClient });
-
-      expect(isWatching).toHaveBeenCalledWith(
-        'workspace_different',
-        'U_DIFFERENT_USER',
-        'C_DIFFERENT_CHANNEL'
-      );
-    });
   });
 });

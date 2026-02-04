@@ -25,6 +25,7 @@ const createTablesSQL = `
     enterprise_id TEXT,
     name TEXT,
     organization_id UUID,
+    is_active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -35,6 +36,7 @@ const createTablesSQL = `
     slack_user_id TEXT NOT NULL,
     email TEXT,
     role TEXT DEFAULT 'member',
+    assistant_delivery BOOLEAN DEFAULT false NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
   );
   CREATE INDEX users_workspace_id_idx ON users(workspace_id);
@@ -48,6 +50,9 @@ const createTablesSQL = `
     subscription_status TEXT,
     plan_id TEXT,
     trial_ends_at TIMESTAMP,
+    admin_override BOOLEAN DEFAULT false NOT NULL,
+    override_reason TEXT,
+    overridden_by TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -61,8 +66,11 @@ const createTablesSQL = `
     billing_period_end TIMESTAMP NOT NULL,
     suggestions_used INTEGER DEFAULT 0 NOT NULL,
     suggestions_included INTEGER NOT NULL,
+    bonus_suggestions INTEGER DEFAULT 0 NOT NULL,
     overage_reported BOOLEAN DEFAULT false,
     stripe_subscription_item_id TEXT,
+    stripe_meter_id TEXT,
+    plan_id TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   );
@@ -79,6 +87,7 @@ const createTablesSQL = `
     input_tokens INTEGER,
     output_tokens INTEGER,
     estimated_cost INTEGER,
+    stripe_reported_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW() NOT NULL
   );
   CREATE INDEX usage_events_email_idx ON usage_events(email);

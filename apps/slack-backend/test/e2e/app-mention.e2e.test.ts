@@ -20,10 +20,9 @@ import type { WebClient } from '@slack/web-api';
 let testDb: Awaited<ReturnType<typeof setupTestDb>>;
 
 // Use vi.hoisted to create mock functions that can be accessed in mock factories
-const { mockAnthropicCreate, mockGetContextForMessage, mockIsWatching } = vi.hoisted(() => ({
+const { mockAnthropicCreate, mockGetContextForMessage } = vi.hoisted(() => ({
   mockAnthropicCreate: vi.fn(),
   mockGetContextForMessage: vi.fn(),
-  mockIsWatching: vi.fn(),
 }));
 
 // Mock the database module to use PGlite-backed instance
@@ -87,14 +86,16 @@ vi.mock('../../src/jobs/queues.js', () => ({
   },
 }));
 
-// Mock the watch service's isWatching function (getWorkspaceId uses test db)
-vi.mock('../../src/services/watch.js', async () => {
-  const actual = await vi.importActual<typeof import('../../src/services/watch.js')>('../../src/services/watch.js');
-  return {
-    ...actual,
-    isWatching: mockIsWatching,
-  };
-});
+// Mock usage enforcement - always allow in tests
+vi.mock('../../src/services/usage-enforcement.js', () => ({
+  checkUsageAllowed: vi.fn().mockResolvedValue({
+    allowed: true,
+    currentUsage: 0,
+    limit: 100,
+    planId: 'test',
+  }),
+  recordUsageEvent: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Mock the logger
 vi.mock('../../src/utils/logger.js', () => ({
@@ -142,6 +143,7 @@ import { registerAppMentionHandler } from '../../src/handlers/events/app-mention
 import { queueAIResponse } from '../../src/jobs/queues.js';
 import { generateSuggestion, sendSuggestionEphemeral } from '../../src/services/index.js';
 import { getContextForMessage } from '../../src/services/context.js';
+import { watchConversation } from '../../src/services/watch.js';
 
 // Helper to create a standard successful AI response
 function createMockAIResponse(text: string) {
@@ -182,7 +184,6 @@ describe('App Mention E2E', () => {
       { userId: 'U123', text: 'Context message 1', ts: '1234567890.123450' },
       { userId: 'U456', text: 'Context message 2', ts: '1234567890.123451' },
     ]);
-    mockIsWatching.mockResolvedValue(true); // Default to watching for E2E tests
 
     // Seed workspace with installation
     workspaceId = await seedWorkspace({
@@ -191,6 +192,9 @@ describe('App Mention E2E', () => {
       botToken: 'xoxb-test-token',
       botUserId: 'BOT123',
     });
+
+    // Add watch record so isWatching check passes in handler
+    await watchConversation(workspaceId, 'U456', 'C789');
 
     // Register handler and capture the callback
     const mockApp: Partial<App> = {
@@ -363,6 +367,8 @@ describe('App Mention E2E', () => {
 
       // Call AI service directly to verify integration
       const result = await generateSuggestion({
+        workspaceId,
+        userId: 'U456',
         triggerMessage: 'Help me respond to this angry customer',
         contextMessages: [
           { userId: 'U123', text: 'Customer complaint about service', ts: '1234567890.000001' },
@@ -377,6 +383,8 @@ describe('App Mention E2E', () => {
 
     it('should include context messages in AI request', async () => {
       await generateSuggestion({
+        workspaceId,
+        userId: 'U456',
         triggerMessage: 'Help me respond',
         contextMessages: [
           { userId: 'U123', text: 'First message in context', ts: '1234567890.000001' },
@@ -475,6 +483,8 @@ describe('App Mention E2E', () => {
 
       await expect(
         generateSuggestion({
+          workspaceId,
+          userId: 'U456',
           triggerMessage: 'Test',
           contextMessages: [],
           triggeredBy: 'mention',

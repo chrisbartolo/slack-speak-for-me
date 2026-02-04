@@ -84,6 +84,17 @@ vi.mock('../../src/jobs/queues.js', () => ({
   },
 }));
 
+// Mock usage enforcement - always allow in tests
+vi.mock('../../src/services/usage-enforcement.js', () => ({
+  checkUsageAllowed: vi.fn().mockResolvedValue({
+    allowed: true,
+    currentUsage: 0,
+    limit: 100,
+    planId: 'test',
+  }),
+  recordUsageEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock the logger
 vi.mock('../../src/utils/logger.js', () => ({
   logger: {
@@ -189,27 +200,42 @@ describe('Suggestion Flow E2E', () => {
       command: SlashCommand;
       ack: () => Promise<void>;
       respond: (msg: { text: string; response_type: string }) => Promise<void>;
+      client: Partial<WebClient>;
     }) => Promise<void>;
 
     let unwatchCommandHandler: (args: {
       command: SlashCommand;
       ack: () => Promise<void>;
       respond: (msg: { text: string; response_type: string }) => Promise<void>;
+      client: Partial<WebClient>;
     }) => Promise<void>;
 
     beforeEach(() => {
       // Register handlers and capture callbacks
       const mockApp: Partial<App> = {
         command: vi.fn((commandName: string, handler: unknown) => {
-          if (commandName === '/watch') {
+          if (commandName === '/speakforme-watch') {
             watchCommandHandler = handler as typeof watchCommandHandler;
-          } else if (commandName === '/unwatch') {
+          } else if (commandName === '/speakforme-unwatch') {
             unwatchCommandHandler = handler as typeof unwatchCommandHandler;
           }
         }),
       };
       registerWatchCommands(mockApp as App);
     });
+
+    // Mock client for watch commands (needed for conversations.info)
+    const createWatchMockClient = (): Partial<WebClient> => ({
+      conversations: {
+        info: vi.fn().mockResolvedValue({
+          ok: true,
+          channel: { name: 'test-channel', is_im: false, is_mpim: false, is_private: false },
+        }),
+      },
+      users: {
+        info: vi.fn().mockResolvedValue({ ok: true, user: { name: 'test' } }),
+      },
+    } as unknown as Partial<WebClient>);
 
     it('should add watch via /watch command', async () => {
       const mockAck = vi.fn().mockResolvedValue(undefined);
@@ -224,7 +250,7 @@ describe('Suggestion Flow E2E', () => {
         text: '',
       } as SlashCommand;
 
-      await watchCommandHandler({ command, ack: mockAck, respond: mockRespond });
+      await watchCommandHandler({ command, ack: mockAck, respond: mockRespond, client: createWatchMockClient() });
 
       // Verify ack was called
       expect(mockAck).toHaveBeenCalled();
@@ -258,7 +284,7 @@ describe('Suggestion Flow E2E', () => {
         text: '',
       } as SlashCommand;
 
-      await watchCommandHandler({ command, ack: mockAck, respond: mockRespond });
+      await watchCommandHandler({ command, ack: mockAck, respond: mockRespond, client: createWatchMockClient() });
 
       // Should respond that already watching
       expect(mockRespond).toHaveBeenCalledWith(
@@ -292,7 +318,7 @@ describe('Suggestion Flow E2E', () => {
         text: '',
       } as SlashCommand;
 
-      await unwatchCommandHandler({ command, ack: mockAck, respond: mockRespond });
+      await unwatchCommandHandler({ command, ack: mockAck, respond: mockRespond, client: createWatchMockClient() });
 
       // Verify ack was called
       expect(mockAck).toHaveBeenCalled();
@@ -323,7 +349,7 @@ describe('Suggestion Flow E2E', () => {
         text: '',
       } as SlashCommand;
 
-      await unwatchCommandHandler({ command, ack: mockAck, respond: mockRespond });
+      await unwatchCommandHandler({ command, ack: mockAck, respond: mockRespond, client: createWatchMockClient() });
 
       // Should respond that not watching
       expect(mockRespond).toHaveBeenCalledWith(
@@ -820,6 +846,9 @@ describe('Suggestion Flow E2E', () => {
       mockAnthropicCreate.mockResolvedValue(createMockAIResponse('Response with context'));
 
       const result = await refineSuggestion({
+        workspaceId,
+        userId: 'U456',
+        suggestionId: 'sug_test',
         originalSuggestion: 'Original',
         refinementRequest: 'Make it better',
       });
@@ -856,6 +885,9 @@ describe('Suggestion Flow E2E', () => {
       mockAnthropicCreate.mockResolvedValue(createMockAIResponse('Professional response'));
 
       const suggestionResult = await refineSuggestion({
+        workspaceId,
+        userId: 'U456',
+        suggestionId: 'sug_test',
         originalSuggestion: 'Draft response',
         refinementRequest: 'Make it professional',
       });
