@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, BarChart3, Clock, TrendingUp, Shield } from 'lucide-react';
+import { Home, Sliders, MessageSquare, Users, FileText, Sparkles, BarChart3, Clock, TrendingUp, Shield, Ticket } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { UserMenu } from './user-menu';
 
@@ -35,6 +35,9 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
             <NavItem href="/admin/analytics" icon={BarChart3} label="Team Analytics" />
             <NavItem href="/admin/response-times" icon={Clock} label="Response Times" />
             <NavItem href="/admin/communication-insights" icon={TrendingUp} label="Communication Insights" />
+            {isSuperAdmin && (
+              <NavItem href="/admin/coupons" icon={Ticket} label="Coupons" />
+            )}
           </>
         )}
       </nav>
