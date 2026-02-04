@@ -844,3 +844,37 @@ export const communicationTrends = pgTable('communication_trends', {
 // Type exports for communication trends
 export type CommunicationTrend = typeof communicationTrends.$inferSelect;
 export type NewCommunicationTrend = typeof communicationTrends.$inferInsert;
+
+// Knowledge base candidates for auto-learned patterns
+export const kbCandidates = pgTable('kb_candidates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  category: text('category'), // nullable, e.g. 'de_escalation', 'phrasing_patterns', 'domain_knowledge', 'best_practices'
+  tags: jsonb('tags').$type<string[]>(), // nullable
+  embedding: text('embedding').notNull(), // vector string for similarity search
+  reasoning: text('reasoning'), // nullable, Claude's explanation for why this is reusable
+  sourceSuggestionId: text('source_suggestion_id'), // nullable, first suggestion that triggered this candidate
+  acceptanceCount: integer('acceptance_count').default(1),
+  uniqueUsersCount: integer('unique_users_count').default(1),
+  avgSimilarity: integer('avg_similarity').default(0), // 0-100
+  qualityScore: integer('quality_score').default(0), // 0-100
+  status: text('status').default('pending'), // 'pending' | 'approved' | 'rejected' | 'merged'
+  reviewedBy: text('reviewed_by'), // nullable, admin user ID who reviewed
+  reviewedAt: timestamp('reviewed_at'), // nullable
+  rejectionReason: text('rejection_reason'), // nullable
+  publishedDocumentId: uuid('published_document_id').references(() => knowledgeBaseDocuments.id), // nullable
+  mergedIntoId: uuid('merged_into_id'), // nullable, self-reference for merge tracking
+  lastSeenAt: timestamp('last_seen_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  orgIdx: index('kb_candidates_org_idx').on(table.organizationId),
+  statusIdx: index('kb_candidates_status_idx').on(table.organizationId, table.status),
+  qualityIdx: index('kb_candidates_quality_idx').on(table.organizationId, table.qualityScore),
+}));
+
+// Type exports for KB candidates
+export type KbCandidate = typeof kbCandidates.$inferSelect;
+export type NewKbCandidate = typeof kbCandidates.$inferInsert;
