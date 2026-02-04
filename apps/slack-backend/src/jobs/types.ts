@@ -100,3 +100,14 @@ export interface DataRetentionJobResult {
   auditLogsDeleted: number;
   errors: number;
 }
+
+export interface TrendAggregationJobData {
+  triggeredBy: 'schedule' | 'manual';
+  targetDate?: string; // ISO date string
+}
+
+export interface TrendAggregationJobResult {
+  organizationsProcessed: number;
+  trendsCreated: number;
+  errors: number;
+}

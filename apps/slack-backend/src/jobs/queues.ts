@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData, DataRetentionJobData } from './types.js';
+import type { AIResponseJobData, SheetsWriteJobData, ReportGenerationJobData, UsageReporterJobData, KBIndexJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData } from './types.js';
 
 export const aiResponseQueue = new Queue<AIResponseJobData>('ai-responses', {
   connection: redis,
@@ -111,6 +111,16 @@ export const dataRetentionQueue = new Queue<DataRetentionJobData>('data-retentio
       type: 'exponential',
       delay: 60000, // 1 min, 2 min
     },
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 100 },
+  },
+});
+
+export const trendAggregationQueue = new Queue<TrendAggregationJobData>('trend-aggregation', {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 60000 },
     removeOnComplete: { count: 50 },
     removeOnFail: { count: 100 },
   },

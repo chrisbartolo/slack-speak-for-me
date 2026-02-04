@@ -1,10 +1,10 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from './connection.js';
-import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult } from './types.js';
-import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument } from '../services/index.js';
+import type { AIResponseJobData, AIResponseJobResult, SheetsWriteJobData, SheetsWriteJobResult, ReportGenerationJobData, ReportGenerationJobResult, UsageReporterJobData, UsageReporterJobResult, KBIndexJobData, KBIndexJobResult, EscalationScanJobData, EscalationScanJobResult, DataRetentionJobData, DataRetentionJobResult, TrendAggregationJobData, TrendAggregationJobResult } from './types.js';
+import { generateSuggestion, sendSuggestionEphemeral, postToUser, appendSubmission, generateWeeklyReport, isAutoRespondEnabled, logAutoResponse, checkUsageAllowed, getUsageStatus, reportUnreportedUsageBatch, indexDocument, classifyTopic, analyzeSentiment, aggregateDailyTrends } from '../services/index.js';
 import { routeDelivery } from '../services/delivery-router.js';
 import { logger } from '../utils/logger.js';
-import { db, workspaces, installations, decrypt } from '@slack-speak/database';
+import { db, workspaces, installations, topicClassifications, decrypt } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 import { getEncryptionKey } from '../env.js';
 import { WebClient } from '@slack/web-api';
@@ -19,6 +19,7 @@ let usageReporterWorker: Worker<UsageReporterJobData, UsageReporterJobResult> | 
 let kbIndexWorker: Worker<KBIndexJobData, KBIndexJobResult> | null = null;
 let escalationScanWorker: Worker<EscalationScanJobData, EscalationScanJobResult> | null = null;
 let dataRetentionWorker: Worker<DataRetentionJobData, DataRetentionJobResult> | null = null;
+let trendAggregationWorker: Worker<TrendAggregationJobData, TrendAggregationJobResult> | null = null;
 
 export async function startWorkers() {
   aiResponseWorker = new Worker<AIResponseJobData, AIResponseJobResult>(
@@ -106,6 +107,66 @@ export async function startWorkers() {
 
       // Record AI processing completed
       recordAICompleted({ suggestionId, aiProcessingMs: result.processingTimeMs }).catch(() => {});
+
+      // Fire-and-forget: Classify topic + sentiment (NEVER blocks delivery)
+      classifyTopic({
+        conversationMessages: contextMessages.map(m => ({ text: m.text, ts: m.ts })),
+        targetMessage: triggerMessageText,
+      }).then(async (classification) => {
+        try {
+          // Resolve organizationId (reuse from suggestion-metrics pattern)
+          const [ws] = await db
+            .select({ organizationId: workspaces.organizationId })
+            .from(workspaces)
+            .where(eq(workspaces.id, workspaceId))
+            .limit(1);
+
+          const orgId = ws?.organizationId ?? '00000000-0000-0000-0000-000000000000';
+
+          // Step 1: Insert topic classification row (sentiment initially null)
+          const [inserted] = await db.insert(topicClassifications).values({
+            organizationId: orgId,
+            workspaceId,
+            userId,
+            channelId,
+            suggestionId,
+            topic: classification.topic,
+            confidence: Math.round(classification.confidence * 100),
+            reasoning: classification.reasoning,
+          }).returning({ id: topicClassifications.id });
+
+          logger.info({
+            suggestionId,
+            topic: classification.topic,
+            confidence: classification.confidence,
+          }, 'Topic classified and stored');
+
+          // Step 2: Fire-and-forget sentiment analysis, then UPDATE the row
+          analyzeSentiment({
+            conversationMessages: contextMessages.map(m => ({
+              userId: m.userId,
+              text: m.text,
+              ts: m.ts,
+            })),
+            targetMessage: triggerMessageText,
+          }).then(async (sentiment) => {
+            try {
+              await db.update(topicClassifications)
+                .set({ sentiment })
+                .where(eq(topicClassifications.id, inserted.id));
+              logger.info({ suggestionId, tone: sentiment.tone }, 'Sentiment stored in topic classification');
+            } catch (updateError) {
+              logger.warn({ error: updateError, suggestionId }, 'Failed to store sentiment in topic classification');
+            }
+          }).catch((sentimentError) => {
+            logger.warn({ error: sentimentError, suggestionId }, 'Sentiment analysis failed for topic classification');
+          });
+        } catch (insertError) {
+          logger.warn({ error: insertError, suggestionId }, 'Failed to store topic classification');
+        }
+      }).catch((error) => {
+        logger.warn({ error, suggestionId }, 'Topic classification failed');
+      });
 
       // Usage already recorded inside generateSuggestion() — no duplicate here
 
@@ -634,6 +695,28 @@ export async function startWorkers() {
   dataRetentionWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Data retention job completed'));
 
   logger.info('Data retention worker started');
+
+  // Trend aggregation worker
+  trendAggregationWorker = new Worker<TrendAggregationJobData, TrendAggregationJobResult>(
+    'trend-aggregation',
+    async (job) => {
+      logger.info({ jobId: job.id, triggeredBy: job.data.triggeredBy }, 'Processing trend aggregation job');
+      const targetDate = job.data.targetDate ? new Date(job.data.targetDate) : undefined;
+      const result = await aggregateDailyTrends(targetDate);
+      logger.info({ jobId: job.id, ...result }, 'Trend aggregation completed');
+      return result;
+    },
+    {
+      connection: redis,
+      concurrency: 1, // Only one aggregation at a time
+    }
+  );
+
+  trendAggregationWorker.on('error', (err) => logger.error({ err }, 'Trend aggregation worker error'));
+  trendAggregationWorker.on('failed', (job, err) => logger.error({ jobId: job?.id, err: err.message }, 'Trend aggregation job failed'));
+  trendAggregationWorker.on('completed', (job, result) => logger.info({ jobId: job.id, ...result }, 'Trend aggregation job completed'));
+
+  logger.info('Trend aggregation worker started');
 }
 
 export async function stopWorkers() {
@@ -671,5 +754,10 @@ export async function stopWorkers() {
     await dataRetentionWorker.close();
     dataRetentionWorker = null;
     logger.info('Data retention worker stopped');
+  }
+  if (trendAggregationWorker) {
+    await trendAggregationWorker.close();
+    trendAggregationWorker = null;
+    logger.info('Trend aggregation worker stopped');
   }
 }

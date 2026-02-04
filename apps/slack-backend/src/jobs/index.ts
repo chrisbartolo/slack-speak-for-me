@@ -13,6 +13,7 @@ export {
   setupUsageReporterScheduler,
   setupEscalationScannerScheduler,
   setupDataRetentionScheduler,
+  setupTrendAggregationScheduler,
 } from './schedulers.js';
 
 // Re-export types

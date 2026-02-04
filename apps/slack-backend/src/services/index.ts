@@ -110,6 +110,13 @@ export {
   type SentimentAnalysis,
 } from './sentiment-detector.js';
 
+// Topic classifier - conversation topic categorization
+export {
+  classifyTopic,
+  type Topic,
+  type TopicClassification,
+} from './topic-classifier.js';
+
 // Brand voice - organization-level tone and style guidelines
 export {
   getBrandVoiceTemplates,
@@ -169,3 +176,6 @@ export {
   recordUserAction,
   recordError,
 } from './suggestion-metrics.js';
+
+// Trend aggregator - daily communication pattern aggregation
+export { aggregateDailyTrends } from './trend-aggregator.js';

@@ -1,8 +1,8 @@
 import { db, reportSettings as reportSettingsTable } from '@slack-speak/database';
 import { eq, and } from 'drizzle-orm';
-import { reportQueue, usageReporterQueue, escalationScanQueue, dataRetentionQueue } from './queues.js';
+import { reportQueue, usageReporterQueue, escalationScanQueue, dataRetentionQueue, trendAggregationQueue } from './queues.js';
 import { logger } from '../utils/logger.js';
-import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData, DataRetentionJobData } from './types.js';
+import type { ReportGenerationJobData, UsageReporterJobData, EscalationScanJobData, DataRetentionJobData, TrendAggregationJobData } from './types.js';
 
 /**
  * Convert day of week (0-6) and time (HH:mm) to cron pattern
@@ -268,6 +268,33 @@ export async function setupDataRetentionScheduler(): Promise<void> {
     logger.info('Data retention scheduler configured (daily 3 AM UTC)');
   } catch (error) {
     logger.error({ error }, 'Failed to setup data retention scheduler');
+    throw error;
+  }
+}
+
+/**
+ * Setup trend aggregation scheduler
+ * Runs at 3:00 AM UTC daily to aggregate previous day's communication patterns
+ */
+export async function setupTrendAggregationScheduler(): Promise<void> {
+  try {
+    const jobData: TrendAggregationJobData = {
+      triggeredBy: 'schedule',
+    };
+
+    // Upsert the job scheduler (daily at 3 AM UTC)
+    await trendAggregationQueue.upsertJobScheduler(
+      'daily-trend-aggregation',
+      { pattern: '0 3 * * *' }, // 3:00 AM UTC daily
+      {
+        name: 'aggregate-daily-trends',
+        data: jobData,
+      }
+    );
+
+    logger.info('Trend aggregation scheduler configured (daily 3 AM UTC)');
+  } catch (error) {
+    logger.error({ error }, 'Failed to setup trend aggregation scheduler');
     throw error;
   }
 }
