@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 19 of 20 (Satisfaction Measurement) - IN PROGRESS
-Plan: 02 of 04 - COMPLETE (Survey Service + Slack Delivery + BullMQ Job)
+Plan: 03 of 04 - COMPLETE (Health Score Calculator + Weekly BullMQ Job)
 Status: In progress
-Last activity: 2026-02-04 - Completed 19-02-PLAN.md (Survey Service + Slack Delivery + BullMQ Job)
+Last activity: 2026-02-04 - Completed 19-03-PLAN.md (Health Score Calculator + Weekly BullMQ Job)
 
-Progress: [███████████████████████] 92% (Plan 19-02 complete, 2 plans remaining in phase)
+Progress: [████████████████████████] 93% (Plan 19-03 complete, 1 plan remaining in phase)
 
 ## Production Deployment
 
@@ -34,9 +34,9 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 53
+- Total plans completed: 54
 - Average duration: 3.5 min
-- Total execution time: ~3.4 hours
+- Total execution time: ~3.5 hours
 
 **By Phase:**
 
@@ -50,7 +50,7 @@ Progress: [███████████████████████
 | 05 - Weekly Reports | 9 | 30 min | 3.3 min |
 | 17 - Communication Insights | 5 | 18 min | 3.6 min |
 | 18 - Auto-Learning KB | 5 | 20 min | 4.0 min |
-| 19 - Satisfaction Measurement | 3 | 32 min | 10.7 min |
+| 19 - Satisfaction Measurement | 3 | 38 min | 12.7 min |
 
 *Updated after each plan completion*
 
@@ -138,6 +138,14 @@ Recent decisions affecting current work:
 - Phase 19 Plan 01: 7-day survey expiration window - expiredAt timestamp set after 7 days if no user response
 - Phase 19 Plan 01: Baseline tracking with isBaseline flag - Identifies first 30-day scores for before/after comparisons
 - Phase 19 Plan 01: Component metrics nullable for data sparsity - All health score components nullable to handle insufficient data scenarios
+- Phase 19 Plan 03: Health score weights 25/20/20/20/15 - Acceptance rate most important, then response time/sentiment/satisfaction equally, engagement least critical
+- Phase 19 Plan 03: MIN_SUGGESTIONS_FOR_SCORE = 5 - Below 5 suggestions, score is unreliable and misleading - return null for insufficient data
+- Phase 19 Plan 03: Null metric fallback to 50 - Missing component metrics default to neutral score to avoid penalizing new users
+- Phase 19 Plan 03: Response time inverted scoring - Lower is better: ((60000 - clamp(ms, 0, 60000)) / 60000) * 100
+- Phase 19 Plan 03: Baseline period = first 5 weeks - 5 weekly scores approximate 30-day baseline for before/after comparison
+- Phase 19 Plan 03: Sunday 2 AM UTC weekly schedule - Runs before satisfaction surveys (Monday 9 AM) and after usage reporting (daily 2 AM)
+- Phase 19 Plan 03: Team aggregate with userId null - Separate team-wide health score alongside individual scores for org-level insights
+- Phase 19 Plan 03: Raw SQL for multi-source queries - Complex aggregations across 5 tables more readable in SQL, follows trend-aggregator pattern
 - Phase 19 Plan 02: Block Kit radio_buttons for 0-10 NPS rating - 11 options with block_id including surveyId for state extraction
 - Phase 19 Plan 02: 30-day frequency cap prevents survey fatigue - canSurveyUser checks 30+ days elapsed since last survey
 - Phase 19 Plan 02: Weekly Monday 9 AM UTC delivery schedule - BullMQ cron pattern '0 9 * * 1' for automated survey delivery
