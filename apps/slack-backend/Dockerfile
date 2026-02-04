@@ -37,7 +37,12 @@ ENV NODE_ENV=production
 # Copy built application
 COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/dist ./dist
 COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/package*.json ./
+
+# Copy dependencies: root hoisted node_modules + workspace-specific (non-hoisted) packages
 COPY --from=builder --chown=slackapp:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=slackapp:nodejs /app/apps/slack-backend/node_modules /tmp/ws_modules
+RUN cp -a /tmp/ws_modules/. ./node_modules/ && rm -rf /tmp/ws_modules
+
 COPY --from=builder --chown=slackapp:nodejs /app/packages ./packages
 
 USER slackapp
