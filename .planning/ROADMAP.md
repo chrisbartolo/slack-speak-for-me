@@ -507,14 +507,14 @@ Plans:
   4. Escalation frequency and resolution rates visualized
   5. Period-over-period comparison (this week vs last, this month vs last)
   6. Client-specific communication pattern insights when client profiles exist
-**Plans**: 5 plans in 3 waves
+**Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 17-01-PLAN.md — Schema migration for topic_classifications and communication_trends
-- [ ] 17-02-PLAN.md — Topic classifier service with Claude prompt and AI integration
-- [ ] 17-03-PLAN.md — Trend aggregator background job with weekly/monthly schedulers
-- [ ] 17-04-PLAN.md — Web portal communication insights query library
-- [ ] 17-05-PLAN.md — Admin insights dashboard with Tremor charts
+- [ ] 17-01-PLAN.md — Schema: topic_classifications and communication_trends tables
+- [ ] 17-02-PLAN.md — Topic classifier service with Claude prompt and fire-and-forget integration
+- [ ] 17-03-PLAN.md — Trend aggregator BullMQ job with daily 3 AM schedule
+- [ ] 17-04-PLAN.md — Web portal communication insights query library (6 cached functions)
+- [ ] 17-05-PLAN.md — Admin insights dashboard with Tremor charts and visualizations
 
 ### Phase 18: Auto-Learning Knowledge Base
 **Goal**: Mine accepted suggestions for reusable knowledge and track KB effectiveness
