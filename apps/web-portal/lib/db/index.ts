@@ -41,6 +41,8 @@ import {
   suggestionMetrics,
   topicClassifications,
   communicationTrends,
+  kbCandidates,
+  kbEffectiveness,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -95,6 +97,8 @@ const schema = {
   suggestionMetrics,
   topicClassifications,
   communicationTrends,
+  kbCandidates,
+  kbEffectiveness,
 };
 
 export const db = drizzle(queryClient, { schema });
@@ -124,4 +128,8 @@ export type {
   NewGuardrailViolation,
   SuggestionMetric,
   NewSuggestionMetric,
+  KbCandidate,
+  NewKbCandidate,
+  KbEffectiveness,
+  NewKbEffectiveness,
 } from '@slack-speak/database';
