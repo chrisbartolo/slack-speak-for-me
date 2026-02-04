@@ -12,8 +12,8 @@ Team management lets admins view who is using Speak for Me, assign roles, and un
 From the admin dashboard, you can see all team members in your organization:
 
 1. Sign in to the [web portal](/dashboard)
-2. Navigate to the **Admin** section
-3. View the team members list showing name, email, role, and workspace
+2. Click **Admin Dashboard** in the sidebar, then go to **Organizations**
+3. Select your organization to view the team members list showing name, email, plan, usage, and workspace
 
 The team member list is synchronized with your Slack workspace. When someone joins your Slack workspace and authorizes Speak for Me, they automatically appear in the team list.
 
@@ -23,14 +23,15 @@ The team member list is synchronized with your Slack workspace. When someone joi
 
 ## User Roles
 
-Speak for Me has two user roles:
+Speak for Me has three user roles:
 
 | Role | Permissions |
 |------|------------|
-| **Admin** | Full access to organization settings, billing, team management, compliance tools, and all member features |
+| **Super Admin** | All admin permissions plus cross-organization access, plan management, coupon management, and usage resets. Configured via the `SUPER_ADMIN_EMAILS` environment variable. |
+| **Admin** | Organization settings, billing, team analytics, response times, communication insights, compliance tools, and all member features. Scoped to their own organization. |
 | **Member** | Access to personal dashboard, style preferences, watched conversations, and suggestion history |
 
-The person who first installs the Slack app becomes the admin. Additional admins can be promoted from the admin dashboard.
+The person who first installs the Slack app becomes the admin. Additional admins can be promoted from the admin dashboard. Super admin status is granted by adding your email to the `SUPER_ADMIN_EMAILS` environment variable.
 
 ## Seat-Based Billing
 

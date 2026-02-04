@@ -21,14 +21,14 @@ Plan Management gives super admins direct control over user plans and usage limi
     Sign in to the [web portal](/dashboard) with your super admin account.
   </Step>
   <Step>
-    ### Navigate to System settings
+    ### Navigate to an organization
 
-    In the sidebar, expand the **System** section and click **Plans & Usage**.
+    In the sidebar, click **Admin Dashboard**, then go to **Organizations** and select the organization whose users you want to manage.
   </Step>
   <Step>
-    ### Search for a user
+    ### Find the user
 
-    Use the search bar to find the user you want to manage by name or email address.
+    The organization detail page shows all users with their current plan and usage. Super admins see a **Users & Plan Management** section with action buttons for each user.
   </Step>
 </Steps>
 
@@ -44,27 +44,27 @@ Super admins can manually assign any plan tier to a user, bypassing the standard
 
 | Plan | Suggestions per month | Notes |
 |------|----------------------|-------|
-| **Free** | 10 | Default tier for all new accounts |
-| **Starter** | 100 | Includes full style preferences and limited person context |
-| **Pro** | Unlimited | All features including weekly reports and exports |
-| **Team** | 100 per seat | Organization-level plan with admin dashboard |
-| **Business** | Unlimited per seat | Full organization features with analytics |
+| **Free** | 5 | Default tier for all new accounts |
+| **Starter** | 25 | Includes full style preferences and limited person context |
+| **Pro** | 75 | All features including weekly reports and exports |
+| **Team** | 50 per seat | Organization-level plan with admin dashboard |
+| **Business** | 100 per seat | Full organization features with analytics |
 
 <Steps>
   <Step>
     ### Select the user
 
-    Find the user in the Plans & Usage list and click their row to open the management panel.
+    Find the user in the table and click the **credit card icon** in the Actions column to open the plan assignment dialog.
   </Step>
   <Step>
     ### Choose a plan tier
 
-    Select the desired plan from the dropdown. The change takes effect immediately.
+    Select the desired plan from the dropdown and provide a reason (e.g. "Goodwill", "Testing", "External payment"). The change takes effect immediately.
   </Step>
   <Step>
     ### Confirm the assignment
 
-    Review the selection and confirm. The user will see their updated plan the next time they access Speak for Me.
+    Click **Assign Plan** to confirm. The user will see their updated plan the next time they access Speak for Me.
   </Step>
 </Steps>
 
@@ -87,19 +87,19 @@ For example, if a user on the Starter plan has used 80 of their 100 monthly sugg
 
 <Steps>
   <Step>
-    ### Open the user's management panel
+    ### Open the grant dialog
 
-    Find the user in Plans & Usage and click to open their details.
+    Find the user in the table and click the **gift icon** in the Actions column to open the bonus suggestions dialog.
   </Step>
   <Step>
     ### Enter the bonus amount
 
-    In the **Bonus Suggestions** field, enter the number of additional suggestions to grant.
+    Enter the number of additional suggestions to grant (1--1000). The dialog shows the user's current usage and what their new effective limit will be.
   </Step>
   <Step>
     ### Apply the bonus
 
-    Click **Grant Bonus** to apply. The bonus is added immediately and the user can start using the extra suggestions right away.
+    Click **Grant Suggestions** to apply. The bonus is added immediately and the user can start using the extra suggestions right away.
   </Step>
 </Steps>
 
@@ -117,7 +117,7 @@ Common scenarios for resetting usage:
 - A user ran extensive testing that consumed their allowance
 - A goodwill gesture after a service disruption
 
-To reset usage, open the user's management panel and click **Reset Usage**. The counter resets immediately and the user regains their full monthly allowance.
+To reset usage, click the **rotate icon** in the Actions column for the user, then confirm in the dialog. The counter resets immediately and the user regains their full monthly allowance. Bonus suggestions are preserved.
 
 <Callout type="warn">
   Usage resets are logged in the [audit trail](/docs/admin/audit-trail). All plan management actions are tracked for accountability.
