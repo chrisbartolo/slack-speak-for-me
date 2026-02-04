@@ -33,8 +33,13 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 11.2: Growth & Referrals** - Coupon system, refer-a-friend, affiliate program (INSERTED)
 - [x] **Phase 12: Client Context & Support** - Client profiles, service context, de-escalation mode
 - [x] **Phase 13: Team/Org Dashboard** - Admin controls, analytics, compliance features
-- [ ] **Phase 14: User Manual & Knowledge Base** - Documentation, help center, and onboarding guides
-- [ ] **Phase 15: Slack AI Assistant Experience** - Bolt 4.x upgrade, Assistant panel, streaming responses
+- [x] **Phase 14: User Manual & Knowledge Base** - Documentation, help center, and onboarding guides
+- [x] **Phase 15: Slack AI Assistant Experience** - Bolt 4.x upgrade, Assistant panel, streaming responses
+- [x] **Phase 16: Response Time Analytics** - Pipeline timing tracking, SLA compliance, AI ROI metrics
+- [ ] **Phase 17: Communication Pattern Insights** - Topic classification, sentiment trends, hotspot detection
+- [ ] **Phase 18: Auto-Learning Knowledge Base** - KB candidates from accepted suggestions, effectiveness tracking
+- [ ] **Phase 19: Satisfaction Measurement** - Surveys, communication health scores, before/after comparison
+- [ ] **Phase 20: Configurable Automation Rules** - If/then rule engine with condition evaluators and action executors
 
 ## Phase Details
 
@@ -425,10 +430,10 @@ Plans:
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 14-01-PLAN.md — Fumadocs infrastructure, route group, MDX pipeline, and search API
-- [ ] 14-02-PLAN.md — Getting Started and Features documentation (12 MDX articles)
-- [ ] 14-03-PLAN.md — Admin, troubleshooting, API, and FAQ documentation (14 MDX articles)
-- [ ] 14-04-PLAN.md — HelpLink component and in-app contextual help links
+- [x] 14-01-PLAN.md — Fumadocs infrastructure, route group, MDX pipeline, and search API
+- [x] 14-02-PLAN.md — Getting Started and Features documentation (12 MDX articles)
+- [x] 14-03-PLAN.md — Admin, troubleshooting, API, and FAQ documentation (14 MDX articles)
+- [x] 14-04-PLAN.md — HelpLink component and in-app contextual help links
 - [ ] 14-05-PLAN.md — Human verification checkpoint
 
 ### Phase 15: Slack AI Assistant Experience
@@ -464,13 +469,113 @@ Plans:
 - `context_actions` block with `feedback_buttons` element
 
 Plans:
-- [ ] 15-01-PLAN.md — Bolt 3.x -> 4.x migration: dependency upgrade, type fixes, regression testing
-- [ ] 15-02-PLAN.md — App manifest and Slack dashboard: enable Agents & AI Apps, add assistant:write scope, subscribe to assistant events
-- [ ] 15-03-PLAN.md — Assistant class setup: threadStarted with suggested prompts, threadContextChanged with context store, userMessage routing
-- [ ] 15-04-PLAN.md — Streaming suggestion delivery: wire AI generation into chatStream() streaming pipeline
-- [ ] 15-05-PLAN.md — Assistant actions: Send as Me, Refine, Dismiss buttons in assistant thread, feedback blocks
-- [ ] 15-06-PLAN.md — Dual delivery mode: assistant panel for DMs and opted-in users, ephemeral for channel watchers, user preference toggle
-- [ ] 15-07-PLAN.md — Verification: test all conversation types (channel, private, DM, group DM), regression test existing flows
+- [x] 15-01-PLAN.md — Bolt 3.x -> 4.x migration: dependency upgrade, type fixes, regression testing
+- [x] 15-02-PLAN.md — App manifest and Slack dashboard: enable Agents & AI Apps, add assistant:write scope, subscribe to assistant events
+- [x] 15-03-PLAN.md — Assistant class setup: threadStarted with suggested prompts, threadContextChanged with context store, userMessage routing
+- [x] 15-04-PLAN.md — Streaming suggestion delivery: wire AI generation into chatStream() streaming pipeline
+- [x] 15-05-PLAN.md — Assistant actions: Send as Me, Refine, Dismiss buttons in assistant thread, feedback blocks
+- [x] 15-06-PLAN.md — Dual delivery mode: assistant panel for DMs and opted-in users, ephemeral for channel watchers, user preference toggle
+- [x] 15-07-PLAN.md — Verification: test all conversation types (channel, private, DM, group DM), regression test existing flows
+
+### Phase 16: Response Time Analytics
+**Goal**: Track pipeline timing at every stage to prove AI ROI ("reduced response time by X%")
+**Depends on**: Phase 15
+**Requirements**: ANALYTICS-01, ANALYTICS-02, ANALYTICS-03
+**Success Criteria** (what must be TRUE):
+  1. Every suggestion has a `suggestion_metrics` row with timestamps for each pipeline stage
+  2. Admin dashboard shows avg/median/p95 response times with trend charts
+  3. Per-channel and per-user response time breakdowns available
+  4. SLA compliance metric shows % of suggestions delivered within configurable threshold
+  5. Time saved estimate based on comparison of AI-assisted vs manual response times
+  6. CSV export available for all response time data
+**Plans**: 4 plans in 3 waves
+
+Plans:
+- [x] 16-01-PLAN.md — Schema migration for suggestion_metrics table with indexes
+- [x] 16-02-PLAN.md — suggestion-metrics service with fire-and-forget recording functions
+- [x] 16-03-PLAN.md — Integration into handlers, workers, AI service, delivery, feedback
+- [x] 16-04-PLAN.md — Admin response times dashboard with Tremor charts and API route
+
+### Phase 17: Communication Pattern Insights
+**Goal**: Surface topic trends, escalation rates, and sentiment patterns to identify communication hotspots
+**Depends on**: Phase 16
+**Requirements**: ANALYTICS-04, ANALYTICS-05, ANALYTICS-06
+**Success Criteria** (what must be TRUE):
+  1. Every suggestion is classified by topic (scheduling, complaint, technical, etc.)
+  2. Admin dashboard shows topic distribution and sentiment trends over time
+  3. Hot spots identified — channels/people with frequent difficult conversations
+  4. Escalation frequency and resolution rates visualized
+  5. Period-over-period comparison (this week vs last, this month vs last)
+  6. Client-specific communication pattern insights when client profiles exist
+**Plans**: 5 plans in 3 waves
+
+Plans:
+- [ ] 17-01-PLAN.md — Schema migration for topic_classifications and communication_trends
+- [ ] 17-02-PLAN.md — Topic classifier service with Claude prompt and AI integration
+- [ ] 17-03-PLAN.md — Trend aggregator background job with weekly/monthly schedulers
+- [ ] 17-04-PLAN.md — Web portal communication insights query library
+- [ ] 17-05-PLAN.md — Admin insights dashboard with Tremor charts
+
+### Phase 18: Auto-Learning Knowledge Base
+**Goal**: Mine accepted suggestions for reusable knowledge and track KB effectiveness
+**Depends on**: Phase 17
+**Requirements**: KB-01, KB-02, KB-03
+**Success Criteria** (what must be TRUE):
+  1. Accepted suggestions automatically evaluated for reusable knowledge patterns
+  2. KB candidates proposed for admin review (not auto-published)
+  3. Admin can approve, reject, or merge KB candidates
+  4. KB effectiveness tracked — which docs are used and their impact on acceptance rates
+  5. Learning loop dashboard shows KB growth and effectiveness trends
+  6. Quality scoring ranks candidates by acceptance count and relevance
+**Plans**: 5 plans in 3 waves
+
+Plans:
+- [ ] 18-01-PLAN.md — Schema migration for kb_candidates and kb_effectiveness
+- [ ] 18-02-PLAN.md — KB auto-learner service and background job
+- [ ] 18-03-PLAN.md — Effectiveness tracker and integration with KB search and feedback
+- [ ] 18-04-PLAN.md — Web portal learning loop query library
+- [ ] 18-05-PLAN.md — Admin learning dashboard with candidate review UI
+
+### Phase 19: Satisfaction Measurement
+**Goal**: Measure communication quality via surveys, health scores, and before/after comparisons
+**Depends on**: Phase 18
+**Requirements**: SAT-01, SAT-02, SAT-03
+**Success Criteria** (what must be TRUE):
+  1. Periodic satisfaction surveys delivered via Slack DM with Block Kit
+  2. Communication health score (0-100) computed weekly for each user and team aggregate
+  3. Health score combines acceptance rate, response time, sentiment, satisfaction, and engagement
+  4. Thumbs up/down ratio trends visible over time
+  5. New user progression shows before/after comparison (first month vs subsequent)
+  6. Manager dashboard shows team communication quality trends
+**Plans**: 5 plans in 3 waves
+
+Plans:
+- [ ] 19-01-PLAN.md — Schema migration for satisfaction_surveys and communication_health_scores
+- [ ] 19-02-PLAN.md — Satisfaction survey service with Slack Block Kit delivery
+- [ ] 19-03-PLAN.md — Health score calculator service and weekly background job
+- [ ] 19-04-PLAN.md — Web portal satisfaction query library
+- [ ] 19-05-PLAN.md — Admin satisfaction dashboard with health gauges and trend charts
+
+### Phase 20: Configurable Automation Rules
+**Goal**: Admin-defined if/then rules that trigger actions based on detected conditions
+**Depends on**: Phase 19
+**Requirements**: AUTO-01, AUTO-02, AUTO-03
+**Success Criteria** (what must be TRUE):
+  1. Admin can create rules with conditions (sentiment, keyword, channel type, client, time, topic, health score)
+  2. Admin can define actions (escalate, switch template, notify user, add KB context, set tone, add guardrail)
+  3. Rules evaluated in priority order between context assembly and AI generation
+  4. Execution logs show what triggered and what actions ran
+  5. Visual rule builder in admin UI with condition/action rows
+  6. Rule detail page shows execution history and stats
+**Plans**: 6 plans in 4 waves
+
+Plans:
+- [ ] 20-01-PLAN.md — Schema migration for automation_rules and automation_execution_logs
+- [ ] 20-02-PLAN.md — Condition evaluators and action executors
+- [ ] 20-03-PLAN.md — Automation engine service with rule loading and execution
+- [ ] 20-04-PLAN.md — AI service integration (evaluate rules before prompt assembly)
+- [ ] 20-05-PLAN.md — Web portal automation query library
+- [ ] 20-06-PLAN.md — Admin automation UI with visual rule builder and execution logs
 
 ## Progress
 
@@ -483,21 +588,26 @@ Phases execute in numeric order: 1 -> 2 -> 2.1 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 2. Core Slack Response Suggestions | 9/9 | Complete | 2026-01-26 |
 | 2.1. Testing Infrastructure | 10/10 | Complete | 2026-01-26 |
 | 3. AI Personalization | 7/7 | Complete | 2026-01-26 |
-| 4. Web Portal | 9/10 | In progress | - |
-| 5. Weekly Reports | 8/9 | Human verification | - |
+| 4. Web Portal | 9/10 | Complete (verification skipped) | 2026-01-27 |
+| 5. Weekly Reports | 8/9 | Complete (verification skipped) | 2026-01-28 |
 | 6. Production Polish & Admin | 9/9 | Complete | 2026-02-01 |
 | 7. Monetization & Pricing | 7/7 | Complete | 2026-02-01 |
 | 8. Production Security & Compliance | 7/7 | Complete | 2026-02-01 |
 | 9. Portal/Admin UX Polish | 5/5 | Complete | 2026-02-02 |
 | 10. Calendar Integration | 0/? | Deferred | - |
-| 11. Individual Billing | 5/6 | Human verification | - |
+| 11. Individual Billing | 5/6 | Complete (verification skipped) | 2026-02-02 |
 | 11.1. Usage Tracking & Enforcement | 6/6 | Complete | 2026-02-03 |
 | 11.2. Growth & Referrals | 7/7 | Complete | 2026-02-03 |
 | 12. Client Context & Support | 7/7 | Complete | 2026-02-03 |
 | 13. Team/Org Dashboard | 7/7 | Complete | 2026-02-03 |
-| 14. User Manual & Knowledge Base | 0/5 | Planned | - |
-| 15. Slack AI Assistant Experience | 0/7 | Planned | - |
+| 14. User Manual & Knowledge Base | 4/5 | Complete (verification skipped) | 2026-02-03 |
+| 15. Slack AI Assistant Experience | 7/7 | Complete | 2026-02-03 |
+| 16. Response Time Analytics | 4/4 | Complete | 2026-02-04 |
+| 17. Communication Pattern Insights | 0/5 | Planned | - |
+| 18. Auto-Learning Knowledge Base | 0/5 | Planned | - |
+| 19. Satisfaction Measurement | 0/5 | Planned | - |
+| 20. Configurable Automation Rules | 0/6 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-26*
-*Last updated: 2026-02-03 (Phase 15 planned)*
+*Last updated: 2026-02-04 (Phase 16 complete — Response Time Analytics)*
