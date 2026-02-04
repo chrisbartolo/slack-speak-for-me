@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { BrushUnderline, BrushUnderlineThick } from '@/components/ui/brush-underline';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { faqItems } from '@/lib/seo/schemas';
@@ -81,6 +82,95 @@ function FAQSection() {
   );
 }
 
+
+function EmailSignup() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setStatus('loading');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus('error');
+        setErrorMsg(data.error || 'Something went wrong.');
+        return;
+      }
+
+      setStatus('success');
+      setEmail('');
+    } catch {
+      setStatus('error');
+      setErrorMsg('Something went wrong. Please try again.');
+    }
+  }
+
+  if (status === 'success') {
+    return (
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-xl mx-auto text-center">
+          <div className="bg-white rounded-2xl border border-gray-200/50 shadow-sm p-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">You're on the list!</h3>
+            <p className="text-gray-600">We'll send you updates on new features and launch announcements.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-xl mx-auto text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          Not ready to install yet?
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Get notified about new features, tips for handling difficult messages, and launch updates.
+        </p>
+        <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">
+          <Input
+            type="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="flex-1"
+            disabled={status === 'loading'}
+          />
+          <Button
+            type="submit"
+            disabled={status === 'loading'}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-sm whitespace-nowrap"
+          >
+            {status === 'loading' ? 'Subscribing...' : 'Stay Updated'}
+          </Button>
+        </form>
+        {status === 'error' && (
+          <p className="text-red-600 text-sm mt-2">{errorMsg}</p>
+        )}
+        <p className="text-xs text-gray-400 mt-3">No spam. Unsubscribe anytime.</p>
+      </div>
+    </section>
+  );
+}
 
 export function LandingPageContent() {
   const slackInstallUrl = process.env.NEXT_PUBLIC_SLACK_BACKEND_URL
@@ -325,6 +415,9 @@ export function LandingPageContent() {
 
       {/* FAQ Section */}
       <FAQSection />
+
+      {/* Email Signup */}
+      <EmailSignup />
 
       {/* CTA Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">

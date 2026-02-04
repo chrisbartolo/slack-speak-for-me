@@ -37,6 +37,7 @@ import {
   responseTemplates,
   guardrailConfig,
   guardrailViolations,
+  emailSubscribers,
 } from '@slack-speak/database';
 
 const connectionString = process.env.DATABASE_URL || '';
@@ -85,6 +86,7 @@ const schema = {
   responseTemplates,
   guardrailConfig,
   guardrailViolations,
+  emailSubscribers,
 };
 
 export const db = drizzle(queryClient, { schema });

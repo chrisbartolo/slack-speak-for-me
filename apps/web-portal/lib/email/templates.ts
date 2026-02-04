@@ -50,6 +50,26 @@ export function paymentFailedEmail(invoiceUrl?: string): EmailTemplate {
   return { subject, html, text };
 }
 
+export function welcomeSubscriberEmail(): EmailTemplate {
+  const subject = "You're on the list — Speak for Me updates";
+  const html = `
+    <h1>Thanks for signing up!</h1>
+    <p>You'll be the first to know about Speak for Me updates, new features, and launch announcements.</p>
+    <p>In the meantime, here's what Speak for Me does:</p>
+    <ul>
+      <li>AI-powered response suggestions for difficult Slack messages</li>
+      <li>Learns your writing style so suggestions sound like you</li>
+      <li>100% private — only you see the suggestions</li>
+    </ul>
+    <p>Ready to try it now? Install directly from Slack:</p>
+    <p><a href="${baseUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Visit Speak for Me</a></p>
+    <p style="color: #666; font-size: 14px; margin-top: 24px;">You're receiving this because you signed up at speakforme.app. If this wasn't you, just ignore this email.</p>
+  `;
+  const text = `Thanks for signing up!\n\nYou'll be the first to know about Speak for Me updates, new features, and launch announcements.\n\nReady to try it now? Visit ${baseUrl}\n\nYou're receiving this because you signed up at speakforme.app.`;
+
+  return { subject, html, text };
+}
+
 export function subscriptionResumedEmail(): EmailTemplate {
   const subject = 'Your Speak for Me subscription is now active';
   const html = `

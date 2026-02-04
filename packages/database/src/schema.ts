@@ -734,6 +734,17 @@ export const guardrailViolations = pgTable('guardrail_violations', {
   createdAtIdx: index('guardrail_violations_created_at_idx').on(table.createdAt),
 }));
 
+// Email subscribers for newsletter / launch updates
+export const emailSubscribers = pgTable('email_subscribers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull(),
+  source: text('source').default('landing_page'), // 'landing_page' | 'product_hunt' | 'manual'
+  subscribedAt: timestamp('subscribed_at').defaultNow(),
+  unsubscribedAt: timestamp('unsubscribed_at'),
+}, (table) => ({
+  emailIdx: uniqueIndex('email_subscribers_email_idx').on(table.email),
+}));
+
 // Type exports for Phase 13 tables
 export type OrgStyleSettings = typeof orgStyleSettings.$inferSelect;
 export type NewOrgStyleSettings = typeof orgStyleSettings.$inferInsert;
