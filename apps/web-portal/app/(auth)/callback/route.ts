@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth/session';
-import { exchangeCodeForTokens } from '@/lib/auth/slack-oauth';
+import { exchangeCodeForTokens, fetchUserEmail } from '@/lib/auth/slack-oauth';
 import { db, workspaces } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 
@@ -71,11 +71,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch user email from Slack OpenID endpoint
+    const email = tokens.authed_user.access_token
+      ? await fetchUserEmail(tokens.authed_user.access_token)
+      : null;
+
     // Create session with workspace and user info
     await createSession({
       teamId: tokens.team.id,
       userId: tokens.authed_user.id,
       workspaceId: workspace.id,
+      email: email ?? '',
     });
 
     // Clear OAuth cookies and redirect
