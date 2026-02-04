@@ -189,3 +189,13 @@ export {
   createOrUpdateCandidate,
   calculateQualityScore,
 } from './kb-learner.js';
+
+// Satisfaction survey - NPS survey delivery and response tracking
+export {
+  buildSurveyBlocks,
+  canSurveyUser,
+  deliverSurvey,
+  recordSurveyResponse,
+  expireOldSurveys,
+  categorizeNPS,
+} from './satisfaction-survey.js';
