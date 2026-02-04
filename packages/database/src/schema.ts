@@ -896,3 +896,67 @@ export const kbEffectiveness = pgTable('kb_effectiveness', {
 // Type exports for KB effectiveness
 export type KbEffectiveness = typeof kbEffectiveness.$inferSelect;
 export type NewKbEffectiveness = typeof kbEffectiveness.$inferInsert;
+
+// Satisfaction surveys for NPS and user feedback collection
+export const satisfactionSurveys = pgTable('satisfaction_surveys', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id').notNull(), // Slack user ID
+  surveyType: text('survey_type').notNull(), // 'nps' | 'quarterly' | 'milestone'
+  rating: integer('rating'), // 0-10, nullable until user responds
+  npsCategory: text('nps_category'), // nullable, computed: 'promoter' | 'passive' | 'detractor'
+  feedbackText: text('feedback_text'), // nullable, free-form user feedback
+  status: text('status').default('delivered'), // 'delivered' | 'completed' | 'expired' | 'dismissed'
+  deliveredAt: timestamp('delivered_at').defaultNow().notNull(),
+  respondedAt: timestamp('responded_at'), // nullable
+  expiredAt: timestamp('expired_at'), // nullable, set after 7 days if no response
+  slackMessageTs: text('slack_message_ts'), // nullable, for updating the original DM message
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  orgTimeIdx: index('satisfaction_surveys_org_time_idx').on(table.organizationId, table.deliveredAt),
+  userIdx: index('satisfaction_surveys_user_idx').on(table.userId, table.deliveredAt),
+  statusIdx: index('satisfaction_surveys_status_idx').on(table.status),
+  uniqueSurveyIdx: uniqueIndex('satisfaction_surveys_unique_idx').on(
+    table.workspaceId,
+    table.userId,
+    table.surveyType,
+    table.deliveredAt
+  ),
+}));
+
+// Type exports for satisfaction surveys
+export type SatisfactionSurvey = typeof satisfactionSurveys.$inferSelect;
+export type NewSatisfactionSurvey = typeof satisfactionSurveys.$inferInsert;
+
+// Communication health scores for before/after analysis and trend tracking
+export const communicationHealthScores = pgTable('communication_health_scores', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id),
+  userId: text('user_id'), // nullable -- null means team aggregate, non-null means individual user score
+  scoreDate: timestamp('score_date').notNull(), // the start of the scoring period
+  scorePeriod: text('score_period').notNull(), // 'weekly' | 'monthly'
+  healthScore: integer('health_score').notNull(), // 0-100 composite
+  acceptanceRate: integer('acceptance_rate'), // 0-100, nullable if insufficient data
+  avgResponseTimeMs: integer('avg_response_time_ms'), // nullable
+  avgSentimentScore: integer('avg_sentiment_score'), // 0-100, nullable
+  avgSatisfactionScore: integer('avg_satisfaction_score'), // 0-100, nullable -- from NPS normalized
+  engagementRate: integer('engagement_rate'), // 0-100, nullable
+  totalSuggestions: integer('total_suggestions').default(0), // data volume indicator
+  isBaseline: boolean('is_baseline').default(false), // true for first 30-day scores, used in before/after
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  orgDateIdx: uniqueIndex('communication_health_scores_org_date_idx').on(
+    table.organizationId,
+    table.userId,
+    table.scoreDate,
+    table.scorePeriod
+  ),
+  userDateIdx: index('communication_health_scores_user_date_idx').on(table.userId, table.scoreDate),
+  orgScoreIdx: index('communication_health_scores_org_score_idx').on(table.organizationId, table.healthScore),
+}));
+
+// Type exports for communication health scores
+export type CommunicationHealthScore = typeof communicationHealthScores.$inferSelect;
+export type NewCommunicationHealthScore = typeof communicationHealthScores.$inferInsert;
