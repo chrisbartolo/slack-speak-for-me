@@ -21,20 +21,22 @@ import {
   TrendingUp,
   Brain,
   Settings,
-  FileCheck,
-  ShieldCheck,
   Ticket,
   Heart,
   Activity,
   Clock,
   MessageCircle,
-  Layers,
   Palette,
   FileBox,
   ShieldAlert,
   ScrollText,
   Wallet,
-  PieChart
+  PieChart,
+  AlertTriangle,
+  UserCheck,
+  Megaphone,
+  Library,
+  Crown
 } from 'lucide-react';
 import { NavItem } from './nav-item';
 import { NavGroup } from './nav-group';
@@ -134,6 +136,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
                 { href: '/admin/communication-insights', label: 'Communication', icon: MessageCircle },
                 { href: '/admin/satisfaction', label: 'Satisfaction', icon: Heart },
                 { href: '/admin/learning-loop', label: 'Learning Loop', icon: Brain },
+                { href: '/admin/escalations', label: 'Escalations', icon: AlertTriangle },
               ]}
             />
 
@@ -145,6 +148,9 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               openGroupId={openGroupId}
               onToggle={handleToggle}
               items={[
+                { href: '/admin/clients', label: 'Clients', icon: UserCheck },
+                { href: '/admin/brand-voice', label: 'Brand Voice', icon: Megaphone },
+                { href: '/admin/knowledge-base', label: 'Knowledge Base', icon: Library },
                 { href: '/admin/settings', label: 'Org Style', icon: Palette },
                 { href: '/admin/templates', label: 'Templates', icon: FileBox },
                 { href: '/admin/guardrails', label: 'Guardrails', icon: ShieldAlert },
@@ -169,6 +175,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               items={[
                 { href: '/admin/organizations', label: 'Organizations', icon: Building2 },
                 { href: '/admin/users', label: 'Users', icon: Users },
+                { href: '/admin/plan-management', label: 'Plan Management', icon: Crown },
                 { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
               ]}
             />
