@@ -1,51 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, LucideIcon } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { NavItem } from './nav-item';
 import { cn } from '@/lib/utils';
 
 interface NavGroupItem {
   href: string;
   label: string;
+  icon?: LucideIcon;
 }
 
 interface NavGroupProps {
+  id: string;
   label: string;
   icon: LucideIcon;
   items: NavGroupItem[];
-  defaultOpen?: boolean;
+  openGroupId: string | null;
+  onToggle: (id: string) => void;
 }
 
-export function NavGroup({ label, icon: Icon, items, defaultOpen = false }: NavGroupProps) {
+export function NavGroup({ id, label, icon: Icon, items, openGroupId, onToggle }: NavGroupProps) {
   const pathname = usePathname();
+  const isOpen = openGroupId === id;
 
   // Check if any item in the group is currently active
   const hasActiveChild = items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
-  // Initialize to open if has active child, otherwise use defaultOpen
-  const [isOpen, setIsOpen] = useState(defaultOpen || hasActiveChild);
-
-  // Keep open when navigating to a child route
+  // Auto-open when navigating to a child route
   useEffect(() => {
-    if (hasActiveChild && !isOpen) {
-      setIsOpen(true);
+    if (hasActiveChild && openGroupId !== id) {
+      onToggle(id);
     }
-  }, [hasActiveChild, isOpen]);
+  }, [hasActiveChild, id, openGroupId, onToggle]);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className={cn(
-        'group flex w-full items-center justify-between gap-3 px-4 py-2.5',
-        'text-sm font-medium rounded-lg',
-        'transition-all duration-200 ease-out',
-        'outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        hasActiveChild
-          ? 'bg-accent text-accent-foreground shadow-sm'
-          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm active:scale-[0.98]'
-      )}>
+    <div className="space-y-1">
+      <button
+        onClick={() => onToggle(id)}
+        className={cn(
+          'group flex w-full items-center justify-between gap-3 px-4 py-2.5',
+          'text-sm font-medium rounded-lg',
+          'transition-all duration-200 ease-out',
+          'outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          hasActiveChild
+            ? 'bg-accent text-accent-foreground shadow-sm'
+            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm active:scale-[0.98]'
+        )}
+      >
         <div className="flex items-center gap-3">
           <Icon className={cn(
             'w-5 h-5 transition-transform duration-200',
@@ -54,22 +57,29 @@ export function NavGroup({ label, icon: Icon, items, defaultOpen = false }: NavG
           <span>{label}</span>
         </div>
         <ChevronDown className={cn(
-          'w-4 h-4 transition-transform duration-200',
+          'w-4 h-4 transition-transform duration-300 ease-out',
           isOpen && 'rotate-180'
         )} />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-        <div className="ml-8 mt-1 space-y-1 pb-1">
+      </button>
+
+      <div
+        className={cn(
+          'overflow-hidden transition-all duration-300 ease-out',
+          isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        )}
+      >
+        <div className="ml-4 pl-4 border-l border-border/50 space-y-0.5 py-1">
           {items.map((item) => (
             <NavItem
               key={item.href}
               href={item.href}
               label={item.label}
+              icon={item.icon}
               compact
             />
           ))}
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </div>
   );
 }

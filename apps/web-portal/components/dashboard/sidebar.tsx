@@ -1,7 +1,41 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Home, CheckSquare, Sliders, MessageSquare, Users, FileText, Sparkles, BarChart3, Clock, TrendingUp, Shield, CreditCard, Gift, BookOpen, Building2, UserCircle, Brain, Ticket } from 'lucide-react';
+import {
+  Home,
+  Briefcase,
+  CheckSquare,
+  Sliders,
+  MessageSquare,
+  Users,
+  FileText,
+  Sparkles,
+  BarChart3,
+  Shield,
+  CreditCard,
+  Gift,
+  BookOpen,
+  Building2,
+  UserCircle,
+  TrendingUp,
+  Brain,
+  Settings,
+  FileCheck,
+  ShieldCheck,
+  Ticket,
+  Heart,
+  Activity,
+  Clock,
+  MessageCircle,
+  Layers,
+  Palette,
+  FileBox,
+  ShieldAlert,
+  ScrollText,
+  Wallet,
+  PieChart
+} from 'lucide-react';
 import { NavItem } from './nav-item';
 import { NavGroup } from './nav-group';
 import { UserMenu } from './user-menu';
@@ -12,6 +46,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
+  const [openGroupId, setOpenGroupId] = useState<string | null>(null);
+
+  const handleToggle = useCallback((id: string) => {
+    setOpenGroupId(prev => prev === id ? null : id);
+  }, []);
+
   return (
     <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
       {/* Header */}
@@ -29,15 +69,41 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {/* Dashboard - always visible */}
         <NavItem href="/dashboard" icon={Home} label="Dashboard" />
-        <NavItem href="/dashboard/tasks" icon={CheckSquare} label="Tasks" />
-        <NavItem href="/dashboard/style" icon={Sliders} label="Style Settings" />
-        <NavItem href="/dashboard/conversations" icon={MessageSquare} label="Conversations" />
-        <NavItem href="/dashboard/people" icon={Users} label="People" />
-        <NavItem href="/dashboard/feedback" icon={Sparkles} label="AI Learning" />
-        <NavItem href="/dashboard/usage" icon={BarChart3} label="Usage" />
-        <NavItem href="/dashboard/reports" icon={FileText} label="Reports" />
+
+        {/* Workspace Group */}
+        <NavGroup
+          id="workspace"
+          label="Workspace"
+          icon={Briefcase}
+          openGroupId={openGroupId}
+          onToggle={handleToggle}
+          items={[
+            { href: '/dashboard/tasks', label: 'Tasks', icon: CheckSquare },
+            { href: '/dashboard/conversations', label: 'Conversations', icon: MessageSquare },
+            { href: '/dashboard/people', label: 'People', icon: Users },
+            { href: '/dashboard/style', label: 'Style Settings', icon: Sliders },
+            { href: '/dashboard/feedback', label: 'AI Learning', icon: Sparkles },
+            { href: '/dashboard/reports', label: 'Reports', icon: FileText },
+          ]}
+        />
+
+        {/* Account Group */}
+        <NavGroup
+          id="account"
+          label="Account"
+          icon={UserCircle}
+          openGroupId={openGroupId}
+          onToggle={handleToggle}
+          items={[
+            { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+            { href: '/dashboard/usage', label: 'Usage', icon: BarChart3 },
+            { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
+            { href: '/dashboard/referrals', label: 'Referrals', icon: Gift },
+          ]}
+        />
 
         {/* Documentation - opens in new tab */}
         <a
@@ -50,48 +116,63 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
           <span>Documentation</span>
         </a>
 
-        <NavItem href="/dashboard/settings" icon={UserCircle} label="Account" />
-        <NavItem href="/dashboard/billing" icon={CreditCard} label="Billing" />
-        <NavItem href="/dashboard/referrals" icon={Gift} label="Referrals" />
-
         {/* Organization admin - visible to all admins */}
         {isAdmin && (
-          <div className="border-t border-border pt-4 mt-4">
+          <>
+            <div className="border-t border-border my-3" />
+
+            {/* Analytics Group */}
             <NavGroup
-              label="Organization"
-              icon={Building2}
-              defaultOpen={false}
+              id="analytics"
+              label="Analytics"
+              icon={TrendingUp}
+              openGroupId={openGroupId}
+              onToggle={handleToggle}
               items={[
-                { href: '/admin/analytics', label: 'Analytics' },
-                { href: '/admin/response-times', label: 'Response Times' },
-                { href: '/admin/communication-insights', label: 'Communication Insights' },
-                { href: '/admin/learning-loop', label: 'Learning Loop' },
-                { href: '/admin/satisfaction', label: 'Satisfaction' },
-                { href: '/admin/settings', label: 'Org Style' },
-                { href: '/admin/templates', label: 'Templates' },
-                { href: '/admin/guardrails', label: 'Guardrails' },
-                { href: '/admin/audit-trail', label: 'Audit Trail' },
-                { href: '/admin/billing', label: 'Org Billing' },
-                { href: '/admin/usage', label: 'Usage' },
+                { href: '/admin/analytics', label: 'Team Analytics', icon: PieChart },
+                { href: '/admin/response-times', label: 'Response Times', icon: Clock },
+                { href: '/admin/communication-insights', label: 'Communication', icon: MessageCircle },
+                { href: '/admin/satisfaction', label: 'Satisfaction', icon: Heart },
+                { href: '/admin/learning-loop', label: 'Learning Loop', icon: Brain },
               ]}
             />
-          </div>
+
+            {/* Organization Settings Group */}
+            <NavGroup
+              id="org-settings"
+              label="Organization"
+              icon={Building2}
+              openGroupId={openGroupId}
+              onToggle={handleToggle}
+              items={[
+                { href: '/admin/settings', label: 'Org Style', icon: Palette },
+                { href: '/admin/templates', label: 'Templates', icon: FileBox },
+                { href: '/admin/guardrails', label: 'Guardrails', icon: ShieldAlert },
+                { href: '/admin/audit-trail', label: 'Audit Trail', icon: ScrollText },
+                { href: '/admin/billing', label: 'Org Billing', icon: Wallet },
+                { href: '/admin/usage', label: 'Org Usage', icon: Activity },
+              ]}
+            />
+          </>
         )}
 
         {/* System admin - visible to super admins only */}
         {isSuperAdmin && (
-          <div className={isAdmin ? 'mt-1' : 'border-t border-border pt-4 mt-4'}>
+          <>
+            {!isAdmin && <div className="border-t border-border my-3" />}
             <NavGroup
+              id="system"
               label="System"
               icon={Shield}
-              defaultOpen={false}
+              openGroupId={openGroupId}
+              onToggle={handleToggle}
               items={[
-                { href: '/admin/organizations', label: 'Organizations' },
-                { href: '/admin/users', label: 'Users' },
-                { href: '/admin/coupons', label: 'Coupons' },
+                { href: '/admin/organizations', label: 'Organizations', icon: Building2 },
+                { href: '/admin/users', label: 'Users', icon: Users },
+                { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
               ]}
             />
-          </div>
+          </>
         )}
       </nav>
 
