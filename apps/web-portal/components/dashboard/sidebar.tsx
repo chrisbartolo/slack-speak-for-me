@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Home,
@@ -41,6 +40,7 @@ import {
 import { NavItem } from './nav-item';
 import { NavGroup } from './nav-group';
 import { UserMenu } from './user-menu';
+import { useSidebar } from './sidebar-context';
 
 interface SidebarProps {
   isAdmin?: boolean;
@@ -48,11 +48,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
-  const [openGroupId, setOpenGroupId] = useState<string | null>(null);
-
-  const handleToggle = useCallback((id: string) => {
-    setOpenGroupId(prev => prev === id ? null : id);
-  }, []);
+  const { openGroupId, toggleGroup } = useSidebar();
 
   return (
     <aside className="w-64 border-r border-border bg-background flex flex-col h-full">
@@ -81,7 +77,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
           label="Workspace"
           icon={Briefcase}
           openGroupId={openGroupId}
-          onToggle={handleToggle}
+          onToggle={toggleGroup}
           items={[
             { href: '/dashboard/tasks', label: 'Tasks', icon: CheckSquare },
             { href: '/dashboard/conversations', label: 'Conversations', icon: MessageSquare },
@@ -98,7 +94,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
           label="Account"
           icon={UserCircle}
           openGroupId={openGroupId}
-          onToggle={handleToggle}
+          onToggle={toggleGroup}
           items={[
             { href: '/dashboard/settings', label: 'Settings', icon: Settings },
             { href: '/dashboard/usage', label: 'Usage', icon: BarChart3 },
@@ -129,7 +125,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               label="Analytics"
               icon={TrendingUp}
               openGroupId={openGroupId}
-              onToggle={handleToggle}
+              onToggle={toggleGroup}
               items={[
                 { href: '/admin/analytics', label: 'Team Analytics', icon: PieChart },
                 { href: '/admin/response-times', label: 'Response Times', icon: Clock },
@@ -146,7 +142,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               label="Organization"
               icon={Building2}
               openGroupId={openGroupId}
-              onToggle={handleToggle}
+              onToggle={toggleGroup}
               items={[
                 { href: '/admin/clients', label: 'Clients', icon: UserCheck },
                 { href: '/admin/brand-voice', label: 'Brand Voice', icon: Megaphone },
@@ -171,7 +167,7 @@ export function Sidebar({ isAdmin, isSuperAdmin }: SidebarProps) {
               label="System"
               icon={Shield}
               openGroupId={openGroupId}
-              onToggle={handleToggle}
+              onToggle={toggleGroup}
               items={[
                 { href: '/admin/organizations', label: 'Organizations', icon: Building2 },
                 { href: '/admin/users', label: 'Users', icon: Users },
