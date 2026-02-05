@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, LucideIcon } from 'lucide-react';
 import { NavItem } from './nav-item';
@@ -24,20 +24,23 @@ interface NavGroupProps {
 export function NavGroup({ id, label, icon: Icon, items, openGroupId, onToggle }: NavGroupProps) {
   const pathname = usePathname();
   const isOpen = openGroupId === id;
+  const hasInitialized = useRef(false);
 
   // Check if any item in the group is currently active
   const hasActiveChild = items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
-  // Auto-open when navigating to a child route
+  // Auto-open on initial render only if this group has the active route
   useEffect(() => {
-    if (hasActiveChild && openGroupId !== id) {
+    if (!hasInitialized.current && hasActiveChild) {
+      hasInitialized.current = true;
       onToggle(id);
     }
-  }, [hasActiveChild, id, openGroupId, onToggle]);
+  }, []); // Empty deps - only run on mount
 
   return (
     <div className="space-y-1">
       <button
+        type="button"
         onClick={() => onToggle(id)}
         className={cn(
           'group flex w-full items-center justify-between gap-3 px-4 py-2.5',
@@ -64,20 +67,22 @@ export function NavGroup({ id, label, icon: Icon, items, openGroupId, onToggle }
 
       <div
         className={cn(
-          'overflow-hidden transition-all duration-300 ease-out',
-          isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          'grid transition-all duration-300 ease-out',
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         )}
       >
-        <div className="ml-4 pl-4 border-l border-border/50 space-y-0.5 py-1">
-          {items.map((item) => (
-            <NavItem
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              icon={item.icon}
-              compact
-            />
-          ))}
+        <div className="overflow-hidden">
+          <div className="ml-4 pl-4 border-l border-border/50 space-y-0.5 py-1">
+            {items.map((item) => (
+              <NavItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                compact
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
