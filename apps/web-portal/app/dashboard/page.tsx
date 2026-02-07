@@ -9,18 +9,26 @@ import {
 import { StatCard } from '@/components/dashboard/stat-card';
 import { LearningSummary } from '@/components/dashboard/learning-summary';
 import { GettingStarted } from '@/components/dashboard/getting-started';
+import { AccountSetup } from '@/components/dashboard/account-setup';
 import { MessageSquare, Eye, Edit3, Sliders } from 'lucide-react';
 import { HelpLink } from '@/components/help/help-link';
+import { verifySession } from '@/lib/auth/dal';
+import { isAdmin } from '@/lib/auth/admin';
+import { checkUserAccess } from '@/lib/billing/access-check';
 
 export default async function DashboardPage() {
+  const session = await verifySession();
+
   // Fetch data in parallel
-  const [stylePrefs, messageCount, conversationCount, refinementCount, personContextCount, feedbackStats] = await Promise.all([
+  const [stylePrefs, messageCount, conversationCount, refinementCount, personContextCount, feedbackStats, adminStatus, access] = await Promise.all([
     getStylePreferences(),
     getMessageCount(),
     getWatchedConversationCount(),
     getRefinementCount(),
     getPersonContextCount(),
     getSuggestionFeedbackStats(),
+    isAdmin(),
+    checkUserAccess(session.email, session.workspaceId),
   ]);
 
   // Calculate onboarding progress
@@ -41,6 +49,14 @@ export default async function DashboardPage() {
           Your AI learning progress and activity overview
         </p>
       </div>
+
+      {/* Account Setup (prerequisite onboarding) */}
+      <AccountSetup
+        hasEmail={!!session.email}
+        hasActiveSubscription={access.hasAccess}
+        isAdmin={adminStatus}
+        subscriptionSource={access.hasAccess ? access.source : null}
+      />
 
       {/* Getting Started Guide */}
       <GettingStarted

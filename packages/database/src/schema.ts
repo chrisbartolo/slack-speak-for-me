@@ -59,6 +59,7 @@ export const users = pgTable('users', {
   workspaceIdx: index('users_workspace_id_idx').on(table.workspaceId),
   slackUserIdx: index('users_slack_user_id_idx').on(table.slackUserId),
   roleIdx: index('users_role_idx').on(table.role),
+  workspaceUserUnique: uniqueIndex('users_workspace_slack_user_unique_idx').on(table.workspaceId, table.slackUserId),
 }));
 
 export const watchedConversations = pgTable('watched_conversations', {

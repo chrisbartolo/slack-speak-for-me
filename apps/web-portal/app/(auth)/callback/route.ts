@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth/session';
 import { exchangeCodeForTokens, fetchUserEmail } from '@/lib/auth/slack-oauth';
-import { db, workspaces } from '@slack-speak/database';
+import { db, workspaces, users } from '@slack-speak/database';
 import { eq } from 'drizzle-orm';
 
 // Get the base URL for redirects (handles proxy/tunnel scenarios)
@@ -83,6 +83,33 @@ export async function GET(request: NextRequest) {
       workspaceId: workspace.id,
       email: email ?? '',
     });
+
+    // Upsert user record - ensures user exists with email
+    // Installation store creates admin users WITHOUT email;
+    // this fills in the email while preserving their admin role
+    if (email) {
+      await db
+        .insert(users)
+        .values({
+          workspaceId: workspace.id,
+          slackUserId: tokens.authed_user.id,
+          email: email,
+          role: 'member',
+        })
+        .onConflictDoUpdate({
+          target: [users.workspaceId, users.slackUserId],
+          set: { email: email },
+        });
+    } else {
+      await db
+        .insert(users)
+        .values({
+          workspaceId: workspace.id,
+          slackUserId: tokens.authed_user.id,
+          role: 'member',
+        })
+        .onConflictDoNothing();
+    }
 
     // Clear OAuth cookies and redirect
     const response = NextResponse.redirect(new URL(returnUrl, baseUrl));

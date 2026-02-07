@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/dal';
+import { createSession } from '@/lib/auth/session';
 import { db, users } from '@slack-speak/database';
 import { and, eq } from 'drizzle-orm';
 
@@ -19,16 +20,27 @@ export async function PATCH(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Update user record
+    // Upsert user record (handles case where user row doesn't exist yet)
     await db
-      .update(users)
-      .set({ email: normalizedEmail })
-      .where(
-        and(
-          eq(users.workspaceId, session.workspaceId),
-          eq(users.slackUserId, session.userId)
-        )
-      );
+      .insert(users)
+      .values({
+        workspaceId: session.workspaceId,
+        slackUserId: session.userId,
+        email: normalizedEmail,
+        role: 'member',
+      })
+      .onConflictDoUpdate({
+        target: [users.workspaceId, users.slackUserId],
+        set: { email: normalizedEmail },
+      });
+
+    // Refresh session cookie so email is available immediately on next request
+    await createSession({
+      userId: session.userId,
+      workspaceId: session.workspaceId,
+      teamId: session.teamId,
+      email: normalizedEmail,
+    });
 
     return NextResponse.json({ success: true, email: normalizedEmail });
   } catch (error) {
