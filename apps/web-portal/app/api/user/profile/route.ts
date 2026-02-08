@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySession } from '@/lib/auth/dal';
+import { getOptionalSession } from '@/lib/auth/dal';
 import { encrypt } from '@/lib/auth/session';
 import { db, users } from '@slack-speak/database';
 import { and, eq } from 'drizzle-orm';
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await verifySession();
+    // Use getOptionalSession (not verifySession) in API routes —
+    // verifySession calls redirect() which throws inside try/catch
+    const session = await getOptionalSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
 
     const body = await request.json();
     const { email } = body;
@@ -69,9 +78,10 @@ export async function PATCH(request: NextRequest) {
     });
     return response;
   } catch (error) {
-    console.error('Update profile error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Update profile error:', message, error);
     return NextResponse.json(
-      { error: 'Failed to update profile' },
+      { error: 'Failed to update profile', detail: message },
       { status: 500 }
     );
   }
@@ -79,7 +89,14 @@ export async function PATCH(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await verifySession();
+    const session = await getOptionalSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
 
     const [user] = await db
       .select({ email: users.email })
@@ -94,9 +111,10 @@ export async function GET() {
 
     return NextResponse.json({ email: user?.email || null });
   } catch (error) {
-    console.error('Get profile error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Get profile error:', message, error);
     return NextResponse.json(
-      { error: 'Failed to get profile' },
+      { error: 'Failed to get profile', detail: message },
       { status: 500 }
     );
   }

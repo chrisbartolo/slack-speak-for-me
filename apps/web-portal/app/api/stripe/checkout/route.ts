@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin, getOrganization } from '@/lib/auth/admin';
-import { verifySession } from '@/lib/auth/dal';
+import { getOptionalSession } from '@/lib/auth/dal';
 import { getStripe, createCustomer, createTrialCheckout, createIndividualCheckout } from '@/lib/stripe';
 import { db, schema } from '@/lib/db';
 import { eq } from 'drizzle-orm';
@@ -74,7 +74,14 @@ async function resolveDiscount(
  * Any authenticated user can start an individual subscription
  */
 async function handleIndividualCheckout(body: { planId?: string; couponCode?: string; referralCode?: string }): Promise<Response> {
-  const session = await verifySession();
+  const session = await getOptionalSession();
+
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Not authenticated' },
+      { status: 401 }
+    );
+  }
 
   if (!session.email) {
     return NextResponse.json(

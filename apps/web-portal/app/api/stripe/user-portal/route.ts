@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifySession } from '@/lib/auth/dal';
+import { getOptionalSession } from '@/lib/auth/dal';
 import { createPortalSession } from '@/lib/stripe';
 import { getIndividualSubscription } from '@/lib/billing/access-check';
 
@@ -12,7 +12,14 @@ import { getIndividualSubscription } from '@/lib/billing/access-check';
  */
 export async function POST() {
   try {
-    const session = await verifySession();
+    const session = await getOptionalSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
 
     if (!session.email) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/admin';
-import { verifySession } from '@/lib/auth/dal';
+import { getOptionalSession } from '@/lib/auth/dal';
 import { getOrganization } from '@/lib/auth/admin';
 import { getTemplates, createTemplate } from '@/lib/admin/templates';
 import { z } from 'zod';
@@ -20,8 +20,11 @@ const createTemplateBodySchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify session (any authenticated user can view templates)
-    const session = await verifySession();
+    // Use getOptionalSession in API routes (verifySession's redirect throws in try/catch)
+    const session = await getOptionalSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
     // Get organization ID from admin session
     const admin = await requireAdmin();
@@ -66,8 +69,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify session (any authenticated user can submit)
-    const session = await verifySession();
+    // Use getOptionalSession in API routes (verifySession's redirect throws in try/catch)
+    const session = await getOptionalSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
     // Get organization ID from admin context
     const admin = await requireAdmin();
