@@ -56,7 +56,7 @@ export function TagInput({
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className="ml-1 rounded-full hover:bg-gray-300 p-0.5"
+              className="ml-1 rounded-full hover:bg-muted p-0.5"
             >
               <X className="h-3 w-3" />
             </button>
@@ -71,7 +71,7 @@ export function TagInput({
         placeholder={value.length >= maxTags ? `Maximum ${maxTags} items` : placeholder}
         disabled={value.length >= maxTags}
       />
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-muted-foreground">
         {value.length}/{maxTags} items. Press Enter to add.
       </p>
     </div>

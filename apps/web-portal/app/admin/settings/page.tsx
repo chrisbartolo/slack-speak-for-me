@@ -7,9 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, X, Plus, Save, Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, Save, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { TagInput } from '@/components/forms/tag-input';
 
 interface OrgStyleSettings {
   styleMode: 'override' | 'layer' | 'fallback';
@@ -40,6 +51,25 @@ const FORMALITY_OPTIONS = [
   { value: 'very_formal', label: 'Very Formal' },
 ];
 
+const STYLE_MODES = [
+  {
+    value: 'fallback',
+    label: 'User preferences first',
+    sublabel: 'Default',
+    description: 'User preferences take priority, org settings fill gaps',
+  },
+  {
+    value: 'layer',
+    label: 'Org sets baseline',
+    description: 'Org provides defaults, users can customize within bounds',
+  },
+  {
+    value: 'override',
+    label: 'Org overrides user',
+    description: 'Org style replaces user preferences entirely',
+  },
+];
+
 export default function AdminSettingsPage() {
   // Org style state
   const [styleSettings, setStyleSettings] = useState<OrgStyleSettings>({
@@ -50,8 +80,6 @@ export default function AdminSettingsPage() {
     avoidPhrases: [],
     customGuidance: '',
   });
-  const [newPreferredPhrase, setNewPreferredPhrase] = useState('');
-  const [newAvoidPhrase, setNewAvoidPhrase] = useState('');
 
   // YOLO mode state
   const [yoloSettings, setYoloSettings] = useState<YoloModeSettings>({
@@ -64,8 +92,6 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingYolo, setSavingYolo] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Load settings on mount
   useEffect(() => {
@@ -75,7 +101,6 @@ export default function AdminSettingsPage() {
   async function loadSettings() {
     try {
       setLoading(true);
-      setError(null);
 
       // Load org style settings
       const styleRes = await fetch('/api/admin/org-style');
@@ -98,7 +123,7 @@ export default function AdminSettingsPage() {
 
       setYoloSettings(yoloData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load settings');
+      toast.error(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
       setLoading(false);
     }
@@ -107,8 +132,6 @@ export default function AdminSettingsPage() {
   async function saveStyleSettings() {
     try {
       setSaving(true);
-      setError(null);
-      setSuccess(null);
 
       const res = await fetch('/api/admin/org-style', {
         method: 'PUT',
@@ -128,10 +151,9 @@ export default function AdminSettingsPage() {
         throw new Error(data.error || 'Failed to save settings');
       }
 
-      setSuccess('Style settings saved successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      toast.success('Style settings saved');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save settings');
+      toast.error(err instanceof Error ? err.message : 'Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -140,7 +162,6 @@ export default function AdminSettingsPage() {
   async function toggleGlobalYolo(enabled: boolean) {
     try {
       setSavingYolo(true);
-      setError(null);
 
       const res = await fetch('/api/admin/yolo-mode', {
         method: 'PUT',
@@ -150,18 +171,16 @@ export default function AdminSettingsPage() {
 
       if (!res.ok) throw new Error('Failed to update YOLO mode');
 
-      setYoloSettings((prev) => ({ ...prev, globalEnabled: enabled }));
-
-      // Update effective status for users without overrides
       setYoloSettings((prev) => ({
         ...prev,
+        globalEnabled: enabled,
         users: prev.users.map((user) => ({
           ...user,
           effectiveStatus: user.override !== null ? user.override : enabled,
         })),
       }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update YOLO mode');
+      toast.error(err instanceof Error ? err.message : 'Failed to update YOLO mode');
     } finally {
       setSavingYolo(false);
     }
@@ -193,42 +212,8 @@ export default function AdminSettingsPage() {
         ),
       }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user setting');
+      toast.error(err instanceof Error ? err.message : 'Failed to update user setting');
     }
-  }
-
-  function addPreferredPhrase() {
-    if (newPreferredPhrase.trim() && styleSettings.preferredPhrases.length < 20) {
-      setStyleSettings({
-        ...styleSettings,
-        preferredPhrases: [...styleSettings.preferredPhrases, newPreferredPhrase.trim()],
-      });
-      setNewPreferredPhrase('');
-    }
-  }
-
-  function removePreferredPhrase(index: number) {
-    setStyleSettings({
-      ...styleSettings,
-      preferredPhrases: styleSettings.preferredPhrases.filter((_, i) => i !== index),
-    });
-  }
-
-  function addAvoidPhrase() {
-    if (newAvoidPhrase.trim() && styleSettings.avoidPhrases.length < 20) {
-      setStyleSettings({
-        ...styleSettings,
-        avoidPhrases: [...styleSettings.avoidPhrases, newAvoidPhrase.trim()],
-      });
-      setNewAvoidPhrase('');
-    }
-  }
-
-  function removeAvoidPhrase(index: number) {
-    setStyleSettings({
-      ...styleSettings,
-      avoidPhrases: styleSettings.avoidPhrases.filter((_, i) => i !== index),
-    });
   }
 
   if (loading) {
@@ -242,24 +227,11 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-3xl font-bold">Admin Settings</h1>
+        <h1 className="text-3xl font-bold text-foreground">Admin Settings</h1>
         <p className="text-muted-foreground mt-1">
           Configure organization-wide style guidelines and YOLO mode controls
         </p>
       </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <AlertDescription className="text-green-800">{success}</AlertDescription>
-        </Alert>
-      )}
 
       {/* Section 1: Org-Wide Style Guidelines */}
       <Card>
@@ -276,171 +248,108 @@ export default function AdminSettingsPage() {
             <p className="text-sm text-muted-foreground">
               How should org settings interact with individual user preferences?
             </p>
-            <div className="grid gap-3">
-              <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                <input
-                  type="radio"
-                  name="styleMode"
-                  value="fallback"
-                  checked={styleSettings.styleMode === 'fallback'}
-                  onChange={(e) =>
-                    setStyleSettings({ ...styleSettings, styleMode: 'fallback' })
-                  }
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">User preferences first (Default)</div>
-                  <div className="text-sm text-muted-foreground">
-                    User preferences take priority, org settings fill gaps
-                  </div>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                <input
-                  type="radio"
-                  name="styleMode"
-                  value="layer"
-                  checked={styleSettings.styleMode === 'layer'}
-                  onChange={(e) => setStyleSettings({ ...styleSettings, styleMode: 'layer' })}
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">Org sets baseline</div>
-                  <div className="text-sm text-muted-foreground">
-                    Org provides defaults, users can customize within bounds
-                  </div>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                <input
-                  type="radio"
-                  name="styleMode"
-                  value="override"
-                  checked={styleSettings.styleMode === 'override'}
-                  onChange={(e) =>
-                    setStyleSettings({ ...styleSettings, styleMode: 'override' })
-                  }
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">Org overrides user</div>
-                  <div className="text-sm text-muted-foreground">
-                    Org style replaces user preferences entirely
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          {/* Tone */}
-          <div className="space-y-2">
-            <Label htmlFor="tone">Tone</Label>
-            <Input
-              id="tone"
-              value={styleSettings.tone || ''}
-              onChange={(e) => setStyleSettings({ ...styleSettings, tone: e.target.value })}
-              placeholder="e.g., Professional, Friendly, Direct"
-              maxLength={50}
-            />
-            <p className="text-xs text-muted-foreground">
-              Overall communication tone for AI suggestions
-            </p>
-          </div>
-
-          {/* Formality */}
-          <div className="space-y-2">
-            <Label htmlFor="formality">Formality Level</Label>
-            <select
-              id="formality"
-              value={styleSettings.formality || 'neutral'}
-              onChange={(e) =>
-                setStyleSettings({ ...styleSettings, formality: e.target.value })
+            <RadioGroup
+              value={styleSettings.styleMode}
+              onValueChange={(value) =>
+                setStyleSettings({ ...styleSettings, styleMode: value as OrgStyleSettings['styleMode'] })
               }
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="grid grid-cols-1 md:grid-cols-3 gap-4"
             >
-              {FORMALITY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+              {STYLE_MODES.map((mode) => (
+                <label
+                  key={mode.value}
+                  className={cn(
+                    'relative flex cursor-pointer flex-col gap-1 rounded-lg border p-4 transition-colors hover:bg-accent/50',
+                    styleSettings.styleMode === mode.value && 'border-primary bg-accent/30 ring-1 ring-primary/20'
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value={mode.value} />
+                    <span className="font-medium">{mode.label}</span>
+                    {mode.sublabel && (
+                      <Badge variant="secondary" className="text-xs">
+                        {mode.sublabel}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground pl-6">
+                    {mode.description}
+                  </p>
+                </label>
               ))}
-            </select>
+            </RadioGroup>
           </div>
 
-          {/* Preferred Phrases */}
-          <div className="space-y-2">
-            <Label>Preferred Phrases</Label>
-            <p className="text-xs text-muted-foreground">
-              Phrases to encourage in AI responses (max 20)
-            </p>
-            <div className="flex gap-2">
+          {/* Tone & Formality - Two Column */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="tone">Tone</Label>
               <Input
-                value={newPreferredPhrase}
-                onChange={(e) => setNewPreferredPhrase(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPreferredPhrase())}
-                placeholder="Add a phrase..."
-                maxLength={100}
-                disabled={styleSettings.preferredPhrases.length >= 20}
+                id="tone"
+                value={styleSettings.tone || ''}
+                onChange={(e) => setStyleSettings({ ...styleSettings, tone: e.target.value })}
+                placeholder="e.g., Professional, Friendly, Direct"
+                maxLength={50}
               />
-              <Button
-                onClick={addPreferredPhrase}
-                disabled={!newPreferredPhrase.trim() || styleSettings.preferredPhrases.length >= 20}
-                size="icon"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Overall communication tone for AI suggestions
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {styleSettings.preferredPhrases.map((phrase, index) => (
-                <Badge key={index} variant="secondary" className="gap-1">
-                  {phrase}
-                  <button
-                    onClick={() => removePreferredPhrase(index)}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
+
+            <div className="space-y-2">
+              <Label htmlFor="formality">Formality Level</Label>
+              <Select
+                value={styleSettings.formality || 'neutral'}
+                onValueChange={(value) =>
+                  setStyleSettings({ ...styleSettings, formality: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FORMALITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Avoid Phrases */}
-          <div className="space-y-2">
-            <Label>Avoid Phrases</Label>
-            <p className="text-xs text-muted-foreground">
-              Phrases to avoid in AI responses (max 20)
-            </p>
-            <div className="flex gap-2">
-              <Input
-                value={newAvoidPhrase}
-                onChange={(e) => setNewAvoidPhrase(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAvoidPhrase())}
-                placeholder="Add a phrase to avoid..."
+          {/* Preferred & Avoid Phrases - Two Column */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Preferred Phrases</Label>
+              <p className="text-xs text-muted-foreground">
+                Phrases to encourage in AI responses
+              </p>
+              <TagInput
+                value={styleSettings.preferredPhrases}
+                onChange={(phrases) =>
+                  setStyleSettings({ ...styleSettings, preferredPhrases: phrases })
+                }
+                placeholder="e.g., 'Thanks for reaching out'"
+                maxTags={20}
                 maxLength={100}
-                disabled={styleSettings.avoidPhrases.length >= 20}
               />
-              <Button
-                onClick={addAvoidPhrase}
-                disabled={!newAvoidPhrase.trim() || styleSettings.avoidPhrases.length >= 20}
-                size="icon"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {styleSettings.avoidPhrases.map((phrase, index) => (
-                <Badge key={index} variant="secondary" className="gap-1">
-                  {phrase}
-                  <button
-                    onClick={() => removeAvoidPhrase(index)}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
+
+            <div className="space-y-2">
+              <Label>Avoid Phrases</Label>
+              <p className="text-xs text-muted-foreground">
+                Phrases to avoid in AI responses
+              </p>
+              <TagInput
+                value={styleSettings.avoidPhrases}
+                onChange={(phrases) =>
+                  setStyleSettings({ ...styleSettings, avoidPhrases: phrases })
+                }
+                placeholder="e.g., 'No worries'"
+                maxTags={20}
+                maxLength={100}
+              />
             </div>
           </div>
 
