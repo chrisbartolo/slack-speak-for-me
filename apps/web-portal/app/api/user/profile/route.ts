@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/dal';
-import { createSession } from '@/lib/auth/session';
+import { encrypt } from '@/lib/auth/session';
 import { db, users } from '@slack-speak/database';
 import { and, eq } from 'drizzle-orm';
 
@@ -34,15 +34,26 @@ export async function PATCH(request: NextRequest) {
         set: { email: normalizedEmail },
       });
 
-    // Refresh session cookie so email is available immediately on next request
-    await createSession({
+    // Refresh session JWT with updated email and set on response directly
+    // (can't use createSession() here — its cookies() API conflicts with NextResponse)
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const sessionToken = await encrypt({
       userId: session.userId,
       workspaceId: session.workspaceId,
       teamId: session.teamId,
       email: normalizedEmail,
+      expiresAt,
     });
 
-    return NextResponse.json({ success: true, email: normalizedEmail });
+    const response = NextResponse.json({ success: true, email: normalizedEmail });
+    response.cookies.set('session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: expiresAt,
+      sameSite: 'lax',
+      path: '/',
+    });
+    return response;
   } catch (error) {
     console.error('Update profile error:', error);
     return NextResponse.json(
