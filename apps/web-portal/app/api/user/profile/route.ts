@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOptionalSession } from '@/lib/auth/dal';
 import { encrypt } from '@/lib/auth/session';
-import { db, users } from '@slack-speak/database';
+import { db, users, workspaces } from '@slack-speak/database';
 import { and, eq } from 'drizzle-orm';
 
 export async function PATCH(request: NextRequest) {
@@ -29,6 +29,23 @@ export async function PATCH(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Verify workspace exists (session may contain stale workspaceId)
+    const [workspace] = await db
+      .select({ id: workspaces.id })
+      .from(workspaces)
+      .where(eq(workspaces.id, session.workspaceId))
+      .limit(1);
+
+    if (!workspace) {
+      // Session has a workspaceId that doesn't exist — user must re-login
+      const response = NextResponse.json(
+        { error: 'Session expired. Please log out and log back in.' },
+        { status: 401 }
+      );
+      response.cookies.delete('session');
+      return response;
+    }
+
     // Update or create user record with email
     const [existing] = await db
       .select({ id: users.id })
@@ -50,7 +67,7 @@ export async function PATCH(request: NextRequest) {
       await db
         .insert(users)
         .values({
-          workspaceId: session.workspaceId,
+          workspaceId: workspace.id,
           slackUserId: session.userId,
           email: normalizedEmail,
           role: 'member',
