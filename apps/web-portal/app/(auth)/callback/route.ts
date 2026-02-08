@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth/session';
 import { exchangeCodeForTokens, fetchUserEmail } from '@/lib/auth/slack-oauth';
 import { db, workspaces, users } from '@slack-speak/database';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 // Get the base URL for redirects (handles proxy/tunnel scenarios)
 function getBaseUrl(request: NextRequest): string {
@@ -84,31 +84,38 @@ export async function GET(request: NextRequest) {
       email: email ?? '',
     });
 
-    // Upsert user record - ensures user exists with email
+    // Ensure user record exists with email
     // Installation store creates admin users WITHOUT email;
     // this fills in the email while preserving their admin role
-    if (email) {
-      await db
-        .insert(users)
-        .values({
-          workspaceId: workspace.id,
-          slackUserId: tokens.authed_user.id,
-          email: email,
-          role: 'member',
-        })
-        .onConflictDoUpdate({
-          target: [users.workspaceId, users.slackUserId],
-          set: { email: email },
-        });
+    const [existingUser] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.workspaceId, workspace.id),
+          eq(users.slackUserId, tokens.authed_user.id)
+        )
+      )
+      .limit(1);
+
+    if (existingUser) {
+      // Update email on existing user (preserves role)
+      if (email) {
+        await db
+          .update(users)
+          .set({ email })
+          .where(eq(users.id, existingUser.id));
+      }
     } else {
+      // Create new user record
       await db
         .insert(users)
         .values({
           workspaceId: workspace.id,
           slackUserId: tokens.authed_user.id,
+          email: email ?? null,
           role: 'member',
-        })
-        .onConflictDoNothing();
+        });
     }
 
     // Clear OAuth cookies and redirect

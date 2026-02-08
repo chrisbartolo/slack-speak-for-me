@@ -20,19 +20,33 @@ export async function PATCH(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Upsert user record (handles case where user row doesn't exist yet)
-    await db
-      .insert(users)
-      .values({
-        workspaceId: session.workspaceId,
-        slackUserId: session.userId,
-        email: normalizedEmail,
-        role: 'member',
-      })
-      .onConflictDoUpdate({
-        target: [users.workspaceId, users.slackUserId],
-        set: { email: normalizedEmail },
-      });
+    // Update or create user record with email
+    const [existing] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.workspaceId, session.workspaceId),
+          eq(users.slackUserId, session.userId)
+        )
+      )
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(users)
+        .set({ email: normalizedEmail })
+        .where(eq(users.id, existing.id));
+    } else {
+      await db
+        .insert(users)
+        .values({
+          workspaceId: session.workspaceId,
+          slackUserId: session.userId,
+          email: normalizedEmail,
+          role: 'member',
+        });
+    }
 
     // Refresh session JWT with updated email and set on response directly
     // (can't use createSession() here — its cookies() API conflicts with NextResponse)
